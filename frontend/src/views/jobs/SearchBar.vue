@@ -3,6 +3,7 @@
         <div class="flex w-full max-w-2xl items-center gap-2 p-2">
 
             <n-input type="text" size="large" v-model="keyword" placeholder="Ingresa la plabra clave..." 
+                class="shadow-md"
                 @keyup.enter="searchJobs" />
 
             <!-- Icon -->
