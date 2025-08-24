@@ -47,33 +47,33 @@ const salaryOptions = [
 <template>
     <div class="grid grid-cols-1 md:grid-cols-12 gap-4 min-h-screen">
 
-        <div class="md:col-span-12 p-2">
-            <h4 class="w-full flex justify-center mb-3">
-                Descubre el trabajo que mejor se adapta a ti
-            </h4>
+        <div class="md:col-span-12 pt-3">
+            <h3 class="w-full flex justify-center font-semibold text-lg">
+                Descubre nuevos retos para ti
+            </h3>
             <SearchBar />
         </div>
 
         <!-- Sidebar -->
-        <aside class="md:col-span-3 p-3">
+        <aside class="md:col-span-3 p-2">
             <nav>
 
-                <div class="mt-2 mb-3">
+                <div class="mt-2">
                     <span><strong>Filtros avanzados</strong></span>
                 </div>
 
-                <hr />
+                <hr class="mt-4 mb-3"/>
 
                 <FilterGroup title="Industry" :options="industryOptions" v-model="selectedIndustries" allOptionLabel="Todos" />
 
-                <hr />
+                <hr class="mt-4 mb-3"/>
 
                 <FilterGroup title="Salary Range" :options="salaryOptions" v-model="selectedSalaries" allOptionLabel="Todos" />
             </nav>
         </aside>
 
         <!-- Main content -->
-        <main class="md:col-span-9 p-3">
+        <main class="md:col-span-9 p-2">
 
             <div class="flex justify-between items-center">
                 <div class="text-left">
@@ -98,12 +98,12 @@ const salaryOptions = [
                 </div>
             </div>
 
-            <hr />
+            <hr class="mt-3 mb-3"/>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 place-items-center gap-4">
                 <JobCard v-for="i in 12" :key="i" class="hover-up" />
 
-                <div class="col-span-1 md:col-span-2 lg:col-span-3 text-center text-gray-500">
+                <div class="col-span-1 md:col-span-2 lg:col-span-3 text-gray-500">
                     <!-- <p>No hay resultados para tu búsqueda</p> -->
                     <n-pagination
                         v-model:page="page"

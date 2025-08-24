@@ -9,10 +9,7 @@ const hover = ref(false)
 </script>
 
 <template>
-    <n-card class="max-w-sm rounded-2xl shadow p-2" 
-        @mouseenter="hover = true"
-        @mouseleave="hover = false"
-        >
+    <n-card class="max-w-sm rounded-2xl shadow-md p-2" @mouseenter="hover = true" @mouseleave="hover = false">
         <!-- Header -->
         <div class="flex items-center justify-between mb-2">
             <n-button quaternary circle>
