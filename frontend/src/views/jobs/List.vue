@@ -8,7 +8,7 @@ import { NSelect, NPagination } from 'naive-ui'
 
 const sort = ref('relevance')
 const page = ref(1)
-const pageSize = ref(10)
+const pageSize = ref(12)
 const total = ref(200)
 
 const selectedIndustries = ref([])
@@ -21,9 +21,9 @@ const sortOptions = [
 ]
 
 const pageSizes = [
-  { label: '10 / pág', value: 10 },
-  { label: '20 / pág', value: 20 },
-  { label: '30 / pág', value: 30 }
+  { label: '12 / pág', value: 12 },
+  { label: '24 / pág', value: 24 },
+  { label: '36 / pág', value: 36 }
 ]
 
 const industryOptions = [
@@ -48,7 +48,7 @@ const salaryOptions = [
     <div class="grid grid-cols-1 md:grid-cols-12 gap-4 min-h-screen">
 
         <div class="md:col-span-12 pt-3">
-            <h3 class="w-full flex justify-center font-semibold text-lg">
+            <h3 class="w-full flex justify-center text-lg">
                 Descubre nuevos retos para ti
             </h3>
             <SearchBar />

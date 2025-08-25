@@ -19,7 +19,7 @@ const { user } = storeToRefs(authStore);
                 </div>
 
                 <!-- Menu -->
-                <ul class="md:flex items-center gap-6 text-sm text-gray-700 menu-container">
+                <ul class="md:flex items-center gap-6 text-sm text-gray-700 menu-container" v-if="user !== null">
                     <RouterLink to="/">Home ▾</RouterLink>
                     <RouterLink to="/users">Users ▾</RouterLink>
                     <RouterLink to="/jobs">Jobs ▾</RouterLink>
