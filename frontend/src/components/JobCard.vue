@@ -2,7 +2,7 @@
 
 import { NCard, NButton, NIcon, NTag } from "naive-ui";
 
-import { ref } from "vue"
+import { h, ref } from "vue"
 
 const hover = ref(false)
 
@@ -42,16 +42,17 @@ const hover = ref(false)
 
         <!-- Skills -->
         <div class="flex flex-wrap gap-2 mb-3">
-            <n-tag type="default" round>Adobe XD</n-tag>
-            <n-tag type="default" round>Figma</n-tag>
-            <n-tag type="default" round>Photoshop</n-tag>
+            <n-tag :type="hover ? 'success' : 'default'" round>Adobe XD</n-tag>
+            <n-tag :type="hover ? 'success' : 'default'" round>Figma</n-tag>
+            <n-tag :type="hover ? 'success' : 'default'" round>Photoshop</n-tag>
         </div>
 
         <!-- Footer -->
         <div class="flex items-center justify-between">
-            <span class="text-emerald-600 font-bold text-lg">$500</span>
-            <span class="text-gray-500">/Hour</span>
-
+            <div>
+                <span class="font-bold text-lg">$500</span>
+                <span class="text-gray-500"> / Hour</span>
+            </div>
             <n-button type="primary" :ghost="!hover">
                 Apply Now
             </n-button>

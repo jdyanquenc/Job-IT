@@ -5,6 +5,7 @@ export const http = {
   post: request('POST'),
   put: request('PUT'),
   delete: request('DELETE'),
+  form: formRequest,
 }
 
 function request(method: 'GET' | 'POST' | 'PUT' | 'DELETE') {
@@ -25,15 +26,34 @@ function request(method: 'GET' | 'POST' | 'PUT' | 'DELETE') {
   }
 }
 
+// Handle x-www-form-urlencoded data
+function formRequest(method: 'POST' | 'PUT', url: string, body: any) {
+  const requestOptions: {
+    method: string
+    headers: { Authorization?: string; 'Content-Type': string }
+    body: string
+  } = {
+    method,
+    headers: {
+      ...authHeader(url),
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams(body).toString(),
+  }
+  return fetch(url, requestOptions).then(handleResponse)
+}
+
 // helper functions
 
 function authHeader(url: string) {
   // return auth header with jwt if user is logged in and request is to the api url
   const { user } = useAuthStore()
-  const isLoggedIn = !!user?.token
+  const isLoggedIn = !!user?.access_token
   const isApiUrl = url.startsWith(import.meta.env.VITE_API_URL)
+
+  console.log('Auth Header - isLoggedIn:', isLoggedIn, 'isApiUrl:', isApiUrl)
   if (isLoggedIn && isApiUrl) {
-    return { Authorization: `Bearer ${user.token}` }
+    return { Authorization: `Bearer ${user.access_token}` }
   } else {
     return {}
   }

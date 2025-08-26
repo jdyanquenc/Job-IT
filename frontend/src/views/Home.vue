@@ -9,9 +9,5 @@ const { user } = storeToRefs(authStore);
 </script>
 
 <template>
-
-    <div class="container">
-        <List />
-    </div>
-
+    <List />
 </template>

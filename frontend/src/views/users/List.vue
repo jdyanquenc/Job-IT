@@ -3,9 +3,11 @@
 import { h } from 'vue'
 import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia';
-import { NDataTable, NButton, useMessage } from 'naive-ui'
 import { useUsersStore } from '@/stores';
 
+import { NDataTable, NButton, useMessage } from 'naive-ui'
+
+import SearchBar from '@/views/jobs/SearchBar.vue'
 import type { User } from '@/types/User';
 
 const message = useMessage();
@@ -85,12 +87,23 @@ const columns = [
 
 <template>
 
+<div class="grid grid-cols-1 md:grid-cols-12 gap-4 min-h-screen">
 
-    <h1>Users</h1>
-    <router-link to="/users/add" class="btn btn-sm btn-success mb-2">Add User</router-link>
+    <div class="md:col-span-12 pt-3">
+        <h1>Users</h1>
+        <SearchBar />
+        <router-link to="/users/add" class="btn btn-sm btn-success mb-2">Add User</router-link>
+        <n-data-table :columns="columns" :data="users" :pagination="pagination" :bordered="false" />
+    </div>
+
+</div>
 
 
-    <n-data-table :columns="columns" :data="users" :pagination="pagination" :bordered="false" />
+
+    
+
+
+    
 
     <!-- 
     <table class="table table-striped">
