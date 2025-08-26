@@ -1,6 +1,12 @@
 body {
   font-family: Plus Jakarta Sans,sans-serif;
+  letter-spacing: 0.03em;
 }
+
+hr {
+  border-color: var(--color-gray-300);
+}
+
 
 .capitalize {
   text-transform: capitalize

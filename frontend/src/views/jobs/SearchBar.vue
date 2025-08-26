@@ -1,13 +1,37 @@
+<script setup>
+import { ref, watch } from "vue"
+import { NInput, NButton, NIcon } from "naive-ui"
+
+const modelValue = defineModel({ type: String, default: "" })
+
+const props = defineProps({
+    placeholder: { type: String, default: "" }
+})
+
+const emit = defineEmits(["search"])
+
+const keyword = ref(modelValue.value)
+
+function search() {
+    modelValue.value = keyword.value
+    emit("search", keyword.value)
+}
+
+watch(
+    () => modelValue.value,
+    (newVal) => {
+        keyword.value = newVal
+    }
+)
+</script>
+
 <template>
     <div class="w-full flex justify-center">
         <div class="flex w-full max-w-2xl items-center gap-2 p-2">
+            <n-input v-model:value="keyword" type="text" size="large" :placeholder="placeholder" class="shadow-md"
+                @keyup.enter="search" />
 
-            <n-input type="text" size="large" v-model="keyword" placeholder="Ingresa la plabra clave..." 
-                class="shadow-md"
-                @keyup.enter="searchJobs" />
-
-            <!-- Icon -->
-            <n-button type="primary" size="large" @click="searchJobs">
+            <n-button type="primary" size="large" @click="search">
                 <template #icon>
                     <n-icon>
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
@@ -22,17 +46,3 @@
         </div>
     </div>
 </template>
-
-<script setup>
-import { ref } from "vue"
-import { NInput, NButton, NIcon } from "naive-ui"
-
-const keyword = ref("")
-
-function searchJobs() {
-    if (keyword.value.trim()) {
-        // Replace with your API call or router push
-        console.log("Searching jobs for:", keyword.value)
-    }
-}
-</script>

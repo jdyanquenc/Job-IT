@@ -6,7 +6,7 @@ import type {
     FormValidationError
 } from 'naive-ui'
 
-import { NButton, NCard, NCol, NForm, NFormItem, NInput, NRow, useMessage } from 'naive-ui'
+import { NButton, NCard, NForm, NFormItemRow, NInput, useMessage } from 'naive-ui'
 
 import { ref } from 'vue'
 import { useAuthStore } from '@/stores';
@@ -68,28 +68,21 @@ async function onSubmit() {
 </script>
 
 <template>
-    <n-card title="Login" size="large">
+    <n-card title="Login" class="max-w-screen-sm mx-auto mt-5 mb-5">
 
         <n-form ref="formRef" :model="model" :rules="rules">
-            <n-form-item path="username" label="Username">
+            <n-form-item-row path="username" label="Username">
                 <n-input v-model:value="model.username" @keydown.enter.prevent />
-            </n-form-item>
+            </n-form-item-row>
 
-            <n-form-item path="password" label="Password">
+            <n-form-item-row path="password" label="Password">
                 <n-input v-model:value="model.password" type="password" @keydown.enter.prevent />
-            </n-form-item>
-
-            <n-row :gutter="[0, 24]">
-                <n-col :span="24">
-                    <div style="display: flex; justify-content: flex-end">
-                        <n-button type="primary" @click="handleValidateButtonClick"
-                            :disabled="isSubmitting || (model.username == '' || model.password == '')">
-                            Login
-                        </n-button>
-                        <router-link to="register" class="btn btn-link">Register</router-link>
-                    </div>
-                </n-col>
-            </n-row>
+            </n-form-item-row>
         </n-form>
+        <n-button type="primary" block strong
+             @click="handleValidateButtonClick"
+            :disabled="isSubmitting || (model.username == '' || model.password == '')">
+            Login
+        </n-button>
     </n-card>
 </template>
