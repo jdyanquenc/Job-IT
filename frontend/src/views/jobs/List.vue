@@ -6,9 +6,9 @@ import { useJobsStore } from '@/stores';
 import { NSelect, NPagination } from 'naive-ui'
 import { useLoadingBar } from 'naive-ui'
 
-import SearchBar from '@/views/jobs/SearchBar.vue'
+import SearchBar from '@/components/SearchBar.vue'
 import FilterGroup from '@/components/FilterGroup.vue'
-import JobCard from '@/components/JobCard.vue'
+import JobCard from '@/views/jobs/JobCard.vue'
 
 
 const jobsStore = useJobsStore();
@@ -113,11 +113,11 @@ function handleSearch(value) {
             <hr class="mt-3 mb-3" />
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 place-items-center gap-4">
-                <JobCard v-for="i in 12" :key="i" class="hover-up" />
+                <JobCard v-for="job in jobs" :key="job.id" :job="job" class="hover-up" />
 
                 <div class="col-span-1 md:col-span-2 lg:col-span-3 text-gray-500">
-                    <!-- <p>No hay resultados para tu búsqueda</p> -->
-                    <n-pagination v-model:page="page" :page-size="pageSize" :item-count="total"
+                    <p v-if="jobs.length === 0" class="text-center">No se encontraron ofertas de trabajo.</p>
+                    <n-pagination v-if="jobs.length !== 0" v-model:page="page" :page-size="pageSize" :item-count="total"
                         :page-sizes="pageSizes.map(o => o.value)" class="mt-4 flex justify-center" />
                 </div>
 

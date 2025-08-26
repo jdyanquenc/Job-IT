@@ -7,7 +7,7 @@ import { useUsersStore } from '@/stores';
 
 import { NDataTable, NButton, useMessage } from 'naive-ui'
 
-import SearchBar from '@/views/jobs/SearchBar.vue'
+import SearchBar from '@/components/SearchBar.vue'
 import type { User } from '@/types/User';
 
 const message = useMessage();

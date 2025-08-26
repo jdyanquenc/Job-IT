@@ -19,7 +19,7 @@ export interface Job {
 }
 
 export interface CompanyBasicInfo {
-  id: string
+  id: string | null
   name: string
   location: string
   country_code: string
