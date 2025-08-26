@@ -33,9 +33,13 @@ const hover = ref(false)
         <!-- Job Title -->
         <div class="mb-2">
             <h2 class="text-lg font-bold">{{ props.job.job_title }}</h2>
-            <div class="flex items-center justify-between text-sm text-gray-500">
-                <IconJobType /><span class="mr-17">  {{ props.job.employment_type }}</span>
-                <IconJobPosted /><span>{{ new Date(props.job.created_at).toLocaleDateString() }}</span>
+            <div class="flex justify-between text-sm text-gray-500">
+                <div class="flex items-center">
+                    <IconJobType /><span class="ml-2">  {{ props.job.employment_type }}</span>
+                </div>
+                <div class="flex items-center">
+                    <IconJobPosted /><span class="ml-2">{{ new Date(props.job.created_at).toLocaleDateString() }}</span>    
+                </div>
             </div>
         </div>
 

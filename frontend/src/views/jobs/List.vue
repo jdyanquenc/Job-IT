@@ -66,62 +66,65 @@ function handleSearch(value) {
 </script>
 
 <template>
-    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 min-h-screen">
+    <div class="w-full mx-auto">
 
-        <div class="md:col-span-12 pt-3">
+        <div class="flex mb-4">
             <SearchBar v-model="searchText" @search="handleSearch" placeholder="Descubre nuevos retos para ti..." />
         </div>
 
-        <!-- Sidebar -->
-        <aside class="md:col-span-3 p-2">
-            <nav>
+        <div class="flex flex-col md:flex-row items-start gap-4">
 
-                <div class="mt-2">
-                    <span><strong>Filtros avanzados</strong></span>
-                </div>
+            <!-- Sidebar -->
+            <aside class="p-2 w-full md:w-1/4">
+                <nav>
+                    <div class="mt-2">
+                        <span><strong>Filtros avanzados</strong></span>
+                    </div>
 
-                <hr class="mt-4 mb-3" />
+                    <hr class="mt-4 mb-3" />
 
-                <FilterGroup title="Industry" :options="industryOptions" v-model="selectedIndustries"
-                    allOptionLabel="Todos" />
+                    <FilterGroup title="Industry" :options="industryOptions" v-model="selectedIndustries"
+                        allOptionLabel="Todos" />
 
-                <hr class="mt-4 mb-3" />
+                    <hr class="mt-4 mb-3" />
 
-                <FilterGroup title="Salary Range" :options="salaryOptions" v-model="selectedSalaries"
-                    allOptionLabel="Todos" />
-            </nav>
-        </aside>
+                    <FilterGroup title="Salary Range" :options="salaryOptions" v-model="selectedSalaries"
+                        allOptionLabel="Todos" />
+                </nav>
+            </aside>
 
-        <!-- Main content -->
-        <main class="md:col-span-9 p-2">
+            <!-- Main content -->
+            <main class="p-2 w-full md:w-3/4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center md:block hidden">
+                        <span>Mostrando <strong>41-60 </strong>de <strong>944 </strong>ofertas</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="flex items-center gap-3">
+                            <span>Mostrar:</span>
+                            <n-select :options="pageSizes" v-model:value="pageSize" :consistent-menu-width="false" />
 
-            <div class="flex justify-between items-center">
-                <div class="text-left">
-                    <span>Mostrando <strong>41-60 </strong>de <strong>944 </strong>ofertas</span>
-                </div>
-                <div class="text-right">
-                    <div class="flex items-center gap-3">
-                        <span>Mostrar:</span>
-                        <n-select :options="pageSizes" v-model:value="pageSize" :consistent-menu-width="false" />
-
-                        <span class="ml-4">Orden:</span>
-                        <n-select :options="sortOptions" v-model:value="sort" :consistent-menu-width="false" />
+                            <span>Orden:</span>
+                            <n-select :options="sortOptions" v-model:value="sort" :consistent-menu-width="false" />
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <hr class="mt-3 mb-3" />
+                <hr class="mt-3 mb-3" />
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 place-items-center gap-4">
-                <JobCard v-for="job in jobs" :key="job.id" :job="job" class="hover-up" />
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 place-items-center gap-4">
+                    <JobCard v-for="job in jobs" :key="job.id" :job="job" class="hover-up" />
 
-                <div class="col-span-1 md:col-span-2 lg:col-span-3 text-gray-500">
-                    <p v-if="jobs.length === 0" class="text-center">No se encontraron ofertas de trabajo.</p>
-                    <n-pagination v-if="jobs.length !== 0" v-model:page="page" :page-size="pageSize" :item-count="total"
-                        :page-sizes="pageSizes.map(o => o.value)" class="mt-4 flex justify-center" />
+                    <div class="col-span-1 md:col-span-2 lg:col-span-3 text-gray-500">
+                        <p v-if="jobs.length === 0" class="text-center">
+                            No se encontraron ofertas de trabajo.
+                        </p>
+                        <n-pagination v-if="jobs.length !== 0" v-model:page="page" :page-size="pageSize"
+                            :item-count="total" :page-sizes="pageSizes.map(o => o.value)"
+                            class="mt-4 flex justify-center" />
+                    </div>
                 </div>
-
-            </div>
-        </main>
+            </main>
+        </div>
     </div>
 </template>
