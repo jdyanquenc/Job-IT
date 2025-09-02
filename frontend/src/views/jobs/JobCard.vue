@@ -1,9 +1,13 @@
 <script setup lang="ts">
 
 import { ref } from "vue"
-import { NCard, NButton, NImage, NTag } from "naive-ui";
-import IconJobType from "@/components/icons/IconJobType.vue";
-import IconJobPosted from "@/components/icons/IconJobPosted.vue";
+
+import { NCard, NButton, NImage, NTag, NIcon, NText } from "naive-ui";
+
+import {
+    BriefcaseOutline,
+    TimeOutline
+} from "@vicons/ionicons5"
 
 import type { Job } from "@/types";
 
@@ -17,6 +21,7 @@ const props = defineProps({
 const hover = ref(false)
 
 
+
 </script>
 
 <template>
@@ -25,27 +30,38 @@ const hover = ref(false)
         <div class="flex items-center justify-between mb-2">
             <n-image :src="props.job.company.logo_url || '/images/template/icons/logo-default.svg'" width="100" />
             <div>
-                <h3 class="font-semibold text-lg">{{ props.job.company.name }}</h3>
+                <h4 class="font-semibold text-lg">{{ props.job.company.name }}</h4>
                 <p class="text-gray-500 text-sm">{{ props.job.company.location }}, {{ props.job.company.country_code }}</p>
             </div>
         </div>
 
         <!-- Job Title -->
         <div class="mb-2">
-            <h2 class="text-lg font-bold">{{ props.job.job_title }}</h2>
+            
+                <h4 class="text-lg font-bold">
+                    <router-link :to="{ name: 'JobDetail', params: { id: props.job.id } }">
+                        {{ props.job.job_title }}
+                    </router-link>
+                </h4>
             <div class="flex justify-between text-sm text-gray-500">
-                <div class="flex items-center">
-                    <IconJobType /><span class="ml-2">  {{ props.job.employment_type }}</span>
+
+                <div class="flex items-center space-x-2">
+                    <n-icon :component="BriefcaseOutline" />
+                    <n-text class="ml-1"> {{ props.job.employment_type }}</n-text>
                 </div>
+
                 <div class="flex items-center">
-                    <IconJobPosted /><span class="ml-2">{{ new Date(props.job.created_at).toLocaleDateString() }}</span>    
+                    <n-icon :component="TimeOutline" />
+                    <n-text class="ml-2"> {{ new Date(props.job.created_at).toLocaleDateString() }}</n-text>
                 </div>
             </div>
         </div>
 
         <!-- Description -->
         <p class="text-gray-600 text-sm mb-3">
-            {{ props.job.job_short_description }}
+            <router-link :to="{ name: 'JobDetail', params: { id: props.job.id } }">
+                {{ props.job.job_short_description }}
+            </router-link>
         </p>
 
         <!-- Skills -->

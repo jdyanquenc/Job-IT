@@ -14,6 +14,7 @@ export interface Job {
   skills_required: [string]
   salary_range: string
   created_at: Date 
+  updated_at: Date | null
   expires_at: Date | null
   company: CompanyBasicInfo
 }

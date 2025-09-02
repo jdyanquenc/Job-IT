@@ -1,11 +1,13 @@
-import { Layout, List, AddEdit } from '@/views/jobs';
+import { Layout, List, AddEdit, JobDetail } from '@/views/jobs';
 
 export default {
     path: '/jobs',
     component: Layout,
     children: [
-        { path: '', component: List },
+        { path: '', name: 'JobListing', component: List },
+        { path: ':id', name: 'JobDetail', component: JobDetail },
         { path: 'add', component: AddEdit },
-        { path: 'edit/:id', component: AddEdit }
+        { path: 'edit/:id', component: AddEdit },
+        
     ]
 };

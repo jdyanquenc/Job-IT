@@ -97,28 +97,35 @@ def get_active_jobs(current_user: TokenData, db: Session, query: str, page: int 
 
 
 def get_job_by_id(current_user: TokenData, db: Session, job_id: UUID) -> models.JobDetailResponse:
-    # TODO Check user permission to view job
     job = db.query(JobEntry).filter(JobEntry.id == job_id).first()
     if not job:
         logging.warning(f"Job {job_id} not found for user {current_user.get_uuid()}")
         raise JobNotFoundError(job_id)
     
+    company = db.query(Company).filter(Company.id == job.company_id).first()
+   
     logging.info(f"Retrieved Job {job_id} for user {current_user.get_uuid()}")
     return models.JobDetailResponse(
         id = job.id,
         job_title = job.job_title,
         job_description = job.detail.job_description,
+        experience = job.detail.experience,
+        qualifications = job.detail.qualifications,
+        responsibilities = job.detail.responsibilities,
+        benefits = job.detail.benefits,
         remote = job.remote,
         employment_type = job.employment_type,
         skills_required = job.skills_required,
         salary_range = job.salary_range,
         created_at = job.created_at,
+        updated_at = job.updated_at,
         expires_at = job.expires_at,
+        is_active = job.is_active,
         company = models.CompanyBasicInfo(
-            name = job.company.name,
-            location = job.company.location,
-            country_code = job.company.country.iso_code,
-            image_url = job.company.image_url
+            name = company.name,
+            location = company.location,
+            country_code = company.country.iso_code,
+            image_url = company.image_url
         )
     )
 

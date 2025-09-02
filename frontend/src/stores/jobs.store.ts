@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 import { http } from '@/helpers'
 import type { RegisterJob, Job } from '@/types'
 
-const baseUrl = `${import.meta.env.VITE_API_URL}/jobs/`
+const baseUrl = `${import.meta.env.VITE_API_URL}/jobs`
 
 export const useJobsStore = defineStore('jobit-jobs', {
   state: () => ({
@@ -18,7 +18,7 @@ export const useJobsStore = defineStore('jobit-jobs', {
     async find(query: string = '', page: number = 1) {
       try {
         console.log('Fetching jobs with query:', baseUrl, query);
-        const url = new URL(baseUrl)
+        const url = new URL(`${baseUrl}/search`);
         const params: any = {
           query,
           page,

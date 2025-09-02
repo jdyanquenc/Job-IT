@@ -14,12 +14,12 @@ router = APIRouter(
 )
 
 @router.post("/", response_model=models.JobResponse, status_code=status.HTTP_201_CREATED)
+@require_any_role([Role.COMPANY_MANAGER, Role.ADMIN])
 def create_job(db: DbSession, job: models.JobCreate, current_user: CurrentUser):
     return service.create_job(current_user, db, job)
 
 
-@router.get("/", response_model=List[models.JobResponse])
-@require_any_role([Role.CANDIDATE, Role.COMPANY_MANAGER, Role.ADMIN])
+@router.get("/search", response_model=List[models.JobResponse])
 def get_active_jobs(db: DbSession, current_user: CurrentUser, query: Optional[str] = None, page: Optional[int] = None):
     return service.get_active_jobs(current_user, db, query, page)
 
