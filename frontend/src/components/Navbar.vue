@@ -20,17 +20,17 @@ const { user } = storeToRefs(authStore);
 
                 <!-- Menu -->
                 <ul class="md:flex items-center gap-6 text-sm text-gray-700 menu-container" v-if="user !== null">
-                    <RouterLink to="/">Home ▾</RouterLink>
-                    <RouterLink to="/users">Users ▾</RouterLink>
-                    <RouterLink to="/jobs">Jobs ▾</RouterLink>
-                    <RouterLink to="/company-jobs">Company Jobs ▾</RouterLink>
+                    <RouterLink to="/">Inicio ▾</RouterLink>
+                    <RouterLink to="/users">Usuarios ▾</RouterLink>
+                    <RouterLink to="/jobs">Ofertas ▾</RouterLink>
+                    <RouterLink to="/company-jobs">Mis ofertas ▾</RouterLink>
                 </ul>
 
                 <!-- Actions -->
                 <div class="flex items-center gap-4 text-sm text-gray-700 action-container">
-                    <RouterLink to="/account/register" class="hover:underline" v-if="user === null">Register</RouterLink>
-                    <RouterLink to="/account/login" class="hover:underline" v-if="user === null">Login</RouterLink>
-                    <RouterLink to="#" class="hover:underline" v-if="user !== null" @click="authStore.logout()">Logout</RouterLink>
+                    <RouterLink to="/account/register" class="hover:underline" v-if="user === null">Registrarse</RouterLink>
+                    <RouterLink to="/account/login" class="hover:underline" v-if="user === null">Iniciar sesión</RouterLink>
+                    <RouterLink to="#" class="hover:underline" v-if="user !== null" @click="authStore.logout()">Cerrar sesión</RouterLink>
                 </div>
             </div>
         </div>
