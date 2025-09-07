@@ -20,12 +20,12 @@ const isSubmitting = ref(false);
 const formRef = ref<FormInst | null>(null)
 
 const model = ref<UserCredentials>({
-    username: '',
+    email: '',
     password: ''
 })
 
 const rules: FormRules = {
-    username: {
+    email: {
         required: true,
         message: 'Este campo es requerido',
         trigger: 'blur'
@@ -53,10 +53,10 @@ function handleValidateButtonClick(e: MouseEvent) {
 
 async function onSubmit() {
     const authStore = useAuthStore();
-    const { username, password } = model.value;
+    const { email, password } = model.value;
     try {
         isSubmitting.value = true;
-        await authStore.login(username, password);
+        await authStore.login(email, password);
     }
     catch (error: any) {
         message.error('Login failed: ' + error);
@@ -68,8 +68,9 @@ async function onSubmit() {
 </script>
 
 <template>
-
-    <div class="max-h-screen max-w-screen-sm mx-auto mt-5 mb-5">
+    
+    
+    <div class="max-w-screen-sm md:w-1/2 mx-auto mt-5 mb-5">
         <div class="flex items-center justify-center px-4">
             <div class="w-full max-w-md bg-white p-8">
 
@@ -84,26 +85,23 @@ async function onSubmit() {
 
                 <!-- Form -->
                 <n-form ref="formRef" :model="model" :rules="rules" class="space-y-4">
-                    <n-form-item-row path="username" label="Usuario">
-                        <n-input v-model:value="model.username" placeholder="Steven Jobs :)" />
+                    <n-form-item-row path="email" label="Correo electronico">
+                        <n-input v-model:value="model.email" placeholder="steven@job.it :)" />
                     </n-form-item-row>
 
                     <n-form-item-row path="password" label="Contraseña">
                         <n-input v-model:value="model.password" type="password" placeholder="**********" />
                     </n-form-item-row>
 
+                    <!-- Submit -->
+                    <n-button type="primary"
+                        class="w-full text-white py-2 rounded-md" block strong
+                        @click="handleValidateButtonClick"
+                        :disabled="isSubmitting || (model.email == '' || model.password == '')">
+                        Iniciar sesión
+                    </n-button>
 
                 </n-form>
-
-
-                <!-- Submit -->
-                <n-button type="primary"
-                    class="w-full bg-blue-900 text-white py-2 rounded-md hover:bg-blue-800 transition" block strong
-                    @click="handleValidateButtonClick"
-                    :disabled="isSubmitting || (model.username == '' || model.password == '')">
-                    Iniciar sesión
-                </n-button>
-
 
                 <!-- Footer -->
                 <p class="mt-6 text-center text-sm text-gray-500">
@@ -114,10 +112,19 @@ async function onSubmit() {
             </div>
         </div>
 
-        <div class="img-2 flex-clear">
-            <img alt="JobBox" src="/public/images/template/login/img-3.svg">
+        <div class="hidden md:block flex justify-start mt-6 ml-6 bg-login">
         </div>
+       
     </div>
 
 
 </template>
+
+<style scoped>
+.bg-login {
+    min-height: 200px;
+    background-image: url('/public/images/template/login/img-3.svg');
+    background-repeat: no-repeat;
+    background-position: right center;
+}
+</style>

@@ -1,9 +1,9 @@
 {
   "extends": "@tsconfig/node22/tsconfig.json",
   "include": [
+    "eslint.config.*",
     "vite.config.*",
     "vitest.config.*",
-    "eslint.config.*"
   ],
   "compilerOptions": {
     "noEmit": true,
