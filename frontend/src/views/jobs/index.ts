@@ -1,4 +1,4 @@
-export { default as AddEdit } from './AddEdit.vue'
+export { default as JobAddEdit } from './JobAddEdit.vue'
 export { default as Layout } from './Layout.vue'
-export { default as List } from './List.vue'
+export { default as JobList } from './JobList.vue'
 export { default as JobDetail } from './JobDetail.vue'

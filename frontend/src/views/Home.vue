@@ -2,12 +2,12 @@
 import { storeToRefs } from 'pinia';
 
 import { useAuthStore } from '@/stores';
-import List from '@/views/jobs/List.vue';
+import JobList from '@/views/jobs/JobList.vue';
 
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
 </script>
 
 <template>
-    <List />
+    <JobList />
 </template>

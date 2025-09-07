@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores'
 import accountRoutes from './account.routes'
 import usersRoutes from './users.routes'
 import jobsRoutes from './jobs.routes'
+import companyJobsRoutes from './company-jobs.routes'
 import { Home } from '@/views'
 
 export const router = createRouter({
@@ -14,6 +15,7 @@ export const router = createRouter({
     { ...accountRoutes },
     { ...usersRoutes },
     { ...jobsRoutes },
+    { ...companyJobsRoutes},
     // catch all redirect to home page
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],

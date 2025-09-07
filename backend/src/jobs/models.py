@@ -14,7 +14,7 @@ class JobBase(BaseModel):
     benefits: str
     remote: bool
     employment_type: EmploymentType
-    skills_required: Optional[list[str]] = None
+    tags: Optional[list[str]] = None
     salary_range: Optional[str] = None
     expires_at: Optional[datetime] = None
 
@@ -38,7 +38,7 @@ class JobResponse(BaseModel):
     job_short_description: str
     remote: bool
     employment_type: EmploymentType
-    skills_required: list[str]
+    tags: list[str]
     salary_range: str
     created_at: datetime 
     expires_at: Optional[datetime] = None

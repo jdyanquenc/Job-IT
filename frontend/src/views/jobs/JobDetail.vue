@@ -22,7 +22,7 @@ const id = route.params.id
 
 const { job } = storeToRefs(jobsStore);
 
-async function loadJobDetail() {
+async function loadJobData() {
     loadingBar.start()
     try {
         await jobsStore.getById(id)
@@ -33,11 +33,11 @@ async function loadJobDetail() {
     }
 }
 
-loadJobDetail()
+loadJobData()
 
 
 watch(() => id, () => {
-    loadJobDetail()
+    loadJobData()
 })
 
 
