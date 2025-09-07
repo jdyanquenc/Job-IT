@@ -25,7 +25,7 @@ const hover = ref(false)
 </script>
 
 <template>
-    <n-card class="max-w-sm rounded-2xl shadow-md p-2" @mouseenter="hover = true" @mouseleave="hover = false">
+    <n-card class="max-w-sm min-h-[400px] rounded-2xl shadow-md p-2" @mouseenter="hover = true" @mouseleave="hover = false">
         <!-- Header -->
         <div class="flex items-center justify-between mb-2">
             <n-image :src="props.job.company.logo_url || '/images/template/icons/logo-default.svg'" width="100" />
@@ -58,7 +58,7 @@ const hover = ref(false)
         </div>
 
         <!-- Description -->
-        <p class="text-gray-600 text-sm mb-3">
+        <p class="h-[95px] text-gray-600 text-sm mb-3 overflow-hidden text-ellipsis">
             <router-link :to="{ name: 'JobDetail', params: { id: props.job.id } }">
                 {{ props.job.job_short_description }}
             </router-link>
