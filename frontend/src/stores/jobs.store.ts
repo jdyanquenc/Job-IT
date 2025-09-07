@@ -1,14 +1,14 @@
 import { defineStore } from 'pinia'
 
 import { http } from '@/helpers'
-import type { RegisterJob, Job } from '@/types'
+import type {RegisterJob, Job, JobDetail } from '@/types'
 
 const baseUrl = `${import.meta.env.VITE_API_URL}/jobs`
 
 export const useJobsStore = defineStore('jobit-jobs', {
   state: () => ({
     jobs: [] as Job[],
-    job: {} as Job,
+    job: {} as JobDetail,
   }),
   actions: {
     async register(request: RegisterJob) {
@@ -35,7 +35,7 @@ export const useJobsStore = defineStore('jobit-jobs', {
       try {
         this.job = await http.get(`${baseUrl}/${id}`)
       } catch (error) {
-        this.job = {} as Job
+        this.job = {} as JobDetail
         console.error(`Error fetching job with id ${id}:`, error)
       }
     },

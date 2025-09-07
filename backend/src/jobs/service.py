@@ -55,12 +55,12 @@ def create_job(current_user: TokenData, db: Session, job: models.JobCreate) -> m
 def get_active_jobs(current_user: TokenData, db: Session, query: str, page: int = 1, page_size: int = 20) -> list[models.JobResponse]:
 
     stmt = text("""
-        SELECT j.id, j.job_title, j.job_short_description, j.remote, j.employment_type, j.skills_required, j.salary_range, j.expires_at, j.created_at, c.name AS company_name, c.location AS company_location, co.iso_code AS company_country_code, c.image_url AS company_image_url
+        SELECT j.id, j.job_title, j.job_short_description, j.remote, j.employment_type, j.tags, j.salary_range, j.expires_at, j.created_at, c.name AS company_name, c.location AS company_location, co.iso_code AS company_country_code, c.image_url AS company_image_url
         FROM job_entry j
         JOIN company c ON c.id = j.company_id
         JOIN country co ON co.id = c.country_id
         WHERE is_active = true
-        AND search_vector @@ plainto_tsquery('english', :query)
+        AND (:query = '' OR search_vector @@ plainto_tsquery('english', :query))
         ORDER BY ts_rank_cd(search_vector, plainto_tsquery('english', :query)) DESC
         LIMIT :limit OFFSET :offset
     """)
@@ -78,7 +78,7 @@ def get_active_jobs(current_user: TokenData, db: Session, query: str, page: int 
             job_short_description = job_short_description,
             remote = remote,
             employment_type = employment_type,
-            skills_required = skills_required,
+            tags = tags,
             salary_range = salary_range,
             expires_at = expires_at,
             created_at = created_at,
@@ -89,7 +89,7 @@ def get_active_jobs(current_user: TokenData, db: Session, query: str, page: int 
                 image_url = company_image_url
             )
         )
-        for id, job_title, job_short_description, remote, employment_type, skills_required, salary_range, expires_at, created_at, company_name, company_location, company_country_code, company_image_url in results
+        for id, job_title, job_short_description, remote, employment_type, tags, salary_range, expires_at, created_at, company_name, company_location, company_country_code, company_image_url in results
     ]
 
     logging.info(f"Retrieved {len(jobs)} jobs for user: {current_user.get_uuid()}")

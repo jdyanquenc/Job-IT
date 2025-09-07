@@ -23,6 +23,7 @@ const { user } = storeToRefs(authStore);
                     <RouterLink to="/">Home ▾</RouterLink>
                     <RouterLink to="/users">Users ▾</RouterLink>
                     <RouterLink to="/jobs">Jobs ▾</RouterLink>
+                    <RouterLink to="/company-jobs">Company Jobs ▾</RouterLink>
                 </ul>
 
                 <!-- Actions -->
