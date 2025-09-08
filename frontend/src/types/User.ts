@@ -1,8 +1,11 @@
 export interface RegisterUser {
-  firstName: string | null
-  lastName: string | null
+  identification_type: string | null
+  identification_number: string | null
+  first_name: string | null
+  last_name: string | null
   email: string | null
   password: string | null
+  confirm_password: string | null
 }
 
 export interface UserCredentials {

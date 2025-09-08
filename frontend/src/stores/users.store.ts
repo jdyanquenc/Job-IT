@@ -6,14 +6,22 @@ import type { RegisterUser, User } from '@/types'
 
 const baseUrl = `${import.meta.env.VITE_API_URL}/users`
 
+
 export const useUsersStore = defineStore('jobit-users', {
   state: () => ({
     users: [] as User[],
     user: {} as User,
   }),
   actions: {
+
+    async checkEmailAvailability(email: string) : Promise<{ available: boolean }> {
+      const url = new URL(`${baseUrl}/check-email`);
+      url.search = new URLSearchParams({email}).toString();
+      return await http.get(url.toString())
+    },
+
     async register(request: RegisterUser) {
-      await http.post(`${baseUrl}/register`, request)
+      await http.post(`${baseUrl}/`, request)
     },
 
     async getAll() {

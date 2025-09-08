@@ -76,7 +76,7 @@ async function onSubmit() {
 
 
                 <!-- Title -->
-                <h2 class="font-bold text-center text-gray-900 mb-2">Inicia sesión</h2>
+                <h2 class="font-bold text-center text-gray-900 mb-2">Inicio de sesión</h2>
                 
                 <p class="text-center text-gray-500 text-sm mb-6">
                     Accede a todas las características de Job IT.
@@ -86,7 +86,7 @@ async function onSubmit() {
                 <!-- Form -->
                 <n-form ref="formRef" :model="model" :rules="rules" class="space-y-4">
                     <n-form-item-row path="email" label="Correo electronico">
-                        <n-input v-model:value="model.email" placeholder="steven@job.it :)" />
+                        <n-input v-model:value="model.email" placeholder="steve@jobs.it :)" />
                     </n-form-item-row>
 
                     <n-form-item-row path="password" label="Contraseña">
@@ -103,7 +103,9 @@ async function onSubmit() {
 
                 </n-form>
 
-                <!-- Footer -->
+                <p class="mt-1 text-center text-sm text-gray-500">
+                    <RouterLink to="/account/forgot-password" class="text-gray-600 hover:underline ml-1">Olvidé mi contraseña</RouterLink>
+                </p>
                 <p class="mt-6 text-center text-sm text-gray-500">
                     ¿Aún no tienes una cuenta?
                     <RouterLink to="/account/register" class="text-blue-600 hover:underline ml-1">Regístrate</RouterLink>

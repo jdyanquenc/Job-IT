@@ -6,7 +6,7 @@ import type {
     FormValidationError
 } from 'naive-ui'
 
-import { NButton, NForm, NFormItem, NInput, useMessage } from 'naive-ui'
+import { NButton, NForm, NFormItem, NInput, NSelect, c, useMessage } from 'naive-ui'
 
 import { ref } from 'vue'
 import { useUsersStore } from '@/stores';
@@ -17,52 +17,109 @@ import type { RegisterUser } from '@/types';
 const message = useMessage();
 
 const isSubmitting = ref(false);
-
 const formRef = ref<FormInst | null>(null)
 
 const model = ref<RegisterUser>({
-    firstName: null,
-    lastName: null,
+    identification_type: null,
+    identification_number: null,
+    first_name: null,
+    last_name: null,
     email: null,
-    password: null
+    password: null,
+    confirm_password: null
 })
 
 const rules: FormRules = {
-    documentType: {
+    identification_type: {
         required: true,
         message: 'Este campo es requerido',
         trigger: 'blur'
     },
-    documentNumber: {
+    identification_number: {
         required: true,
         message: 'Este campo es requerido',
         trigger: 'blur'
     },
-    firstName: {
+    first_name: {
         required: true,
         message: 'Este campo es requerido',
         trigger: 'blur'
     },
-    lastName: {
+    last_name: {
         required: true,
         message: 'Este campo es requerido',
         trigger: 'blur'
     },
     email: {
-        required: true,
-        message: 'Este campo es requerido',
+        validator: async (rule, value) => {
+            if (!value) {
+                return Promise.reject('Este campo es requerido')
+            }
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+            if (!emailRegex.test(value)) {
+                return Promise.reject('Correo no válido')
+            }
+
+            const exists = await checkEmailAvailability(value)
+            if (exists) {
+                return Promise.reject('Este correo ya está registrado')
+            }
+
+            return Promise.resolve() // Change here to return void
+        },
         trigger: 'blur'
     },
     password: {
-        required: true,
-        message: 'Este campo es requerido',
-        trigger: 'blur'
+        validator: (rule, value) => {
+            if (!value) {
+                return Promise.reject('Este campo es requerido')
+            }
+            if (value.length < 8) {
+                return Promise.reject('La contraseña debe tener al menos 8 caracteres')
+            }
+            if (!/[A-Z]/.test(value)) {
+                return Promise.reject('La contraseña debe contener al menos una letra mayúscula')
+            }
+            if (!/[a-z]/.test(value)) {
+                return Promise.reject('La contraseña debe contener al menos una letra minúscula')
+            }
+            if (!/[0-9]/.test(value)) {
+                return Promise.reject('La contraseña debe contener al menos un número')
+            }
+            if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) {
+                return Promise.reject('La contraseña debe contener al menos un carácter especial')
+            }
+            if (model.value.confirm_password && value !== model.value.confirm_password) {
+                return Promise.reject('Las contraseñas no coinciden')
+            }
+            return Promise.resolve()
+        },
+        trigger: ['blur', 'input']
+    },
+    confirm_password: {
+        validator: async (rule, value) => {
+            if (value !== model.value.password) {
+                return Promise.reject('Las contraseñas no coinciden')
+            }
+            return Promise.resolve()
+        },
+        trigger: ['blur', 'input']
     }
 };
+
+const identification_types = [
+    { label: 'Cédula de ciudadanía', value: 'CC' },
+    { label: 'Cédula de extranjería', value: 'CE' },
+    { label: 'Pasaporte', value: 'PA' },
+    { label: 'Tarjeta de identidad', value: 'TI' }
+]
+
 
 function handleCompanyRegisterClick() {
     router.push('/account/company-register');
 }
+
+
 function handleValidateButtonClick(e: MouseEvent) {
     e.preventDefault()
     formRef.value?.validate(
@@ -77,8 +134,15 @@ function handleValidateButtonClick(e: MouseEvent) {
     )
 }
 
+async function checkEmailAvailability(email: string): Promise<boolean> {
+    const usersStore: ReturnType<typeof useUsersStore> = useUsersStore();
+    const validationResult = await usersStore.checkEmailAvailability(email);
+    return Promise.resolve(!validationResult.available);
+}
+
+
 async function onSubmit() {
-    const usersStore = useUsersStore();
+    const usersStore: ReturnType<typeof useUsersStore> = useUsersStore();
     const registerUser: RegisterUser = model.value;
 
     try {
@@ -124,32 +188,32 @@ async function onSubmit() {
                 <!-- Form -->
 
                 <n-form ref="formRef" :model="model" :rules="rules">
-                    <n-form-item path="firstName" label="Tipo de documento">
-                        <n-input v-model:value="model.firstName" placeholder="Cédula de ciudadanía"  />
+                    <n-form-item path="identification_type" label="Tipo de documento">
+                        <n-select v-model:value="model.identification_type" :options="identification_types" placeholder="Selecciona una opción" />
                     </n-form-item>
 
-                    <n-form-item path="firstName" label="Número de documento">
-                        <n-input v-model:value="model.firstName" placeholder="0000000000" />
+                    <n-form-item path="identification_number" label="Número de documento">
+                        <n-input v-model:value="model.identification_number" placeholder="0000000000" />
                     </n-form-item>
 
-                    <n-form-item path="firstName" label="Nombres">
-                        <n-input v-model:value="model.firstName" placeholder="Steven" />
+                    <n-form-item path="first_name" label="Nombres">
+                        <n-input v-model:value="model.first_name" placeholder="Steve" />
                     </n-form-item>
 
-                    <n-form-item path="lastName" label="Apellidos">
-                        <n-input v-model:value="model.lastName" placeholder="Job"  />
+                    <n-form-item path="last_name" label="Apellidos">
+                        <n-input v-model:value="model.last_name" placeholder="Jobs"  />
                     </n-form-item>
 
                     <n-form-item path="email" label="Correo electrónico">
-                        <n-input v-model:value="model.email" placeholder="steven@job.it" />
+                        <n-input v-model:value="model.email" placeholder="steve@jobs.it" />
                     </n-form-item>
 
                     <n-form-item path="password" label="Contraseña">
                         <n-input v-model:value="model.password" type="password" placeholder="**********" />
                     </n-form-item>
 
-                    <n-form-item path="password" label="Confirma la contraseña">
-                        <n-input v-model:value="model.password" type="password" placeholder="**********" />
+                    <n-form-item path="confirmPassword" label="Confirma la contraseña">
+                        <n-input v-model:value="model.confirm_password" type="password" placeholder="**********" />
                     </n-form-item>
 
                     <!-- Submit -->

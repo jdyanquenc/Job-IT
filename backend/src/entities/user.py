@@ -9,7 +9,13 @@ class Role(enum.Enum):
     ADMIN = "admin"
     CANDIDATE = "candidate"
     COMPANY_MANAGER = "company_manager"
-    
+
+class IdentificationType(enum.Enum):
+    CC = "CC"
+    CE = "CE"
+    PASSPORT = "PASSPORT"
+    TI = "TI"
+
 
 class User(Base):
     __tablename__ = 'users'
@@ -19,6 +25,8 @@ class User(Base):
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)
     password_hash = Column(String, nullable=False)
+    identification_type = Column(Enum(IdentificationType), nullable=True)
+    identification_number = Column(String, nullable=True)
     role = Column(Enum(Role), nullable=False, default=Role.CANDIDATE)
 
     def __repr__(self):
