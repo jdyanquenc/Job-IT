@@ -8,6 +8,11 @@ export interface RegisterUser {
   confirm_password: string | null
 }
 
+export interface RegisterCompanyUser extends RegisterUser {
+  company_name: string | null
+  company_registration_number: string | null
+}
+
 export interface UserCredentials {
   email: string
   password: string

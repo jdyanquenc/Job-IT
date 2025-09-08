@@ -9,13 +9,16 @@ class Company(Base):
     __tablename__ = 'company'
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    registration_number = Column(String, unique=True, nullable=False)
     name = Column(String, nullable=False)
-    location = Column(String, nullable=True)
-    country_id = Column(UUID(as_uuid=True), ForeignKey("country.id", ondelete="RESTRICT"), nullable=False, index=True)
+    description = Column(String, nullable=True)
+    sector = Column(String, nullable=True)
+    industry = Column(String, nullable=True)
+    city = Column(String, nullable=True)
+    state = Column(String, nullable=True)
+    zip = Column(String, nullable=True)
     image_url = Column(String, nullable=True)
-    
-    country = relationship("Country", uselist=False, foreign_keys=[country_id])
     
 
     def __repr__(self):
-        return f"<Company(name='{self.name}', country_id='{self.country_id}')>"
+        return f"<Company(name='{self.name}', registration_number='{self.registration_number}')>"

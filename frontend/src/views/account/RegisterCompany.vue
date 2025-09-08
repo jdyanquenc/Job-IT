@@ -11,7 +11,7 @@ import { NButton, NForm, NFormItem, NInput, NSelect, c, useMessage } from 'naive
 import { ref } from 'vue'
 import { useUsersStore } from '@/stores';
 import { router } from '@/router';
-import type { RegisterUser } from '@/types';
+import type { RegisterCompanyUser, RegisterUser } from '@/types';
 
 
 const message = useMessage();
@@ -19,17 +19,29 @@ const message = useMessage();
 const isSubmitting = ref(false);
 const formRef = ref<FormInst | null>(null)
 
-const model = ref<RegisterUser>({
+const model = ref<RegisterCompanyUser>({
     identification_type: null,
     identification_number: null,
     first_name: null,
     last_name: null,
     email: null,
     password: null,
-    confirm_password: null
+    confirm_password: null,
+    company_name: null,
+    company_registration_number: null
 })
 
 const rules: FormRules = {
+    company_registration_number: {
+        required: true,
+        message: 'Este campo es requerido',
+        trigger: 'blur'
+    },
+    company_name: {
+        required: true,
+        message: 'Este campo es requerido',
+        trigger: 'blur'
+    },
     identification_type: {
         required: true,
         message: 'Este campo es requerido',
@@ -111,12 +123,13 @@ const identification_types = [
     { label: 'Cédula de ciudadanía', value: 'CC' },
     { label: 'Cédula de extranjería', value: 'CE' },
     { label: 'Pasaporte', value: 'PA' },
-    { label: 'Tarjeta de identidad', value: 'TI' }
+    { label: 'Tarjeta de identidad', value: 'TI' },
+    { label: 'Permiso especial de permanencia', value: 'PEP' }
 ]
 
 
-function handleCompanyRegisterClick() {
-    router.push('/account/register-company');
+function handleRegisterClick() {
+    router.push('/account/register');
 }
 
 
@@ -143,11 +156,11 @@ async function checkEmailAvailability(email: string): Promise<boolean> {
 
 async function onSubmit() {
     const usersStore: ReturnType<typeof useUsersStore> = useUsersStore();
-    const registerUser: RegisterUser = model.value;
+    const registerCompanyUser: RegisterCompanyUser = model.value;
 
     try {
         isSubmitting.value = true;
-        await usersStore.registerCandidate(registerUser);
+        await usersStore.registerCompany(registerCompanyUser);
         await router.push('/account/login');
     }
     catch (error: any) {
@@ -171,23 +184,31 @@ async function onSubmit() {
 
 
                 <!-- Divider -->
-                <div class="w-full flex items-center justify-center text-gray-500 m-4">¿Deseas registrar tu empresa?
+                <div class="w-full flex items-center justify-center text-gray-500 m-4">¿Deseas registrarte como candidato?
                 </div>
 
                 <n-button type="primary" ghost
                     class="w-full flex items-center justify-center border border-gray-300 rounded-md py-2 hover:bg-gray-50 mb-4"
-                    block strong @click="handleCompanyRegisterClick" :disabled="isSubmitting">
-                    Ir a registro de empresas
+                    block strong @click="handleRegisterClick" :disabled="isSubmitting">
+                    Ir a registro de candidatos
                 </n-button>
 
                 <!-- Divider -->
                 <div class="w-full flex items-center justify-center text-gray-500 m-4">O continúa como&nbsp;<span
-                        class="font-bold">candidato</span></div>
+                        class="font-bold">empresa</span></div>
 
 
                 <!-- Form -->
 
                 <n-form ref="formRef" :model="model" :rules="rules">
+                    <n-form-item path="company_registration_number" label="NIT">
+                        <n-input v-model:value="model.company_registration_number" placeholder="000000000-0" />
+                    </n-form-item>
+
+                    <n-form-item path="company_name" label="Razón social">
+                        <n-input v-model:value="model.company_name" placeholder="ACME" />
+                    </n-form-item>
+
                     <n-form-item path="identification_type" label="Tipo de documento">
                         <n-select v-model:value="model.identification_type" :options="identification_types" placeholder="Selecciona una opción" />
                     </n-form-item>
@@ -246,7 +267,7 @@ async function onSubmit() {
 .bg-now-hiring {
     min-width: 128px;
     min-height: 128px;
-    background-image: url('/images/template/job-hiring.svg');
+    background-image: url('/images/template/office-building.svg');
     background-repeat: no-repeat;
     background-position: right center;
     animation: float 3s ease-in-out infinite;

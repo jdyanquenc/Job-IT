@@ -4,8 +4,10 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
 from . import models
-from src.entities.user import User
-from src.exceptions import UserNotFoundError, InvalidPasswordError, PasswordMismatchError
+from src.entities.user import Role, User
+from src.entities.company import Company
+from src.entities.company_user import CompanyUser
+from src.exceptions import CompanyRegistrationNumberExistsError, EmailAlreadyExistsError, IdentificationAlreadyExistsError, UserNotFoundError, InvalidPasswordError, PasswordMismatchError
 from src.auth.service import verify_password, get_password_hash
 import logging
 
@@ -62,7 +64,13 @@ def register_user(db: Session, register_user_request: models.RegisterUserRequest
         existing_user = db.query(User).filter(User.email == register_user_request.email.lower().strip()).first()
         if existing_user:
             logging.warning(f"Attempt to register with already taken email: {register_user_request.email}")
-            raise HTTPException(status_code=400, detail="Email is already registered")
+            raise EmailAlreadyExistsError(register_user_request.email)
+        
+        #Validate identification already exists
+        existing_identification = db.query(User).filter(User.identification_number == register_user_request.identification_number.replace('.', '').strip()).filter(User.identification_type == register_user_request.identification_type).first()
+        if existing_identification:
+            logging.warning(f"Attempt to register with already taken identification number: {register_user_request.identification_number}")
+            raise IdentificationAlreadyExistsError(register_user_request.identification_number)
         
 
         create_user_model = User(
@@ -72,12 +80,74 @@ def register_user(db: Session, register_user_request: models.RegisterUserRequest
             last_name=register_user_request.last_name,
             identification_type=register_user_request.identification_type,
             identification_number=register_user_request.identification_number.replace('.', '').strip(),
-            password_hash=get_password_hash(register_user_request.password)
+            password_hash=get_password_hash(register_user_request.password),
+            role=Role.CANDIDATE
         )    
         db.add(create_user_model)
         db.commit()
     except Exception as e:
         logging.error(f"Failed to register user: {register_user_request.email}. Error: {str(e)}")
+        raise
+
+
+def register_company_user(db: Session, register_company_user_request: models.RegisterCompanyUserRequest) -> None:
+    try:
+        # Check password constraints
+        if validate_password_strength(register_company_user_request.password) is False:
+            logging.warning(f"Weak password attempt during registration for email: {register_company_user_request.email}")
+            raise HTTPException(status_code=400, detail="Password does not meet strength requirements")
+        
+        #Validate if email already exists
+        existing_user = db.query(User).filter(User.email == register_company_user_request.email.lower().strip()).first()
+        if existing_user:
+            logging.warning(f"Attempt to register with already taken email: {register_company_user_request.email}")
+            raise EmailAlreadyExistsError(register_company_user_request.email)
+        
+        #Validate identification already exists
+        existing_identification = db.query(User).filter(User.identification_number == register_company_user_request.identification_number.replace('.', '').strip()).filter(User.identification_type == register_company_user_request.identification_type).first()
+        if existing_identification:
+            logging.warning(f"Attempt to register with already taken identification number: {register_company_user_request.identification_number}")
+            raise IdentificationAlreadyExistsError(register_company_user_request.identification_number)
+        
+        #Validate company registration number already exists
+        existing_company = db.query(Company).filter(Company.registration_number == register_company_user_request.company_registration_number.replace('.', '').replace('-', '').replace(' ', '').strip()).first()
+        if existing_company:
+            logging.warning(f"Attempt to register with already taken company registration number: {register_company_user_request.company_registration_number}")
+            raise CompanyRegistrationNumberExistsError(register_company_user_request.company_registration_number)
+        
+        
+        user_uuid = uuid4()
+        create_user_model = User(
+            id=user_uuid,
+            email=register_company_user_request.email.lower().strip(),
+            first_name=register_company_user_request.first_name,
+            last_name=register_company_user_request.last_name,
+            identification_type=register_company_user_request.identification_type,
+            identification_number=register_company_user_request.identification_number.replace('.', '').strip(),
+            password_hash=get_password_hash(register_company_user_request.password),
+            role=Role.COMPANY_MANAGER
+        )
+
+        company_uuid = uuid4()
+        create_company_model = Company(
+            id=company_uuid,
+            registration_number=register_company_user_request.company_registration_number.replace('.', '').replace('-', '').replace(' ', '').strip(),
+            name=register_company_user_request.company_name.strip()
+        )
+
+        create_company_user_association = CompanyUser(
+            company_id=company_uuid,
+            user_id=user_uuid
+        )
+
+        db.add(create_user_model)
+        db.add(create_company_model)
+        db.flush()  # Ensure company is created before association
+        db.add(create_company_user_association)
+        db.commit()
+
+    except Exception as e:
+        logging.error(f"Failed to register user: {register_company_user_request.email}. Error: {str(e)}")
         raise
 
 

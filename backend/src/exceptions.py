@@ -30,6 +30,18 @@ class InvalidPasswordError(UserError):
     def __init__(self):
         super().__init__(status_code=401, detail="Current password is incorrect")
 
+class EmailAlreadyExistsError(UserError):
+    def __init__(self, email: str):
+        super().__init__(status_code=400, detail=f"Email '{email}' is already registered")
+
+class IdentificationAlreadyExistsError(UserError):
+    def __init__(self, identification_number: str):
+        super().__init__(status_code=400, detail=f"Identification number '{identification_number}' is already registered")
+
+class CompanyRegistrationNumberExistsError(UserError):
+    def __init__(self, registration_number: str):
+        super().__init__(status_code=400, detail=f"Company registration number '{registration_number}' is already registered")
+
 class AuthenticationError(HTTPException):
     def __init__(self, message: str = "Could not validate user"):
         super().__init__(status_code=401, detail=message)

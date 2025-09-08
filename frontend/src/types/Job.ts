@@ -27,13 +27,13 @@ export interface JobDetail {
   id: string
   job_title: string
   job_description: string
-  qualifications: string
   responsibilities: string
+  skills: string
   benefits: string
   experience: string
   remote: boolean
   employment_type: EmploymentType
-  tags: [string]
+  tags: []
   salary_range: string
   created_at: Date 
   updated_at: Date | null
@@ -41,5 +41,6 @@ export interface JobDetail {
 }
 
 export interface RegisterJob extends Omit<JobDetail, 'id' | 'created_at' | 'updated_at'> {
-  
+  location: string
+  country_code: string
 }

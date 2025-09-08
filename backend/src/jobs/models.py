@@ -8,11 +8,13 @@ from src.entities.job import EmploymentType
 class JobBase(BaseModel):
     job_title: str
     job_description: str
-    experience: str
-    qualifications: str
     responsibilities: str
+    skills: str
     benefits: str
+    experience: str
     remote: bool
+    country_code: str
+    location: str
     employment_type: EmploymentType
     tags: Optional[list[str]] = None
     salary_range: Optional[str] = None

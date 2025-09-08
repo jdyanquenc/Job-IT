@@ -105,7 +105,7 @@ async function onSubmit() {
             message.success('User updated successfully');
         } else {
             // Register new user
-            await usersStore.register(registerUser);
+            await usersStore.registerCandidate(registerUser);
             message.success('User registered successfully');
         }
         await router.push('/users');

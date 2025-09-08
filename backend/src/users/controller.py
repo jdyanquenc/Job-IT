@@ -17,10 +17,15 @@ async def check_email_availability(email: str, db: DbSession):
     return service.is_email_taken(db, email)
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post("/candidates", status_code=status.HTTP_201_CREATED)
 @limiter.limit("10/hour")
 async def register_user(request: Request, db: DbSession, register_user_request: models.RegisterUserRequest):
     service.register_user(db, register_user_request)
+
+@router.post("/companies", status_code=status.HTTP_201_CREATED)
+@limiter.limit("10/hour")
+async def register_company_user(request: Request, db: DbSession, register_company_user_request: models.RegisterCompanyUserRequest):
+    service.register_company_user(db, register_company_user_request)
 
 
 @router.get("/me", response_model=models.UserResponse)

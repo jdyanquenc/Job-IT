@@ -25,10 +25,12 @@ class JobEntry(Base):
     tags = Column(ARRAY(String), nullable=True)
     user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False)
     company_id = Column(UUID(as_uuid=True), ForeignKey('company.id'), nullable=False, index=True)
+    country_id = Column(UUID(as_uuid=True), ForeignKey("country.id"), nullable=False, index=True)
     expires_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, nullable=True)
     is_active = Column(Boolean, nullable=False, default=True)
+    
     detail = relationship("JobDetail", back_populates="entry", uselist=False, cascade="all, delete")
 
     def __repr__(self):
@@ -41,10 +43,13 @@ class JobDetail(Base):
 
     id = Column(UUID(as_uuid=True), ForeignKey('job_entry.id', ondelete='CASCADE'), primary_key=True)
     job_description = Column(Text)
-    experience = Column(Text)
-    qualifications = Column(Text)
     responsibilities = Column(Text)
+    skills = Column(Text)
     benefits = Column(Text)
+    experience = Column(Text)
+    contact_person = Column(String, nullable=True)
+    contact = Column(String, nullable=True)
+
     entry = relationship("JobEntry", back_populates="detail")
 
     def __repr__(self):

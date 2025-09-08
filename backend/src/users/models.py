@@ -17,6 +17,10 @@ class RegisterUserRequest(BaseModel):
     role: str | None = None  # Optional role, defaults to None if not provided
 
 
+class RegisterCompanyUserRequest(RegisterUserRequest):
+    company_name: str
+    company_registration_number: str
+
 
 class UserResponse(BaseModel):
     id: UUID

@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 
 import { http } from '@/helpers'
 import { useAuthStore } from '@/stores'
-import type { RegisterUser, User } from '@/types'
+import type { RegisterCompanyUser, RegisterUser, User } from '@/types'
 
 const baseUrl = `${import.meta.env.VITE_API_URL}/users`
 
@@ -20,8 +20,12 @@ export const useUsersStore = defineStore('jobit-users', {
       return await http.get(url.toString())
     },
 
-    async register(request: RegisterUser) {
-      await http.post(`${baseUrl}/`, request)
+    async registerCandidate(request: RegisterUser) {
+      await http.post(`${baseUrl}/candidates`, request)
+    },
+
+    async registerCompany(request: RegisterCompanyUser) {
+      await http.post(`${baseUrl}/companies`, request)
     },
 
     async getAll() {

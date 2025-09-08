@@ -9,7 +9,7 @@ class Country(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String, nullable=False)
-    iso_code = Column(String, unique=True, nullable=False)
+    iso_code = Column(String, unique=True, nullable=True)
 
     def __repr__(self):
         return f"<Country(name='{self.name}', iso_code='{self.iso_code}')>"
