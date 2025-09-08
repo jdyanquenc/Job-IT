@@ -13,9 +13,10 @@ export const useAuthStore = defineStore('auth', {
     returnUrl: null as string | null,
   }),
   actions: {
-    async login(username: string, password: string) {
+    async login(email: string, password: string) {
       try {
-        const user = await http.form('POST', `${baseUrl}/auth/token`, { username, password })
+        // The OAuth2 specification states that the username and password should be sent
+        const user = await http.form('POST', `${baseUrl}/auth/token`, { username: email, password: password })
 
         // update pinia state
         this.user = user
@@ -27,7 +28,7 @@ export const useAuthStore = defineStore('auth', {
         router.push(this.returnUrl || '/')
       } catch (error: any) {
         if (error.response && error.response.status === 401) {
-          throw new Error('Username or password is incorrect')
+          throw new Error('Verifica tus credenciales e intenta de nuevo.')
         }
         throw error
       }

@@ -15,7 +15,7 @@ import FooterPanel from '@/components/FooterPanel.vue';
       </header>
       <main>
         <div class="max-w-screen-xl mx-auto mt-5 mb-5">
-          <div class="flex justify-between items-center">
+          <div class="flex justify-between items-center main-container">
             <n-message-provider>
               <RouterView />
             </n-message-provider>

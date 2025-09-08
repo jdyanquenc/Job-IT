@@ -1,8 +1,8 @@
 from datetime import timedelta, datetime, timezone
 from functools import wraps
 from typing import Annotated, Optional
-from uuid import UUID, uuid4
-from fastapi import Depends, HTTPException
+from uuid import UUID
+from fastapi import Depends
 from passlib.context import CryptContext
 import jwt
 from jwt import PyJWTError
@@ -66,24 +66,9 @@ def verify_token(token: str) -> models.TokenData:
         raise AuthenticationError()
 
 
-def register_user(db: Session, register_user_request: models.RegisterUserRequest) -> None:
-    try:
-        create_user_model = User(
-            id=uuid4(),
-            email=register_user_request.email,
-            first_name=register_user_request.first_name,
-            last_name=register_user_request.last_name,
-            password_hash=get_password_hash(register_user_request.password)
-        )    
-        db.add(create_user_model)
-        db.commit()
-    except Exception as e:
-        logging.error(f"Failed to register user: {register_user_request.email}. Error: {str(e)}")
-        raise
-
-
 def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]) -> models.TokenData:
     return verify_token(token)
+
 
 CurrentUser = Annotated[models.TokenData, Depends(get_current_user)]
 
