@@ -13,7 +13,6 @@ class JobBase(BaseModel):
     benefits: str
     experience: str
     remote: bool
-    country_code: str
     location: str
     employment_type: EmploymentType
     tags: Optional[list[str]] = None
@@ -22,16 +21,11 @@ class JobBase(BaseModel):
 
 
 class JobCreate(JobBase):
-    pass
+    country_code: str  # Use country_code for creation
 
 class JobUpdate(JobBase):
-    pass
-
-class CompanyBasicInfo(BaseModel):
-    name: str
-    location: str
+    # Replace country_code with country_id for updates
     country_code: str
-    image_url: str
 
 
 class JobResponse(BaseModel):
@@ -44,7 +38,8 @@ class JobResponse(BaseModel):
     salary_range: str
     created_at: datetime 
     expires_at: Optional[datetime] = None
-    company: CompanyBasicInfo
+    company_name: str
+    company_image_url: str
 
     @field_validator("employment_type", mode='before')
     def normalize_employment_type(cls, v):
@@ -64,6 +59,8 @@ class JobDetailResponse(JobBase):
     id: UUID
     is_active: bool
     created_at: datetime 
-    company: CompanyBasicInfo
+    country_code: str
+    company_name: str
+    company_image_url: str
     
     model_config = ConfigDict(from_attributes=True)

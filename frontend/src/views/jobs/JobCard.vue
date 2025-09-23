@@ -25,24 +25,25 @@ const hover = ref(false)
 </script>
 
 <template>
-    <n-card class="max-w-sm min-h-[400px] rounded-2xl shadow-md p-2" @mouseenter="hover = true" @mouseleave="hover = false">
+    <n-card class="max-w-sm min-h-[400px] rounded-2xl shadow-md p-2" @mouseenter="hover = true"
+        @mouseleave="hover = false">
         <!-- Header -->
         <div class="flex items-center justify-between mb-2">
-            <n-image :src="props.job.company.logo_url || '/images/template/icons/logo-default.svg'" width="100" />
+            <n-image :src="props.job.company_image_url || '/images/template/icons/logo-default.svg'" width="100" />
             <div>
-                <h4 class="font-semibold text-lg">{{ props.job.company.name }}</h4>
-                <p class="text-gray-500 text-sm">{{ props.job.company.location }}, {{ props.job.company.country_code }}</p>
+                <h4 class="font-semibold text-lg">{{ props.job.company_name }}</h4>
+                <p class="text-gray-500 text-sm">{{ props.job.location }}, {{ props.job.country_code }}</p>
             </div>
         </div>
 
         <!-- Job Title -->
         <div class="mb-2">
-            
-                <h4 class="text-lg font-bold">
-                    <router-link :to="{ name: 'JobDetail', params: { id: props.job.id } }">
-                        {{ props.job.job_title }}
-                    </router-link>
-                </h4>
+
+            <h4 class="text-lg font-bold">
+                <router-link :to="{ name: 'JobDetail', params: { id: props.job.id } }">
+                    {{ props.job.job_title }}
+                </router-link>
+            </h4>
             <div class="flex justify-between text-sm text-gray-500">
 
                 <div class="flex items-center space-x-2">
@@ -66,7 +67,8 @@ const hover = ref(false)
 
         <!-- Skills -->
         <div class="flex flex-wrap gap-2 mb-3">
-            <n-tag v-for="skill in props.job.tags" :type="hover ? 'success' : 'default'" round>{{ skill }}</n-tag>
+            <n-tag v-for="skill in props.job.tags" :key="skill" :type="hover ? 'success' : 'default'" round>{{ skill
+                }}</n-tag>
         </div>
 
         <!-- Footer -->
@@ -82,12 +84,11 @@ const hover = ref(false)
 </template>
 
 <style scoped>
-
 .n-card {
     background-color: #f7fafa;
 }
+
 .n-card:hover {
     background-color: #fff;
 }
-
 </style>

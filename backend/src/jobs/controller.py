@@ -30,7 +30,7 @@ def get_job(db: DbSession, job_id: UUID, current_user: CurrentUser):
 
 
 @router.put("/{job_id}", response_model=models.JobDetailResponse)
-def update_job(db: DbSession, job_id: UUID, todo_update: models.JobCreate, current_user: CurrentUser):
+def update_job(db: DbSession, job_id: UUID, todo_update: models.JobUpdate, current_user: CurrentUser):
     return service.update_job(current_user, db, job_id, todo_update)
 
 
