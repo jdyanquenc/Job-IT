@@ -1,4 +1,4 @@
-export type EmploymentType = 'Full-time' | 'Part-time' | 'Contract';
+export type EmploymentType = 'Full-time' | 'Part-time' | 'Contract'
 
 export interface CompanyBasicInfo {
   id: string | null
@@ -17,10 +17,13 @@ export interface Job {
   employment_type: EmploymentType
   tags: [string]
   salary_range: string
-  created_at: Date 
+  created_at: Date
   updated_at: Date | null
   expires_at: Date | null
-  company: CompanyBasicInfo
+  location: string
+  country_code: string
+  company_name: string
+  company_image_url: string | null
 }
 
 export interface JobDetail {
@@ -35,7 +38,7 @@ export interface JobDetail {
   employment_type: EmploymentType
   tags: []
   salary_range: string
-  created_at: Date 
+  created_at: Date
   updated_at: Date | null
   expires_at: Date | null
 }

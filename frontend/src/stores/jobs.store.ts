@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 
 import { http } from '@/helpers'
-import type {RegisterJob, Job, JobDetail } from '@/types'
+import type { RegisterJob, Job, JobDetail } from '@/types'
 
 const baseUrl = `${import.meta.env.VITE_API_URL}/jobs`
 
@@ -17,13 +17,13 @@ export const useJobsStore = defineStore('jobit-jobs', {
 
     async find(query: string = '', page: number = 1) {
       try {
-        console.log('Fetching jobs with query:', baseUrl, query);
-        const url = new URL(`${baseUrl}/search`);
-        const params: any = {
+        console.log('Fetching jobs with query:', baseUrl, query)
+        const url = new URL(`${baseUrl}/search`)
+        const params = {
           query,
-          page,
+          page: page.toString(),
         }
-        url.search = new URLSearchParams(params).toString();
+        url.search = new URLSearchParams(params).toString()
         this.jobs = await http.get(url.toString())
       } catch (error) {
         this.jobs = []
@@ -40,12 +40,11 @@ export const useJobsStore = defineStore('jobit-jobs', {
       }
     },
 
-    async update(id: string, params: any) {
+    async update(id: string, params: Partial<RegisterJob>) {
       await http.put(`${baseUrl}/${id}`, params)
     },
 
     async delete(id: string) {
-      
       await http.delete(`${baseUrl}/${id}`)
 
       // remove job from list after deleted

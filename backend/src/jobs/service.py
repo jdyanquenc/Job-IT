@@ -7,7 +7,7 @@ from fastapi import HTTPException
 
 from . import models
 from src.auth.models import TokenData
-from src.entities.job import EmploymentType, JobEntry, JobDetail
+from src.entities.job import  JobEntry, JobDetail
 from src.entities.company import Company
 from src.entities.country import Country
 from src.exceptions import JobCreationError, JobNotFoundError
@@ -87,12 +87,10 @@ def get_active_jobs(current_user: TokenData, db: Session, query: str, page: int 
             salary_range = salary_range,
             expires_at = expires_at,
             created_at = created_at,
-            company = models.CompanyBasicInfo(
-                name = company_name,
-                location = location,
-                country_code = country_code,
-                image_url = image_url or ""
-            )
+            location = location,
+            country_code = country_code,
+            company_name = company_name,
+            company_image_url = image_url or ""
         )
         for id, job_title, job_short_description, remote, employment_type, tags, salary_range, expires_at, created_at, company_name, location, country_code, image_url in results
     ]
@@ -108,6 +106,7 @@ def get_job_by_id(current_user: TokenData, db: Session, job_id: UUID) -> models.
         raise JobNotFoundError(job_id)
     
     company = db.query(Company).filter(Company.id == job.company_id).first()
+    country = db.query(Country).filter(Country.id == job.country_id).first()
    
     logging.info(f"Retrieved Job {job_id} for user {current_user.get_uuid()}")
     return models.JobDetailResponse(
@@ -121,25 +120,47 @@ def get_job_by_id(current_user: TokenData, db: Session, job_id: UUID) -> models.
         employment_type = job.employment_type,
         remote = job.remote,
         salary_range = job.salary_range,
+        tags = job.tags or [],
         created_at = job.created_at,
         updated_at = job.updated_at,
         expires_at = job.expires_at,
         is_active = job.is_active,
-        company = models.CompanyBasicInfo(
-            name = company.name,
-            location = company.location,
-            country_code = company.country.iso_code,
-            image_url = company.image_url
-        )
+        location = job.location,
+        country_code = country.iso_code,
+        company_name = company.name,
+        company_image_url = company.image_url
     )
 
 
 def update_job(current_user: TokenData, db: Session, job_id: UUID, job_update: models.JobUpdate) -> models.JobDetailResponse:
     # TODO Check user permission to update job
-    job_data = job_update.model_dump(exclude_unset=True)
-    db.query(JobEntry).filter(JobEntry.id == job_id).update(job_data)
+    country = db.query(Country).filter(Country.iso_code == job_update.country_code).first()
+    job_entry = db.query(JobEntry).filter(JobEntry.id == job_id).first()
+    job_detail = db.query(JobDetail).filter(JobDetail.id == job_id).first()
+
+    if not job_entry or not job_detail:
+        logging.warning(f"Job {job_id} not found for user {current_user.get_uuid()}")
+        raise JobNotFoundError(job_id)
+
+    job_entry.title = job_update.job_title
+    job_entry.job_short_description = job_update.job_description[:100]
+    job_entry.remote = job_update.remote
+    job_entry.location = job_update.location
+    job_entry.employment_type = job_update.employment_type
+    job_entry.salary_range = job_update.salary_range
+    job_entry.tags = job_update.tags
+    job_entry.expires_at = job_update.expires_at
+    job_entry.updated_at = datetime.now(timezone.utc)
+    job_entry.country_id = country.id
+ 
+    job_detail.job_description = job_update.job_description
+    job_detail.responsibilities = job_update.responsibilities
+    job_detail.skills = job_update.skills
+    job_detail.benefits = job_update.benefits
+    job_detail.experience = job_update.experience
+
     db.commit()
-    logging.info(f"Successfully updated todo {job_id} for user {current_user.get_uuid()}")
+    logging.info(f"Successfully updated job {job_id} for user {current_user.get_uuid()}")
     return get_job_by_id(current_user, db, job_id)
 
 

@@ -9,12 +9,6 @@ import type {
 
 import { NButton, NCol, NForm, NFormItem, NInput, NSelect, NDynamicTags, NRow, NTimeline, NTimelineItem, useMessage } from 'naive-ui'
 
-import {
-    MapOutline, CallOutline, MailOutline, LocationOutline, TimeOutline, BriefcaseOutline,
-    CashOutline, BusinessOutline, BarChartOutline, CalendarOutline, PersonOutline,
-} from "@vicons/ionicons5"
-
-
 import { ref, watch } from 'vue'
 import { storeToRefs } from 'pinia';
 import type { RegisterJob, EmploymentType } from '@/types';
@@ -33,7 +27,6 @@ const jobsStore = useJobsStore();
 const { job } = storeToRefs(jobsStore);
 
 const editMode = ref(false);
-const isLoading = ref(false)
 const isSubmitting = ref(false)
 
 const id = route.params.id as string | undefined;
@@ -166,21 +159,8 @@ const rules: FormRules = {
 };
 
 if (id) {
-    isLoading.value = true;
-    loadJobData(id)
     editMode.value = true;
-    model.value.job_title = job.value.job_title;
-    model.value.job_description = job.value.job_description;
-    model.value.skills = job.value.skills;
-    model.value.responsibilities = job.value.responsibilities;
-    model.value.experience = job.value.experience;
-    model.value.benefits = job.value.benefits;
-    model.value.salary_range = job.value.salary_range;
-    model.value.remote = job.value.remote;
-    model.value.tags = job.value.tags;
-    model.value.employment_type = job.value.employment_type;
-    model.value.expires_at = job.value.expires_at;
-    isLoading.value = false;
+    loadJobData(id)
 }
 
 async function loadJobData(id: string) {
@@ -188,8 +168,22 @@ async function loadJobData(id: string) {
     try {
         await jobsStore.getById(id)
         loadingBar.finish()
-    } catch (error) {
-        isLoading.value = false;
+
+        model.value.job_title = job.value.job_title;
+        model.value.job_description = job.value.job_description;
+        model.value.skills = job.value.skills;
+        model.value.responsibilities = job.value.responsibilities;
+        model.value.experience = job.value.experience;
+        model.value.benefits = job.value.benefits;
+        model.value.salary_range = job.value.salary_range;
+        model.value.remote = job.value.remote;
+        model.value.tags = job.value.tags || [];
+        model.value.employment_type = job.value.employment_type;
+        model.value.expires_at = job.value.expires_at;
+        model.value.location = job.value.location;
+        model.value.country_code = job.value.country_code;
+        
+    } catch {
         loadingBar.error()
         router.push('/company-jobs')
         message.error('Cannot load job data');
@@ -237,7 +231,7 @@ async function onSubmit() {
         }
         await router.push('/company-jobs');
     }
-    catch (error: any) {
+    catch (error: unknown) {
         console.error('Registration failed:', error);
     }
     finally {
