@@ -7,7 +7,7 @@ import type {
 } from 'naive-ui'
 
 
-import { NButton, NCol, NForm, NFormItem, NInput, NSelect, NDynamicTags, NRow, NTimeline, NTimelineItem, useMessage } from 'naive-ui'
+import { NButton, NSpin, NCol, NForm, NFormItem, NInput, NSelect, NDynamicTags, NRow, NTimeline, NTimelineItem, useMessage } from 'naive-ui'
 
 import { ref, watch } from 'vue'
 import { storeToRefs } from 'pinia';
@@ -27,6 +27,7 @@ const jobsStore = useJobsStore();
 const { job } = storeToRefs(jobsStore);
 
 const editMode = ref(false);
+const isLoading = ref(false);
 const isSubmitting = ref(false)
 
 const id = route.params.id as string | undefined;
@@ -46,7 +47,9 @@ const model = ref<RegisterJob>({
     remote: false,
     tags: [],
     employment_type: 'Full-time',
-    expires_at: new Date(new Date().setDate(new Date().getDate() + 30))
+    expires_at: new Date(new Date().setDate(new Date().getDate() + 30)),
+    company_image_url: '',
+    company_name: ''
 })
 
 const experience_options = [
@@ -164,6 +167,7 @@ if (id) {
 }
 
 async function loadJobData(id: string) {
+    isLoading.value = true;
     loadingBar.start()
     try {
         await jobsStore.getById(id)
@@ -182,11 +186,13 @@ async function loadJobData(id: string) {
         model.value.expires_at = job.value.expires_at;
         model.value.location = job.value.location;
         model.value.country_code = job.value.country_code;
-        
+
     } catch {
         loadingBar.error()
         router.push('/company-jobs')
         message.error('Cannot load job data');
+    } finally {
+        isLoading.value = false;
     }
 }
 
@@ -250,70 +256,71 @@ async function onSubmit() {
             <!-- Main content -->
             <main class="p-2 flex-1 basis-3/4">
 
-                <n-form ref="formRef" :model="model" :rules="rules">
-                    <n-form-item path="job_title" label="Título">
-                        <n-input v-model:value="model.job_title" placeholder="Título de la oferta" />
-                    </n-form-item>
+                <n-spin :show="isLoading">
+                    <n-form ref="formRef" :model="model" :rules="rules">
+                        <n-form-item path="job_title" label="Título">
+                            <n-input v-model:value="model.job_title" placeholder="Título de la oferta" />
+                        </n-form-item>
 
-                    <n-form-item path="job_description" label="Descripción">
-                        <n-input v-model:value="model.job_description" type="textarea"
-                            placeholder="Ingresa una descripción para la oferta" />
-                    </n-form-item>
+                        <n-form-item path="job_description" label="Descripción">
+                            <n-input v-model:value="model.job_description" type="textarea"
+                                placeholder="Ingresa una descripción para la oferta" />
+                        </n-form-item>
 
-                    <n-form-item path="responsibilities" label="Responsabilidades">
-                        <n-input v-model:value="model.responsibilities" type="textarea"
-                            placeholder="Indica las responsabilidades del cargo" />
-                    </n-form-item>
+                        <n-form-item path="responsibilities" label="Responsabilidades">
+                            <n-input v-model:value="model.responsibilities" type="textarea"
+                                placeholder="Indica las responsabilidades del cargo" />
+                        </n-form-item>
 
-                    <n-form-item path="skills" label="Habilidades">
-                        <n-input v-model:value="model.skills" type="textarea"
-                            placeholder="Ingresa las habilidades requeridas" />
-                    </n-form-item>
+                        <n-form-item path="skills" label="Habilidades">
+                            <n-input v-model:value="model.skills" type="textarea"
+                                placeholder="Ingresa las habilidades requeridas" />
+                        </n-form-item>
 
-                    <n-form-item path="benefits" label="Beneficios">
-                        <n-input v-model:value="model.benefits" type="textarea"
-                            placeholder="Indica los beneficios que ofrece la empresa" />
-                    </n-form-item>
+                        <n-form-item path="benefits" label="Beneficios">
+                            <n-input v-model:value="model.benefits" type="textarea"
+                                placeholder="Indica los beneficios que ofrece la empresa" />
+                        </n-form-item>
 
-                    <n-form-item path="experience" label="Experiencia">
-                        <n-select v-model:value="model.experience" :options="experience_options"
-                            placeholder="Selecciona la experiencia requerida" />
-                    </n-form-item>
+                        <n-form-item path="experience" label="Experiencia">
+                            <n-select v-model:value="model.experience" :options="experience_options"
+                                placeholder="Selecciona la experiencia requerida" />
+                        </n-form-item>
 
-                    <n-form-item path="salary_range" label="Rango salarial">
-                        <n-select v-model:value="model.salary_range" :options="salary_range_options"
-                            placeholder="Selecciona el rango salarial" />
-                    </n-form-item>
+                        <n-form-item path="salary_range" label="Rango salarial">
+                            <n-select v-model:value="model.salary_range" :options="salary_range_options"
+                                placeholder="Selecciona el rango salarial" />
+                        </n-form-item>
 
-                    <n-form-item path="country_code" label="País">
-                        <n-select v-model:value="model.country_code" :options="countries"
-                            placeholder="Selecciona el país" />
-                    </n-form-item>
+                        <n-form-item path="country_code" label="País">
+                            <n-select v-model:value="model.country_code" :options="countries"
+                                placeholder="Selecciona el país" />
+                        </n-form-item>
 
-                    <n-form-item path="location" label="Lugar">
-                        <n-input v-model:value="model.location" placeholder="Ciudad o lugar de trabajo" />
-                    </n-form-item>
+                        <n-form-item path="location" label="Lugar">
+                            <n-input v-model:value="model.location" placeholder="Ciudad o lugar de trabajo" />
+                        </n-form-item>
 
-                    <n-form-item path="tags" label="Etiquetas">
-                        <n-dynamic-tags v-model:value="model.tags" />
-                    </n-form-item>
+                        <n-form-item path="tags" label="Etiquetas">
+                            <n-dynamic-tags v-model:value="model.tags" />
+                        </n-form-item>
 
-                    <n-row :gutter="[0, 24]">
-                        <n-col :span="24">
-                            <div style="display: flex; justify-content: flex-end">
-                                <n-button type="primary" @click="handleValidateButtonClick" :disabled="isSubmitting">
-                                    {{ editMode ? 'Actualizar Oferta' : 'Registrar Oferta' }}
-                                </n-button>
-                                &nbsp;&nbsp;
-                                <n-button type="default" @click="handleCancelButtonClick" :disabled="isSubmitting">
-                                    Cancelar
-                                </n-button>
-                            </div>
-                        </n-col>
-                    </n-row>
-                </n-form>
-
-
+                        <n-row :gutter="[0, 24]">
+                            <n-col :span="24">
+                                <div style="display: flex; justify-content: flex-end">
+                                    <n-button type="primary" @click="handleValidateButtonClick"
+                                        :disabled="isSubmitting">
+                                        {{ editMode ? 'Actualizar Oferta' : 'Registrar Oferta' }}
+                                    </n-button>
+                                    &nbsp;&nbsp;
+                                    <n-button type="default" @click="handleCancelButtonClick" :disabled="isSubmitting">
+                                        Cancelar
+                                    </n-button>
+                                </div>
+                            </n-col>
+                        </n-row>
+                    </n-form>
+                </n-spin>
             </main>
 
             <!-- Sidebar -->

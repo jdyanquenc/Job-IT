@@ -36,6 +36,10 @@ export interface JobDetail {
   experience: string
   remote: boolean
   employment_type: EmploymentType
+  location: string
+  country_code: string
+  company_image_url: string
+  company_name: string
   tags: []
   salary_range: string
   created_at: Date

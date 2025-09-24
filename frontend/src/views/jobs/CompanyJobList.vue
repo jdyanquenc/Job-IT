@@ -2,17 +2,17 @@
 import { ref } from 'vue'
 import { storeToRefs } from 'pinia';
 
-import { useJobsStore } from '@/stores';
-import { NSelect, NPagination } from 'naive-ui'
+import { useCompanyJobsStore } from '@/stores';
+import { NSelect, NPagination, NButton } from 'naive-ui'
 import { useLoadingBar } from 'naive-ui'
 
 import SearchBar from '@/components/SearchBar.vue'
 import FilterGroup from '@/components/FilterGroup.vue'
-import JobCard from '@/views/jobs/JobCard.vue'
+import CompanyJobCard from './CompanyJobCard.vue';
 
 
-const jobsStore = useJobsStore();
-const { jobs } = storeToRefs(jobsStore);
+const companyJobsStore = useCompanyJobsStore();
+const { jobs } = storeToRefs(companyJobsStore);
 
 const loadingBar = useLoadingBar()
 const sort = ref('relevance')
@@ -23,6 +23,8 @@ const total = ref(200)
 const selectedIndustries = ref([])
 const selectedSalaries = ref([])
 const searchText = ref('')
+
+const hover = ref(false)
 
 
 
@@ -58,7 +60,7 @@ const salaryOptions = [
 
 function handleSearch(value: string) {
     loadingBar.start()
-    jobsStore.find(value).finally(() => {
+    companyJobsStore.find(value).finally(() => {
         loadingBar.finish()
     })
 }
@@ -69,7 +71,13 @@ function handleSearch(value: string) {
     <div class="w-full mx-auto">
 
         <div class="flex mb-4">
-            <SearchBar v-model="searchText" @search="handleSearch" placeholder="Descubre nuevos retos para ti..." />
+            <SearchBar v-model="searchText" @search="handleSearch" placeholder="Ingresa palabras clave..." />
+            <div class="mt-2">
+                <n-button type="primary" size="large" @click="$router.push({ name: 'CompanyJobAdd' })" :ghost="!hover"
+                    @mouseenter="hover = true" @mouseleave="hover = false">
+                    Publicar oferta
+                </n-button>
+            </div>
         </div>
 
         <div class="flex flex-col md:flex-row items-start gap-4">
@@ -112,8 +120,8 @@ function handleSearch(value: string) {
 
                 <hr class="mt-3 mb-3" />
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 place-items-center gap-4">
-                    <JobCard v-for="job in jobs" :key="job.id" :job="job" class="hover-up" />
+                <div class="flex flex-col gap-4">
+                    <CompanyJobCard v-for="job in jobs" :key="job.id" :job="job" class="hover-up" />
 
                     <div class="col-span-1 md:col-span-2 lg:col-span-3 text-gray-500">
                         <p v-if="jobs.length === 0" class="text-center">

@@ -1,9 +1,10 @@
-<script setup>
+<script setup lang="ts">
 import { ref, watch } from "vue"
 import { NInput, NButton, NIcon } from "naive-ui"
 
 const modelValue = defineModel({ type: String, default: "" })
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const props = defineProps({
     placeholder: { type: String, default: "" }
 })

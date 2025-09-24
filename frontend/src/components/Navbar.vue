@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 import { storeToRefs } from 'pinia';
 import { useAuthStore } from '@/stores';
 import { RouterLink } from 'vue-router'
@@ -28,9 +29,12 @@ const { user } = storeToRefs(authStore);
 
                 <!-- Actions -->
                 <div class="flex items-center gap-4 text-sm text-gray-700 action-container">
-                    <RouterLink to="/account/register" class="hover:underline" v-if="user === null">Regístrate</RouterLink>
-                    <RouterLink to="/account/login" class="hover:underline" v-if="user === null">Inicia sesión</RouterLink>
-                    <RouterLink to="#" class="hover:underline" v-if="user !== null" @click="authStore.logout()">Cierra sesión</RouterLink>
+                    <RouterLink to="/account/register" class="hover:underline" v-if="user === null">Regístrarse
+                    </RouterLink>
+                    <RouterLink to="/account/login" class="hover:underline" v-if="user === null">Iniciar sesión
+                    </RouterLink>
+                    <RouterLink to="#" class="hover:underline" v-if="user !== null" @click="authStore.logout()">Cerrar
+                        sesión</RouterLink>
                 </div>
             </div>
         </div>
@@ -38,7 +42,6 @@ const { user } = storeToRefs(authStore);
 </template>
 
 <style scoped>
-
 .logo-container {
     width: 20%;
 }
@@ -52,5 +55,4 @@ const { user } = storeToRefs(authStore);
     width: 20%;
     justify-content: flex-end;
 }
-
 </style>
