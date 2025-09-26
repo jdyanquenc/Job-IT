@@ -19,14 +19,20 @@ def create_job(db: DbSession, job: models.JobCreate, current_user: CurrentUser):
     return service.create_job(current_user, db, job)
 
 
+@router.get("/companies/search", response_model=List[models.JobResponse])
+@require_any_role([Role.COMPANY_MANAGER, Role.ADMIN])
+def get_company_jobs(db: DbSession, current_user: CurrentUser, query: Optional[str] = None, page: Optional[int] = None):
+    return service.get_company_jobs(current_user, db, query, page)
+
+
 @router.get("/search", response_model=List[models.JobResponse])
-def get_active_jobs(db: DbSession, current_user: CurrentUser, query: Optional[str] = None, page: Optional[int] = None):
-    return service.get_active_jobs(current_user, db, query, page)
+def get_active_jobs(db: DbSession, query: Optional[str] = None, page: Optional[int] = None):
+    return service.get_active_jobs(db, query, page)
 
 
 @router.get("/{job_id}", response_model=models.JobDetailResponse)
-def get_job(db: DbSession, job_id: UUID, current_user: CurrentUser):
-    return service.get_job_by_id(current_user, db, job_id)
+def get_job(db: DbSession, job_id: UUID):
+    return service.get_job_by_id(db, job_id)
 
 
 @router.put("/{job_id}", response_model=models.JobDetailResponse)

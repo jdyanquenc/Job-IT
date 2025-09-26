@@ -42,14 +42,10 @@ def create_job(current_user: TokenData, db: Session, job: models.JobCreate) -> m
             employment_type = new_job_entry.employment_type,
             tags = new_job_entry.tags,
             salary_range = new_job_entry.salary_range,
-            expires_at = new_job_entry.expires_at,
             created_at = new_job_entry.created_at,
-            company = models.CompanyBasicInfo(
-                name = company.name,
-                image_url = company.image_url,
-                location = new_job_entry.location,
-                country_code = country.iso_code
-            )
+            expires_at = new_job_entry.expires_at,
+            company_name = company.name,
+            company_image_url = company.image_url or ""
         )
 
     except Exception as e:
@@ -57,7 +53,49 @@ def create_job(current_user: TokenData, db: Session, job: models.JobCreate) -> m
         raise JobCreationError(str(e))
 
 
-def get_active_jobs(current_user: TokenData, db: Session, query: str, page: int = 1, page_size: int = 20) -> list[models.JobResponse]:
+def get_company_jobs(current_user: TokenData, db: Session, query: str, page: int = 1, page_size: int = 20) -> list[models.JobResponse]:
+    stmt = text("""
+        SELECT j.id, j.job_title, j.job_short_description, j.remote, j.employment_type, j.tags, j.salary_range, j.expires_at, j.created_at, c.name AS company_name, j.location, co.iso_code AS country_code, c.image_url
+        FROM job_entry j
+        JOIN company c ON c.id = j.company_id
+        JOIN country co ON co.id = j.country_id
+        WHERE j.company_id = :company_id
+        AND (:query = '' OR search_vector @@ plainto_tsquery('english', :query))
+        ORDER BY ts_rank_cd(search_vector, plainto_tsquery('english', :query)) DESC
+        LIMIT :limit OFFSET :offset
+    """)
+    results = db.execute(stmt, {
+        "company_id": current_user.get_company_uuid(),
+        "query": query,
+        "limit": page_size,
+        "offset": (page - 1) * page_size
+    }).fetchall()
+
+    # Convert to list of Pydantic models
+    jobs = [
+        models.JobResponse(
+            id = id,
+            job_title = job_title,
+            job_short_description = job_short_description,
+            remote = remote,
+            employment_type = employment_type,
+            tags = tags,
+            salary_range = salary_range,
+            expires_at = expires_at,
+            created_at = created_at,
+            location = location,
+            country_code = country_code,
+            company_name = company_name,
+            company_image_url = image_url or ""
+        )
+        for id, job_title, job_short_description, remote, employment_type, tags, salary_range, expires_at, created_at, company_name, location, country_code, image_url in results
+    ]
+
+    logging.info(f"Retrieved {len(jobs)} jobs for company: {current_user.get_company_uuid()}")
+    return jobs
+
+
+def get_active_jobs(db: Session, query: str, page: int = 1, page_size: int = 20) -> list[models.JobResponse]:
 
     stmt = text("""
         SELECT j.id, j.job_title, j.job_short_description, j.remote, j.employment_type, j.tags, j.salary_range, j.expires_at, j.created_at, c.name AS company_name, j.location, co.iso_code AS country_code, c.image_url
@@ -95,20 +133,20 @@ def get_active_jobs(current_user: TokenData, db: Session, query: str, page: int 
         for id, job_title, job_short_description, remote, employment_type, tags, salary_range, expires_at, created_at, company_name, location, country_code, image_url in results
     ]
 
-    logging.info(f"Retrieved {len(jobs)} jobs for user: {current_user.get_uuid()}")
+    logging.info(f"Retrieved {len(jobs)} jobs")
     return jobs
 
 
-def get_job_by_id(current_user: TokenData, db: Session, job_id: UUID) -> models.JobDetailResponse:
+def get_job_by_id(db: Session, job_id: UUID) -> models.JobDetailResponse:
     job = db.query(JobEntry).filter(JobEntry.id == job_id).first()
     if not job:
-        logging.warning(f"Job {job_id} not found for user {current_user.get_uuid()}")
+        logging.warning(f"Job {job_id} not found")
         raise JobNotFoundError(job_id)
     
     company = db.query(Company).filter(Company.id == job.company_id).first()
     country = db.query(Country).filter(Country.id == job.country_id).first()
-   
-    logging.info(f"Retrieved Job {job_id} for user {current_user.get_uuid()}")
+
+    logging.info(f"Retrieved Job with ID {job_id}")
     return models.JobDetailResponse(
         id = job.id,
         job_title = job.job_title,
@@ -128,7 +166,7 @@ def get_job_by_id(current_user: TokenData, db: Session, job_id: UUID) -> models.
         location = job.location,
         country_code = country.iso_code,
         company_name = company.name,
-        company_image_url = company.image_url
+        company_image_url = company.image_url or ""
     )
 
 

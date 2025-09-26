@@ -2,7 +2,7 @@
 
 import { NMessageProvider, NLoadingBarProvider, NBackTop } from 'naive-ui';
 import { RouterView } from 'vue-router'
-import Navbar from '@/components/Navbar.vue';
+import Navbar from '@/components/NavBar.vue';
 import FooterPanel from '@/components/FooterPanel.vue';
 
 </script>

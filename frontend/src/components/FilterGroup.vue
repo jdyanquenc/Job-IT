@@ -3,7 +3,7 @@ import { ref, watch } from "vue"
 import { NCheckboxGroup, NCheckbox, NTag } from "naive-ui"
 
 // Props
-defineProps({
+const props = defineProps({
     title: {
         type: String,
         required: true
@@ -30,7 +30,7 @@ defineProps({
 const emit = defineEmits(["update:modelValue", "update:allOption"])
 
 // Estado local
-const selected = ref([...new Set([...__props.modelValue])])
+const selected = ref([...new Set([...props.modelValue])])
 const allSelected = ref(false)
 
 
@@ -38,9 +38,9 @@ const toogleAll = () => {
     if (allSelected.value === false) {
         selected.value = []
     } else {
-        selected.value = __props.options.map(opt => opt.id)
+        selected.value = props.options.map(opt => opt.id)
     }
-    
+
     // Emitir el nuevo valor al padre
     emit("update:modelValue", selected.value)
     emit("update:allOption", allSelected.value)
@@ -52,7 +52,7 @@ const handleChange = (values) => {
     selected.value = [...new Set(values)]
 
     // Actualizar el estado de "All" basado en la selección actual
-    allSelected.value = selected.value.length === __props.options.length
+    allSelected.value = selected.value.length === props.options.length
 
     // Emitir el nuevo valor al padre
     emit("update:modelValue", selected.value)
@@ -61,7 +61,7 @@ const handleChange = (values) => {
 
 // Sincronizar con valor externo
 watch(
-    () => __props.modelValue,
+    () => props.modelValue,
     (newVal) => {
         selected.value = [...new Set(newVal)]
     }
@@ -78,12 +78,12 @@ watch(
                 {{ allOptionLabel }}
             </n-checkbox>
             <n-tag round size="small" :bordered="false" type="info" class="shadow !bg-green-100 !text-green-600">
-                {{ options.map(opt => opt.count).reduce((a, b) => a + b, 0) }}
+                {{options.map(opt => opt.count).reduce((a, b) => a + b, 0)}}
             </n-tag>
         </div>
 
         <n-checkbox-group v-model:value="selected" @update:value="handleChange">
-            
+
             <div v-for="item in options" :key="item.id" class="flex items-center justify-between mb-3">
                 <n-checkbox :value="item.id">
                     {{ item.name }}

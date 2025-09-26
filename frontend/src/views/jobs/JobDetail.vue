@@ -149,7 +149,7 @@ const similarJobs = [
                                 <n-icon :component="CalendarOutline" />
                                 <n-text strong>Fecha límite:</n-text>
                                 <n-text>{{ job.expires_at ? new Date(job.expires_at).toLocaleDateString() : 'N/A'
-                                    }}</n-text>
+                                }}</n-text>
                             </div>
                         </n-gi>
 
@@ -219,7 +219,7 @@ const similarJobs = [
 
                 <n-card>
                     <div class="flex items-center space-x-3">
-                        <n-image width="80" :src="job.company_image_url" />
+                        <n-image :src="job.company_image_url || '/images/template/icons/logo-default.svg'" width="80" />
 
                         <div>
                             <n-text strong>{{ job.company_name }}</n-text>
@@ -275,7 +275,7 @@ const similarJobs = [
                                 <div class="flex justify-between text-sm text-gray-500 space-x-2">
                                     <span class="text-primary-500 font-semibold">{{ job.salary }}</span>
                                     <n-icon class="items-right" :component="LocationOutline" /> <span>{{ job.location
-                                        }}</span>
+                                    }}</span>
                                 </div>
                             </div>
                         </div>
