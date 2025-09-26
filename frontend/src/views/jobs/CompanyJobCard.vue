@@ -73,7 +73,7 @@ const hover = ref(false)
                     Ver Postulantes
                 </n-button>
                 <n-button type="warning" :ghost="!hover"
-                    @click="$router.push({ name: 'JobEdit', params: { id: props.job.id } })">
+                    @click="$router.push({ name: 'CompanyJobEdit', params: { id: props.job.id } })">
                     Editar
                 </n-button>
                 <n-button type="error" :ghost="!hover">

@@ -68,7 +68,7 @@ const hover = ref(false)
         <!-- Skills -->
         <div class="flex flex-wrap gap-2 mb-3">
             <n-tag v-for="skill in props.job.tags" :key="skill" :type="hover ? 'success' : 'default'" round>{{ skill
-            }}</n-tag>
+                }}</n-tag>
         </div>
 
         <!-- Footer -->
