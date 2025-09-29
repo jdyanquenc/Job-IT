@@ -22,6 +22,7 @@ export const useAuthStore = defineStore('auth', {
     // initialize state from local storage to enable user to stay logged in
     userToken: JSON.parse(localStorage.getItem(userKey) || 'null'),
     returnUrl: null as string | null,
+    isTokenValid: false,
   }),
   actions: {
     async login(email: string, password: string) {
@@ -56,28 +57,28 @@ export const useAuthStore = defineStore('auth', {
           localStorage.setItem(tokenDataKey, JSON.stringify(tokenData))
         }
         return JSON.parse(localStorage.getItem(tokenDataKey) || 'null')
-      } catch (error) {
-        console.error('Invalid token:', error)
+      } catch {
         return null
       }
     },
     isLoggedIn() {
-      return !!this.userToken && (this.getTokenData()?.exp || 0) * 1000 > Date.now()
+      this.isTokenValid = (this.getTokenData()?.exp || 0) * 1000 > Date.now()
+      if (this.userToken && !this.isTokenValid) {
+        this.logout()
+      }
+      return this.isTokenValid
+    },
+    getUserId() {
+      return this.getTokenData()?.sub || null
     },
     isAdmin() {
-      const isRoleAdmin = this.getTokenData()?.role === 'ADMIN'
-      console.log('Checking if user is admin...', isRoleAdmin)
-      return isRoleAdmin
+      return this.getTokenData()?.role === 'ADMIN'
     },
     isCandidate() {
-      const isRoleCandidate = this.getTokenData()?.role === 'CANDIDATE'
-      console.log('Checking if user is candidate...', isRoleCandidate)
-      return isRoleCandidate
+      return this.getTokenData()?.role === 'CANDIDATE'
     },
     isCompanyManager() {
-      const isRoleCompanyManager = this.getTokenData()?.role === 'COMPANY_MANAGER'
-      console.log('Checking if user is company manager...', isRoleCompanyManager)
-      return isRoleCompanyManager
+      return this.getTokenData()?.role === 'COMPANY_MANAGER'
     },
     logout() {
       this.userToken = null

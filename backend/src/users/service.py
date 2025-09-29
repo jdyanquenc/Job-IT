@@ -3,6 +3,8 @@ from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
+from src.entities.user_profile import UserProfile
+
 from . import models
 from src.entities.user import Role, User
 from src.entities.company import Company
@@ -72,9 +74,9 @@ def register_user(db: Session, register_user_request: models.RegisterUserRequest
             logging.warning(f"Attempt to register with already taken identification number: {register_user_request.identification_number}")
             raise IdentificationAlreadyExistsError(register_user_request.identification_number)
         
-
+        user_uuid = uuid4()
         create_user_model = User(
-            id=uuid4(),
+            id=user_uuid,
             email=register_user_request.email.lower().strip(),
             first_name=register_user_request.first_name.capitalize().strip(),
             last_name=register_user_request.last_name.capitalize().strip(),
@@ -82,8 +84,15 @@ def register_user(db: Session, register_user_request: models.RegisterUserRequest
             identification_number=register_user_request.identification_number.replace('.', '').strip(),
             password_hash=get_password_hash(register_user_request.password),
             role=Role.CANDIDATE
-        )    
+        )
+
+        create_user_profile = UserProfile(
+            id=user_uuid,
+        )
+
         db.add(create_user_model)
+        db.flush()  # Ensure user is created before profile
+        db.add(create_user_profile)
         db.commit()
     except Exception as e:
         logging.error(f"Failed to register user: {register_user_request.email}. Error: {str(e)}")
