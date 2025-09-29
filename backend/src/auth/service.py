@@ -1,7 +1,7 @@
 from datetime import timedelta, datetime, timezone
 from functools import wraps
 from typing import Annotated, Optional
-from uuid import UUID
+from uuid import UUID, uuid4
 from fastapi import Depends
 from passlib.context import CryptContext
 import jwt
@@ -43,12 +43,15 @@ def authenticate_user(email: str, password: str, db: Session) -> User | bool:
     return user
 
 
-def create_access_token(email: str, user_id: UUID, role: Role, expires_delta: timedelta, company_id: Optional[UUID]) -> str:
+def create_access_token(user: User, company_id: Optional[UUID]) -> str:
+    expires_delta = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     encode = {
-        'sub': email,
-        'id': str(user_id),
+        'sub': str(user.id),
+        'email': user.email,
         'exp': datetime.now(timezone.utc) + expires_delta,
-        'role': role.name,
+        'jti': str(uuid4()),
+        'name': f"{user.first_name} {user.last_name}",
+        'role': user.role.name,
         'company_id': str(company_id) if company_id else None
     }
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
@@ -103,5 +106,5 @@ def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depen
     company_user = db.query(CompanyUser).filter(CompanyUser.user_id == user.id).first() 
     company_id = company_user.company_id if company_user else None
         
-    token = create_access_token(user.email, user.id, user.role, timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES), company_id)
+    token = create_access_token(user, company_id)
     return models.Token(access_token=token, token_type='bearer')

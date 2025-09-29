@@ -24,9 +24,9 @@ export const router = createRouter({
 router.beforeEach(async (to) => {
   // redirect to login page if not logged in and trying to access a restricted page
   const publicPagesPatterns: RegExp[] = [
-    /\/account\/login/,
-    /\/account\/register/,
-    /\/account\/register-company/,
+    /\/accounts\/login/,
+    /\/accounts\/register/,
+    /\/accounts\/register-company/,
     /\/jobs\/.*/,
     /\/jobs/,
     /\/$/,
@@ -34,8 +34,8 @@ router.beforeEach(async (to) => {
   const authRequired = !publicPagesPatterns.some((pattern) => pattern.test(to.path))
   const authStore = useAuthStore()
 
-  if (authRequired && !authStore.user) {
+  if (authRequired && !authStore.userToken) {
     authStore.returnUrl = to.fullPath
-    return '/account/login'
+    return '/accounts/login'
   }
 })

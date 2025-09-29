@@ -116,7 +116,7 @@ const identification_types = [
 
 
 function handleCompanyRegisterClick() {
-    router.push('/account/register-company');
+    router.push('/accounts/register-company');
 }
 
 
@@ -148,7 +148,7 @@ async function onSubmit() {
     try {
         isSubmitting.value = true;
         await usersStore.registerCandidate(registerUser);
-        await router.push('/account/login');
+        await router.push('/accounts/login');
     }
     catch (error: any) {
         console.error('Registration failed:', error);
@@ -189,7 +189,8 @@ async function onSubmit() {
 
                 <n-form ref="formRef" :model="model" :rules="rules">
                     <n-form-item path="identification_type" label="Tipo de documento">
-                        <n-select v-model:value="model.identification_type" :options="identification_types" placeholder="Selecciona una opción" />
+                        <n-select v-model:value="model.identification_type" :options="identification_types"
+                            placeholder="Selecciona una opción" />
                     </n-form-item>
 
                     <n-form-item path="identification_number" label="Número de documento">
@@ -201,7 +202,7 @@ async function onSubmit() {
                     </n-form-item>
 
                     <n-form-item path="last_name" label="Apellidos">
-                        <n-input v-model:value="model.last_name" placeholder="Jobs"  />
+                        <n-input v-model:value="model.last_name" placeholder="Jobs" />
                     </n-form-item>
 
                     <n-form-item path="email" label="Correo electrónico">
@@ -229,7 +230,7 @@ async function onSubmit() {
                 <!-- Footer -->
                 <p class="mt-6 text-center text-sm text-gray-500">
                     ¿Ya tienes una cuenta?
-                    <RouterLink to="/account/login" class="text-blue-600 hover:underline ml-1">Inicia sesión
+                    <RouterLink to="/accounts/login" class="text-blue-600 hover:underline ml-1">Inicia sesión
                     </RouterLink>
                 </p>
 

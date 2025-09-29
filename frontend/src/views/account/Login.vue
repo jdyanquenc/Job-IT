@@ -68,8 +68,8 @@ async function onSubmit() {
 </script>
 
 <template>
-    
-    
+
+
     <div class="max-w-screen-sm md:w-1/2 mx-auto mt-5 mb-5">
         <div class="flex items-center justify-center px-4">
             <div class="w-full max-w-md bg-white p-8">
@@ -77,7 +77,7 @@ async function onSubmit() {
 
                 <!-- Title -->
                 <h2 class="font-bold text-center text-gray-900 mb-2">Inicio de sesión</h2>
-                
+
                 <p class="text-center text-gray-500 text-sm mb-6">
                     Accede a todas las características de Job IT.
                 </p>
@@ -94,8 +94,7 @@ async function onSubmit() {
                     </n-form-item-row>
 
                     <!-- Submit -->
-                    <n-button type="primary"
-                        class="w-full text-white py-2 rounded-md" block strong
+                    <n-button type="primary" class="w-full text-white py-2 rounded-md" block strong
                         @click="handleValidateButtonClick"
                         :disabled="isSubmitting || (model.email == '' || model.password == '')">
                         Iniciar sesión
@@ -104,11 +103,13 @@ async function onSubmit() {
                 </n-form>
 
                 <p class="mt-1 text-center text-sm text-gray-500">
-                    <RouterLink to="/account/forgot-password" class="text-gray-600 hover:underline ml-1">Olvidé mi contraseña</RouterLink>
+                    <RouterLink to="/accounts/forgot-password" class="text-gray-600 hover:underline ml-1">Olvidé mi
+                        contraseña</RouterLink>
                 </p>
                 <p class="mt-6 text-center text-sm text-gray-500">
                     ¿Aún no tienes una cuenta?
-                    <RouterLink to="/account/register" class="text-blue-600 hover:underline ml-1">Regístrate</RouterLink>
+                    <RouterLink to="/accounts/register" class="text-blue-600 hover:underline ml-1">Regístrate
+                    </RouterLink>
                 </p>
 
             </div>
@@ -116,7 +117,7 @@ async function onSubmit() {
 
         <div class="hidden md:block flex justify-start mt-6 ml-6 bg-login">
         </div>
-       
+
     </div>
 
 
