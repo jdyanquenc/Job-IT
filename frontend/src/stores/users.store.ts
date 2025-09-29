@@ -6,17 +6,15 @@ import type { RegisterCompanyUser, RegisterUser, User } from '@/types'
 
 const baseUrl = `${import.meta.env.VITE_API_URL}/users`
 
-
 export const useUsersStore = defineStore('jobit-users', {
   state: () => ({
     users: [] as User[],
     user: {} as User,
   }),
   actions: {
-
-    async checkEmailAvailability(email: string) : Promise<{ available: boolean }> {
-      const url = new URL(`${baseUrl}/check-email`);
-      url.search = new URLSearchParams({email}).toString();
+    async checkEmailAvailability(email: string): Promise<{ available: boolean }> {
+      const url = new URL(`${baseUrl}/check-email`)
+      url.search = new URLSearchParams({ email }).toString()
       return await http.get(url.toString())
     },
 
@@ -51,13 +49,13 @@ export const useUsersStore = defineStore('jobit-users', {
 
       // update stored user if the logged in user updated their own record
       const authStore = useAuthStore()
-      if (id === authStore.user.id) {
+      if (id === authStore.userToken.id) {
         // update local storage
-        const user = { ...authStore.user, ...params }
+        const user = { ...authStore.userToken, ...params }
         localStorage.setItem('jobit-user', JSON.stringify(user))
 
         // update auth user in pinia state
-        authStore.user = user
+        authStore.userToken = user
       }
     },
 
@@ -72,7 +70,7 @@ export const useUsersStore = defineStore('jobit-users', {
 
       // auto logout if the logged in user deleted their own record
       const authStore = useAuthStore()
-      if (id === authStore.user.id) {
+      if (id === authStore.userToken.id) {
         authStore.logout()
       }
     },

@@ -76,8 +76,8 @@ def register_user(db: Session, register_user_request: models.RegisterUserRequest
         create_user_model = User(
             id=uuid4(),
             email=register_user_request.email.lower().strip(),
-            first_name=register_user_request.first_name,
-            last_name=register_user_request.last_name,
+            first_name=register_user_request.first_name.capitalize().strip(),
+            last_name=register_user_request.last_name.capitalize().strip(),
             identification_type=register_user_request.identification_type,
             identification_number=register_user_request.identification_number.replace('.', '').strip(),
             password_hash=get_password_hash(register_user_request.password),

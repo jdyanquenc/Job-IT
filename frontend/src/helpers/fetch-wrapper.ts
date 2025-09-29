@@ -47,7 +47,7 @@ function formRequest(method: 'POST' | 'PUT', url: string, body: any) {
 
 function authHeader(url: string) {
   // return auth header with jwt if user is logged in and request is to the api url
-  const { user } = useAuthStore()
+  const { userToken: user } = useAuthStore()
   const isLoggedIn = !!user?.access_token
   const isApiUrl = url.startsWith(import.meta.env.VITE_API_URL)
 
@@ -65,7 +65,7 @@ async function handleResponse(response: any) {
 
   // check for error response
   if (!response.ok) {
-    const { user, logout } = useAuthStore()
+    const { userToken: user, logout } = useAuthStore()
     if ([401, 403].includes(response.status) && user) {
       // auto logout if 401 Unauthorized or 403 Forbidden response returned from api
       logout()
