@@ -60,7 +60,7 @@ def create_access_token(user: User, company_id: Optional[UUID]) -> str:
 def verify_token(token: str) -> models.TokenData:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: str = payload.get('id')
+        user_id: str = payload.get('sub')
         role = payload.get("role")
         company_id = payload.get("company_id")
         return models.TokenData(user_id=user_id, role=role, company_id=company_id)

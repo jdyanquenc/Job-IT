@@ -1,27 +1,41 @@
 <script setup lang="ts">
 import { ref } from "vue"
+import { useCompanyStore } from "@/stores/company.store"
 import {
     NForm, NFormItem, NInput, NDatePicker, NModal,
-    NButton, NSpace, NCard
+    NButton, NSpace, NCard, NSelect
 } from "naive-ui"
 
-import { Add } from "@vicons/ionicons5"
+const companyStore = useCompanyStore()
+
+import { Add, Pencil, Trash } from "@vicons/ionicons5"
+
+export interface WorkExperience {
+    company: string
+    position: string
+    description: string
+    startDate: number | null
+    endDate: number | null
+}
+
 
 const props = defineProps({
-    modelValue: { type: Array, required: true }
+    modelValue: { type: Array<WorkExperience>, required: true }
 })
 const emit = defineEmits(["update:modelValue"])
 
 const showModal = ref(false)
-const tempExperience = ref(createExperience())
+const tempExperience = ref<WorkExperience>(createExperience())
 
-function createExperience() {
+
+
+function createExperience(): WorkExperience {
     return {
         company: "",
         position: "",
         description: "",
-        start_date: null,
-        end_date: null
+        startDate: null,
+        endDate: null
     }
 }
 
@@ -31,13 +45,18 @@ function saveExperience() {
     showModal.value = false
 }
 
+function editExperience(index: number) {
+    tempExperience.value = { ...props.modelValue[index] }
+    showModal.value = true
+}
+
 function removeExperience(index: number) {
     const updated = [...props.modelValue]
     updated.splice(index, 1)
     emit("update:modelValue", updated)
 }
 
-function formatDate(date: string | null) {
+function formatDate(date: number | null) {
     if (!date) return ""
     const d = new Date(date)
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`
@@ -46,7 +65,8 @@ function formatDate(date: string | null) {
 
 <template>
     <div class="w-full mb-4">
-        <span class="font-medium mb-2">Experiencia Laboral</span>
+
+        <h5>Experiencia Laboral</h5>
 
         <n-space vertical class="w-full">
             <!-- Lista de experiencias -->
@@ -55,20 +75,29 @@ function formatDate(date: string | null) {
                     <div>
                         <p class="font-semibold">{{ experience.company }}</p>
                         <p>{{ experience.position }}</p>
-                        <small>
-                            {{ formatDate(experience.start_date) }} -
-                            {{ experience.end_date ? formatDate(experience.end_date) : "Actualidad" }}
-                        </small>
+                        <p>
+                            <span>
+                                {{ formatDate(experience.startDate) }} -
+                                {{ experience.endDate ? formatDate(experience.endDate) : "Actualidad" }}
+                            </span>
+                        </p>
                         <p class="mt-1 text-gray-500">{{ experience.description }}</p>
                     </div>
+                    <n-button quaternary type="warning" size="small" @click="editExperience(index)">
+                        <template #icon>
+                            <Pencil />
+                        </template>
+                    </n-button>
                     <n-button quaternary type="error" size="small" @click="removeExperience(index)">
-                        Eliminar
+                        <template #icon>
+                            <Trash />
+                        </template>
                     </n-button>
                 </div>
             </n-card>
 
             <!-- Botón para abrir modal -->
-            <n-button type="primary" @click="showModal = true" ghost>
+            <n-button type="primary" @click="showModal = true" ghost size="medium">
                 <template #icon>
                     <Add />
                 </template>
@@ -81,7 +110,9 @@ function formatDate(date: string | null) {
     <n-modal v-model:show="showModal" preset="dialog" title="Agregar Experiencia Laboral">
         <n-form :model="tempExperience" label-placement="top">
             <n-form-item label="Empresa">
-                <n-input v-model:value="tempExperience.company" />
+                <n-select v-model:value="tempExperience.company" :options="companyStore.options" filterable tag
+                    :loading="companyStore.loading" :clearable="true" placeholder="Selecciona o escribe para buscar"
+                    :on-search="companyStore.fetchOptions" :on-create="(label) => ({ label, value: label })" />
             </n-form-item>
             <n-form-item label="Cargo">
                 <n-input v-model:value="tempExperience.position" />
@@ -90,10 +121,10 @@ function formatDate(date: string | null) {
                 <n-input v-model:value="tempExperience.description" type="textarea" />
             </n-form-item>
             <n-form-item label="Fecha de inicio">
-                <n-date-picker v-model:value="tempExperience.start_date" type="month" />
+                <n-date-picker v-model:value="tempExperience.startDate" type="month" />
             </n-form-item>
             <n-form-item label="Fecha de finalización">
-                <n-date-picker v-model:value="tempExperience.end_date" type="month" />
+                <n-date-picker v-model:value="tempExperience.endDate" type="month" />
             </n-form-item>
         </n-form>
 

@@ -344,6 +344,6 @@ async function onSubmit() {
 
 <style scoped>
 .n-timeline .n-timeline-item {
-    height: 70px;
+    height: 100px;
 }
 </style>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue"
 import {
-    NButton
+    NButton, NTimeline, NTimelineItem
 } from "naive-ui"
 
 import ResumeDescription from "./components/ResumeDescription.vue"
@@ -23,38 +23,69 @@ const form = ref({
         location: ""
     }
 })
-
+/*
 function handleSubmit() {
     console.log("CV data:", form.value)
     // Aquí envías los datos a tu API
 }
+*/
+function handleBack() {
+    window.history.back()
+}
+
 </script>
 
 <template>
 
     <div class="w-full">
 
-        <div class="flex mt-4 ml-2">
-            <h2 class="text-2xl font-bold mb-2">Registro de Curriculum</h2>
+        <div class="flex flex-col lg:flex-row w-full gap-6">
+
+            <!-- Main content -->
+            <main class="p-2 flex-1 basis-3/4">
+
+                <h2 class="text-2xl mb-2">Jesus Yanquen</h2>
+
+                <hr class="mt-2 mb-4" />
+
+                <resume-description v-model="form.description" />
+
+                <resume-education v-model="form.education" />
+
+                <resume-work-experience v-model="form.work_experience" />
+
+                <resume-preferences v-model="form.preferences" />
+
+                <resume-skills v-model="form.skills" />
+
+
+                <div class="mt-6 flex justify-center">
+                    <n-button type="default" @click="handleBack()">Volver</n-button>
+                </div>
+
+            </main>
+
+            <!-- Sidebar -->
+
+            <div class="p-2 basis-1/4">
+
+                <n-timeline item-placement="right" size="large">
+                    <n-timeline-item type="default" title="Perfil profesional" />
+                    <n-timeline-item type="success" title="Educación" />
+                    <n-timeline-item type="error" title="Experiencia Laboral" />
+                    <n-timeline-item type="warning" title="Preferencias" />
+                    <n-timeline-item type="info" title="Habilidades" />
+                </n-timeline>
+
+            </div>
 
         </div>
-
-        <hr class="mt-2 mb-8" />
-
-        <resume-description v-model="form.description" />
-
-        <resume-education v-model="form.education" />
-
-        <resume-work-experience v-model="form.work_experience" />
-
-        <resume-preferences v-model="form.preferences" />
-
-        <resume-skills v-model="form.skills" />
-
-        <div class="mt-6 flex justify-center">
-            <n-button type="primary" @click="handleSubmit">Guardar CV</n-button>
-        </div>
-
     </div>
 
 </template>
+
+<style scoped>
+.n-timeline .n-timeline-item {
+    height: 100px;
+}
+</style>

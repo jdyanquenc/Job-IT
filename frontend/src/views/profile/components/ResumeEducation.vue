@@ -7,8 +7,16 @@ import {
 
 import { Add } from "@vicons/ionicons5"
 
+
+export interface Education {
+    institution: string
+    degree: string
+    start_date: string | null
+    end_date: string | null
+}
+
 const props = defineProps({
-    modelValue: { type: Array, required: true }
+    modelValue: { type: Array<Education>, required: true }
 })
 const emit = defineEmits(["update:modelValue"])
 
@@ -19,7 +27,6 @@ function createEducation() {
     return {
         institution: "",
         degree: "",
-        field: "",
         start_date: null,
         end_date: null
     }
@@ -31,13 +38,13 @@ function saveEducation() {
     showModal.value = false
 }
 
-function removeEducation(index) {
+function removeEducation(index: number) {
     const updated = [...props.modelValue]
     updated.splice(index, 1)
     emit("update:modelValue", updated)
 }
 
-function formatDate(date) {
+function formatDate(date: string | null) {
     if (!date) return ""
     const d = new Date(date)
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`
@@ -48,7 +55,8 @@ function formatDate(date) {
 <template>
 
     <div class="w-full mb-4">
-        <span class="font-medium mb-2">Educación</span>
+        <h5>Educación</h5>
+
 
         <n-space vertical class="w-full">
             <!-- Lista de estudios guardados -->
@@ -56,7 +64,7 @@ function formatDate(date) {
                 <div class="flex justify-between">
                     <div>
                         <p class="font-semibold">{{ education.institution }}</p>
-                        <p>{{ education.degree }} - {{ education.field }}</p>
+                        <p>{{ education.degree }}</p>
                         <small>
                             {{ formatDate(education.start_date) }} -
                             {{ education.end_date ? formatDate(education.end_date) : "Actualidad" }}
@@ -69,7 +77,7 @@ function formatDate(date) {
             </n-card>
 
             <!-- Botón para abrir modal -->
-            <n-button type="primary" @click="showModal = true" ghost>
+            <n-button type="primary" @click="showModal = true" ghost size="medium">
                 <template #icon>
                     <Add />
                 </template>
@@ -88,9 +96,6 @@ function formatDate(date) {
             </n-form-item>
             <n-form-item label="Título o grado">
                 <n-input v-model:value="tempEducation.degree" />
-            </n-form-item>
-            <n-form-item label="Campo de estudio">
-                <n-input v-model:value="tempEducation.field" />
             </n-form-item>
             <n-form-item label="Fecha de inicio">
                 <n-date-picker v-model:value="tempEducation.start_date" type="month" />

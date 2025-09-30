@@ -28,11 +28,6 @@ const salaryOptions = [
 
 <template>
     <n-space vertical>
-        <n-form-item label="Rango Salarial Estimado">
-            <n-select :value="localValue.salary_range" :options="salaryOptions" placeholder="Selecciona rango"
-                @update:value="updateField('salary_range', $event)" />
-        </n-form-item>
-
         <n-form-item label="Tipo de empleo preferido">
             <n-radio-group :value="localValue.job_type" @update:value="updateField('job_type', $event)">
                 <n-space>
@@ -46,6 +41,11 @@ const salaryOptions = [
         <n-form-item label="Lugar de Residencia">
             <n-input :value="localValue.location" placeholder="Ej: Ciudad de México, CDMX"
                 @update:value="updateField('location', $event)" />
+        </n-form-item>
+
+        <n-form-item label="Rango Salarial Estimado">
+            <n-select :value="localValue.salary_range" :options="salaryOptions" placeholder="Selecciona rango"
+                @update:value="updateField('salary_range', $event)" />
         </n-form-item>
     </n-space>
 </template>

@@ -25,6 +25,18 @@ def get_company_jobs(db: DbSession, current_user: CurrentUser, query: Optional[s
     return service.get_company_jobs(current_user, db, query, page)
 
 
+@router.put("/{job_id}", response_model=models.JobDetailResponse)
+@require_any_role([Role.COMPANY_MANAGER, Role.ADMIN])
+def update_job(db: DbSession, job_id: UUID, todo_update: models.JobUpdate, current_user: CurrentUser):
+    return service.update_job(current_user, db, job_id, todo_update)
+
+
+@router.delete("/{job_id}", status_code=status.HTTP_204_NO_CONTENT)
+@require_any_role([Role.COMPANY_MANAGER, Role.ADMIN])
+def delete_job(db: DbSession, job_id: UUID, current_user: CurrentUser):
+    service.delete_job(current_user, db, job_id)
+
+
 @router.get("/search", response_model=List[models.JobResponse])
 def get_active_jobs(db: DbSession, query: Optional[str] = None, page: Optional[int] = None):
     return service.get_active_jobs(db, query, page)
@@ -33,13 +45,3 @@ def get_active_jobs(db: DbSession, query: Optional[str] = None, page: Optional[i
 @router.get("/{job_id}", response_model=models.JobDetailResponse)
 def get_job(db: DbSession, job_id: UUID):
     return service.get_job_by_id(db, job_id)
-
-
-@router.put("/{job_id}", response_model=models.JobDetailResponse)
-def update_job(db: DbSession, job_id: UUID, todo_update: models.JobUpdate, current_user: CurrentUser):
-    return service.update_job(current_user, db, job_id, todo_update)
-
-
-@router.delete("/{job_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_job(db: DbSession, job_id: UUID, current_user: CurrentUser):
-    service.delete_job(current_user, db, job_id)
