@@ -26,7 +26,7 @@ class Company(Base):
     state = Column(String, nullable=True)
     zip = Column(String, nullable=True)
     
-    country_id = Column(UUID(as_uuid=True), ForeignKey("country.id"), nullable=False, index=True)
+    country_id = Column(UUID(as_uuid=True), ForeignKey("country.id"), nullable=True, index=True)
     
 
     def __repr__(self):

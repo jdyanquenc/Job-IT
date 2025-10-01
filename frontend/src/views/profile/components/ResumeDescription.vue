@@ -39,8 +39,9 @@ profileStore.load(id as string)
         <!-- Si no está en edición -->
         <div v-if="!editing" @click="startEditing" class="cursor-pointer">
             <article class="prose prose-gray">
-                <p v-if="profileStore.profileData.description" title="Haz clic para editar">{{
-                    profileStore.profileData.description }}</p>
+                <p v-if="profileStore.profileData.description" title="Haz clic para editar">
+                    {{ profileStore.profileData.description }}
+                </p>
                 <p v-else class="text-gray-400 italic">Cuéntanos sobre ti, tu perfil profesional y tus metas. Haz clic
                     para editar</p>
             </article>

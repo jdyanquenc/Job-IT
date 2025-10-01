@@ -23,3 +23,18 @@ def get_profile_data(db: DbSession, profile_id: UUID, current_user: CurrentUser)
 @require_any_role([Role.CANDIDATE])
 def update_profile(db: DbSession, profile_id: UUID, profile_update: models.ProfileUpdate, current_user: CurrentUser):
     return service.update_profile(current_user, db, profile_id, profile_update)
+
+@router.post("/{profile_id}/work-experiences", response_model=models.WorkExperienceResponse)
+@require_any_role([Role.CANDIDATE])
+def add_working_experience(db: DbSession, profile_id: UUID, work_experience: models.WorkExperienceRequest, current_user: CurrentUser):
+    return service.add_working_experience(current_user, db, profile_id, work_experience)
+
+@router.put("/{profile_id}/work-experiences/{experience_id}", response_model=models.WorkExperienceResponse)
+@require_any_role([Role.CANDIDATE])
+def update_working_experience(db: DbSession, profile_id: UUID, experience_id: UUID, work_experience: models.WorkExperienceRequest, current_user: CurrentUser):
+    return service.update_working_experience(current_user, db, profile_id, experience_id, work_experience)
+
+@router.delete("/{profile_id}/work-experiences/{experience_id}", status_code=204)
+@require_any_role([Role.CANDIDATE])
+def delete_working_experience(db: DbSession, profile_id: UUID, experience_id: UUID, current_user: CurrentUser):
+    return service.delete_working_experience(current_user, db, profile_id, experience_id)

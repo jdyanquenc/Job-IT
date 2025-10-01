@@ -1,59 +1,64 @@
 <script setup lang="ts">
 import { ref } from "vue"
-import { useCompanyStore } from "@/stores/company.store"
+import { useCompanyStore, useProfileStore } from "@/stores"
 import {
     NForm, NFormItem, NInput, NDatePicker, NModal,
     NButton, NSpace, NCard, NSelect
 } from "naive-ui"
 
-const companyStore = useCompanyStore()
-
 import { Add, Pencil, Trash } from "@vicons/ionicons5"
-
-export interface WorkExperience {
-    company: string
-    position: string
-    description: string
-    startDate: number | null
-    endDate: number | null
-}
+import type { WorkExperience } from "@/types"
 
 
-const props = defineProps({
-    modelValue: { type: Array<WorkExperience>, required: true }
-})
-const emit = defineEmits(["update:modelValue"])
+const companyStore = useCompanyStore()
+const profileStore = useProfileStore()
+
 
 const showModal = ref(false)
 const tempExperience = ref<WorkExperience>(createExperience())
 
 
-
 function createExperience(): WorkExperience {
     return {
-        company: "",
+        id: "",
+        company_id: null,
+        company_name: "",
         position: "",
         description: "",
-        startDate: null,
-        endDate: null
+        start_date: null,
+        end_date: null
     }
 }
 
 function saveExperience() {
-    emit("update:modelValue", [...props.modelValue, { ...tempExperience.value }])
+    // If company_name is empty, set the value from company_id (new company)
+    if (!tempExperience.value.company_name) {
+        tempExperience.value.company_name = tempExperience.value.company_id as string
+        tempExperience.value.company_id = null
+    }
+    // If the experience has an ID, it's an edit; otherwise, it's a new entry
+    if (!tempExperience.value.id) {
+        profileStore.addWorkExperience(tempExperience.value)
+    } else {
+        profileStore.updateWorkExperience(tempExperience.value)
+    }
+
+    // Reset temporary experience and close modal
     tempExperience.value = createExperience()
     showModal.value = false
 }
 
-function editExperience(index: number) {
-    tempExperience.value = { ...props.modelValue[index] }
+function editExperience(id: string) {
+    tempExperience.value = { ...profileStore.profileData.work_experiences.find(exp => exp.id === id) } as WorkExperience
     showModal.value = true
 }
 
-function removeExperience(index: number) {
-    const updated = [...props.modelValue]
-    updated.splice(index, 1)
-    emit("update:modelValue", updated)
+function removeExperience(id: string) {
+    profileStore.deleteWorkExperience(id)
+}
+
+function createCompany(name: string) {
+    return { label: name, value: name }
 }
 
 function formatDate(date: number | null) {
@@ -70,25 +75,25 @@ function formatDate(date: number | null) {
 
         <n-space vertical class="w-full">
             <!-- Lista de experiencias -->
-            <n-card v-for="(experience, index) in modelValue" :key="index" class="mb-2">
+            <n-card v-for="experience in profileStore.profileData.work_experiences" :key="experience.id" class="mb-2">
                 <div class="flex justify-between">
                     <div>
-                        <p class="font-semibold">{{ experience.company }}</p>
+                        <p class="font-semibold">{{ experience.company_name }}</p>
                         <p>{{ experience.position }}</p>
                         <p>
                             <span>
-                                {{ formatDate(experience.startDate) }} -
-                                {{ experience.endDate ? formatDate(experience.endDate) : "Actualidad" }}
+                                {{ formatDate(experience.start_date) }} -
+                                {{ experience.end_date ? formatDate(experience.end_date) : "Actualidad" }}
                             </span>
                         </p>
                         <p class="mt-1 text-gray-500">{{ experience.description }}</p>
                     </div>
-                    <n-button quaternary type="warning" size="small" @click="editExperience(index)">
+                    <n-button quaternary type="warning" size="small" @click="editExperience(experience.id)">
                         <template #icon>
                             <Pencil />
                         </template>
                     </n-button>
-                    <n-button quaternary type="error" size="small" @click="removeExperience(index)">
+                    <n-button quaternary type="error" size="small" @click="removeExperience(experience.id)">
                         <template #icon>
                             <Trash />
                         </template>
@@ -110,9 +115,9 @@ function formatDate(date: number | null) {
     <n-modal v-model:show="showModal" preset="dialog" title="Agregar Experiencia Laboral">
         <n-form :model="tempExperience" label-placement="top">
             <n-form-item label="Empresa">
-                <n-select v-model:value="tempExperience.company" :options="companyStore.options" filterable tag
+                <n-select v-model:value="tempExperience.company_id" :options="companyStore.options" filterable tag
                     :loading="companyStore.loading" :clearable="true" placeholder="Selecciona o escribe para buscar"
-                    :on-search="companyStore.fetchOptions" :on-create="(label) => ({ label, value: label })" />
+                    :on-search="companyStore.fetchOptions" :on-create="(label) => createCompany(label)" />
             </n-form-item>
             <n-form-item label="Cargo">
                 <n-input v-model:value="tempExperience.position" />
@@ -121,10 +126,10 @@ function formatDate(date: number | null) {
                 <n-input v-model:value="tempExperience.description" type="textarea" />
             </n-form-item>
             <n-form-item label="Fecha de inicio">
-                <n-date-picker v-model:value="tempExperience.startDate" type="month" />
+                <n-date-picker v-model:value="tempExperience.start_date" type="month" />
             </n-form-item>
             <n-form-item label="Fecha de finalización">
-                <n-date-picker v-model:value="tempExperience.endDate" type="month" />
+                <n-date-picker v-model:value="tempExperience.end_date" type="month" />
             </n-form-item>
         </n-form>
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useAuthStore } from '@/stores'
 
 export const http = {
@@ -61,7 +62,10 @@ function authHeader(url: string) {
 
 async function handleResponse(response: any) {
   const isJson = response.headers?.get('content-type')?.includes('application/json')
-  const data = isJson ? await response.json() : null
+  let data = null
+  if (isJson && response.status !== 204) {
+    data = await response.json()
+  }
 
   // check for error response
   if (!response.ok) {
