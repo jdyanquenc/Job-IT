@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue"
 import { useCompanyStore, useProfileStore } from "@/stores"
+import { validate as isValidUUID } from 'uuid';
 import {
     NForm, NFormItem, NInput, NDatePicker, NModal,
     NButton, NSpace, NCard, NSelect
@@ -12,7 +13,6 @@ import type { WorkExperience } from "@/types"
 
 const companyStore = useCompanyStore()
 const profileStore = useProfileStore()
-
 
 const showModal = ref(false)
 const tempExperience = ref<WorkExperience>(createExperience())
@@ -31,8 +31,7 @@ function createExperience(): WorkExperience {
 }
 
 function saveExperience() {
-    // If company_name is empty, set the value from company_id (new company)
-    if (!tempExperience.value.company_name) {
+    if (!isValidUUID(tempExperience.value.company_id)) {
         tempExperience.value.company_name = tempExperience.value.company_id as string
         tempExperience.value.company_id = null
     }
@@ -57,10 +56,6 @@ function removeExperience(id: string) {
     profileStore.deleteWorkExperience(id)
 }
 
-function createCompany(name: string) {
-    return { label: name, value: name }
-}
-
 function formatDate(date: number | null) {
     if (!date) return ""
     const d = new Date(date)
@@ -76,28 +71,34 @@ function formatDate(date: number | null) {
         <n-space vertical class="w-full">
             <!-- Lista de experiencias -->
             <n-card v-for="experience in profileStore.profileData.work_experiences" :key="experience.id" class="mb-2">
-                <div class="flex justify-between">
+                <div>
+                    <p class="font-semibold">{{ experience.company_name }}</p>
+                    <p>{{ experience.position }}</p>
+                    <p>
+                        <span>
+                            {{ formatDate(experience.start_date) }} -
+                            {{ experience.end_date ? formatDate(experience.end_date) : "Actualidad" }}
+                        </span>
+                    </p>
+                </div>
+                <div class="flex items-center justify-between">
                     <div>
-                        <p class="font-semibold">{{ experience.company_name }}</p>
-                        <p>{{ experience.position }}</p>
-                        <p>
-                            <span>
-                                {{ formatDate(experience.start_date) }} -
-                                {{ experience.end_date ? formatDate(experience.end_date) : "Actualidad" }}
-                            </span>
-                        </p>
                         <p class="mt-1 text-gray-500">{{ experience.description }}</p>
                     </div>
-                    <n-button quaternary type="warning" size="small" @click="editExperience(experience.id)">
-                        <template #icon>
-                            <Pencil />
-                        </template>
-                    </n-button>
-                    <n-button quaternary type="error" size="small" @click="removeExperience(experience.id)">
-                        <template #icon>
-                            <Trash />
-                        </template>
-                    </n-button>
+                    <div class="flex gap-2">
+                        <n-button quaternary type="warning" size="small" title="Editar"
+                            @click="editExperience(experience.id)">
+                            <template #icon>
+                                <Pencil />
+                            </template>
+                        </n-button>
+                        <n-button quaternary type="error" size="small" title="Eliminar"
+                            @click="removeExperience(experience.id)">
+                            <template #icon>
+                                <Trash />
+                            </template>
+                        </n-button>
+                    </div>
                 </div>
             </n-card>
 
@@ -117,7 +118,7 @@ function formatDate(date: number | null) {
             <n-form-item label="Empresa">
                 <n-select v-model:value="tempExperience.company_id" :options="companyStore.options" filterable tag
                     :loading="companyStore.loading" :clearable="true" placeholder="Selecciona o escribe para buscar"
-                    :on-search="companyStore.fetchOptions" :on-create="(label) => createCompany(label)" />
+                    :on-search="companyStore.fetchOptions" :on-create="(label) => ({ label, value: '-1' })" />
             </n-form-item>
             <n-form-item label="Cargo">
                 <n-input v-model:value="tempExperience.position" />
@@ -141,3 +142,14 @@ function formatDate(date: number | null) {
         </template>
     </n-modal>
 </template>
+
+<style scoped>
+.n-card {
+    background-color: #fff;
+
+}
+
+.n-card:hover {
+    background-color: #f7fafa;
+}
+</style>
