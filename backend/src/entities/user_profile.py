@@ -70,6 +70,7 @@ class UserProfile(Base):
         primary_key=True,
     )
     country_id = Column(UUID(as_uuid=True), ForeignKey('country.id'), nullable=True, index=True)
+    location = Column(String, nullable=True)
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
     description = Column(String, nullable=True)

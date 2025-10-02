@@ -26,14 +26,19 @@ def get_profile(current_user: TokenData, db: Session, profile_id: UUID) -> Profi
         raise ProfileNotFoundError(profile_id)
 
     # Order education experiences by start_date descending
+    if not profile.education_experiences:
+        profile.education_experiences = []
     profile.education_experiences.sort(key=lambda ee: ee.start_date, reverse=True)
 
     # Order work experiences by start_date descending
+    if not profile.work_experiences:
+        profile.work_experiences = []
     profile.work_experiences.sort(key=lambda we: we.start_date, reverse=True)
 
     return ProfileResponse(
         id=profile.id,
-        description=profile.description,
+        description=profile.description if profile.description else "",
+        location=profile.location if profile.location else "",
         education_experiences=[
             models.EducationResponse(
                 id=ee.id,
@@ -71,9 +76,11 @@ def update_profile(current_user: TokenData, db: Session, profile_id: UUID, profi
         raise ProfileNotFoundError(profile_id)
     
     # Update only the fields provided in the update request
-    if profile_update.description:
+    if profile_update.description is not None:
         profile.description = profile_update.description
-        # Add more fields as necessary
+    
+    if profile_update.location is not None:
+        profile.location = profile_update.location
     
     db.commit()
     db.refresh(profile)
@@ -81,7 +88,8 @@ def update_profile(current_user: TokenData, db: Session, profile_id: UUID, profi
     logging.info(f"Profile {profile_id} updated by user {current_user.get_uuid()}")
     return ProfileResponse(
         id=profile.id,
-        description=profile.description
+        description=profile.description,
+        location=profile.location
     )
 
 

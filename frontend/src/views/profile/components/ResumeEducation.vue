@@ -4,7 +4,7 @@ import { useCatalogueStore, useProfileStore } from "@/stores"
 import { validate as isValidUUID } from 'uuid';
 import {
     NForm, NFormItem, NInput, NDatePicker, NModal,
-    NButton, NSpace, NCard, NSelect
+    NButton, NSpace, NCard, NSelect, NPopover
 } from "naive-ui"
 
 import { Add, Pencil, Trash } from "@vicons/ionicons5"
@@ -60,7 +60,7 @@ function newEducation() {
 }
 
 function editEducation(id: string) {
-    tempEducation.value = { ...profileStore.profileData.education_experiences.find(education => education.id === id) } as EducationExperience
+    tempEducation.value = { ...profileStore.profile.education_experiences.find(education => education.id === id) } as EducationExperience
     catalogueStore.fetchInstitutions(tempEducation.value.institution_name)
     showModal.value = true
 }
@@ -91,8 +91,7 @@ function translateDegree(degree: string) {
 
         <n-space vertical class="w-full">
             <!-- Lista de estudios guardados -->
-            <n-card v-for="education in profileStore.profileData.education_experiences" :key="education.id"
-                class="mb-2">
+            <n-card v-for="education in profileStore.profile.education_experiences" :key="education.id" class="mb-2">
                 <div>
                     <p class="font-semibold">{{ education.institution_name }}</p>
                     <p class="mt-1 text-gray-500">{{ translateDegree(education.degree) }} - {{
@@ -109,18 +108,26 @@ function translateDegree(degree: string) {
                         </p>
                     </div>
                     <div class="flex gap-2">
-                        <n-button quaternary type="warning" size="small" title="Editar"
-                            @click="editEducation(education.id)">
-                            <template #icon>
-                                <Pencil />
+                        <n-popover trigger="hover">
+                            <template #trigger>
+                                <n-button quaternary type="warning" size="small" @click="editEducation(education.id)">
+                                    <template #icon>
+                                        <Pencil />
+                                    </template>
+                                </n-button>
                             </template>
-                        </n-button>
-                        <n-button quaternary type="error" size="small" title="Eliminar"
-                            @click="removeEducation(education.id)">
-                            <template #icon>
-                                <Trash />
+                            <span>Editar</span>
+                        </n-popover>
+                        <n-popover trigger="hover">
+                            <template #trigger>
+                                <n-button quaternary type="error" size="small" @click="removeEducation(education.id)">
+                                    <template #icon>
+                                        <Trash />
+                                    </template>
+                                </n-button>
                             </template>
-                        </n-button>
+                            <span>Eliminar</span>
+                        </n-popover>
                     </div>
                 </div>
             </n-card>

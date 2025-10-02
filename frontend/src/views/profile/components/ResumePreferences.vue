@@ -1,12 +1,19 @@
 <script setup lang="ts">
 import { computed } from "vue"
+import { useProfileStore } from "@/stores"
+import InlineEditableInput from "@/components/InlineEditableInput.vue"
 import {
     NSelect, NRadioGroup, NRadio, NFormItem, NSpace, NInput
 } from "naive-ui"
+import { storeToRefs } from "pinia"
 
 const props = defineProps({
     modelValue: { type: Object, required: true }
 })
+
+const profileStore = useProfileStore()
+
+const { profile } = storeToRefs(profileStore)
 
 const emit = defineEmits(["update:modelValue"])
 
@@ -28,6 +35,7 @@ const salaryOptions = [
 
 <template>
     <n-space vertical>
+
         <n-form-item label="Tipo de empleo preferido">
             <n-radio-group :value="localValue.job_type" @update:value="updateField('job_type', $event)">
                 <n-space>
@@ -38,7 +46,10 @@ const salaryOptions = [
             </n-radio-group>
         </n-form-item>
 
-        <n-form-item label="Lugar de Residencia">
+        <inline-editable-input v-model="profile.location" label="Lugar de Residencia" type="text"
+            placeholder="Ej: Bogotá, Colombia" @save="profileStore.updateLocation" />
+
+        <n-form-item label="Lugar de Residencia Old">
             <n-input :value="localValue.location" placeholder="Ej: Ciudad de México, CDMX"
                 @update:value="updateField('location', $event)" />
         </n-form-item>

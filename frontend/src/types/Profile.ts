@@ -1,6 +1,7 @@
 export interface Profile {
   id: string
-  description: string | null
+  description: string
+  location: string
   education_experiences: EducationExperience[]
   work_experiences: WorkExperience[]
 }

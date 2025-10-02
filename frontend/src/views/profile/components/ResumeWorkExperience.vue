@@ -4,7 +4,7 @@ import { useCatalogueStore, useProfileStore } from "@/stores"
 import { validate as isValidUUID } from 'uuid';
 import {
     NForm, NFormItem, NInput, NDatePicker, NModal,
-    NButton, NSpace, NCard, NSelect
+    NButton, NSpace, NCard, NSelect, NPopover
 } from "naive-ui"
 
 import { Add, Pencil, Trash } from "@vicons/ionicons5"
@@ -51,7 +51,7 @@ function newExperience() {
 }
 
 function editExperience(id: string) {
-    tempExperience.value = { ...profileStore.profileData.work_experiences.find(exp => exp.id === id) } as WorkExperience
+    tempExperience.value = { ...profileStore.profile.work_experiences.find(exp => exp.id === id) } as WorkExperience
     catalogueStore.fetchCompanies(tempExperience.value.company_name)
     showModal.value = true
 }
@@ -74,7 +74,7 @@ function formatDate(date: number | null) {
 
         <n-space vertical class="w-full">
             <!-- Lista de experiencias -->
-            <n-card v-for="experience in profileStore.profileData.work_experiences" :key="experience.id" class="mb-2">
+            <n-card v-for="experience in profileStore.profile.work_experiences" :key="experience.id" class="mb-2">
                 <div>
                     <p class="font-semibold">{{ experience.company_name }}</p>
                     <p>{{ experience.position }}</p>
@@ -90,18 +90,28 @@ function formatDate(date: number | null) {
                         <p class="mt-1 text-gray-500">{{ experience.description }}</p>
                     </div>
                     <div class="flex gap-2">
-                        <n-button quaternary type="warning" size="small" title="Editar"
-                            @click="editExperience(experience.id)">
-                            <template #icon>
-                                <Pencil />
+                        <n-popover trigger="hover">
+                            <template #trigger>
+                                <n-button quaternary type="warning" size="small" title="Editar"
+                                    @click="editExperience(experience.id)">
+                                    <template #icon>
+                                        <Pencil />
+                                    </template>
+                                </n-button>
                             </template>
-                        </n-button>
-                        <n-button quaternary type="error" size="small" title="Eliminar"
-                            @click="removeExperience(experience.id)">
-                            <template #icon>
-                                <Trash />
+                            <span>Editar</span>
+                        </n-popover>
+                        <n-popover trigger="hover">
+                            <template #trigger>
+                                <n-button quaternary type="error" size="small" title="Eliminar"
+                                    @click="removeExperience(experience.id)">
+                                    <template #icon>
+                                        <Trash />
+                                    </template>
+                                </n-button>
                             </template>
-                        </n-button>
+                            <span>Eliminar</span>
+                        </n-popover>
                     </div>
                 </div>
             </n-card>

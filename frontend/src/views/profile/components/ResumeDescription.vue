@@ -11,10 +11,10 @@ const profileStore = useProfileStore()
 const id = route.params.id
 
 const editing = ref(false)
-const tempValue = ref(profileStore.profileData.description || "")
+const tempValue = ref(profileStore.profile.description || "")
 
 function startEditing() {
-    tempValue.value = profileStore.profileData.description || ""
+    tempValue.value = profileStore.profile.description || ""
     editing.value = true
 }
 
@@ -25,7 +25,7 @@ async function saveEdit() {
 
 function cancelEdit() {
     editing.value = false
-    tempValue.value = profileStore.profileData.description || ""
+    tempValue.value = profileStore.profile.description || ""
 }
 
 profileStore.load(id as string)
@@ -39,8 +39,8 @@ profileStore.load(id as string)
         <!-- Si no está en edición -->
         <div v-if="!editing" @click="startEditing" class="cursor-pointer">
             <article class="prose prose-gray">
-                <p v-if="profileStore.profileData.description" title="Haz clic para editar">
-                    {{ profileStore.profileData.description }}
+                <p v-if="profileStore.profile.description" title="Haz clic para editar">
+                    {{ profileStore.profile.description }}
                 </p>
                 <p v-else class="text-gray-400 italic">Cuéntanos sobre ti, tu perfil profesional y tus metas. Haz clic
                     para editar</p>

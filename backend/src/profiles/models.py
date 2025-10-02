@@ -8,14 +8,13 @@ from pydantic import BaseModel, ConfigDict
 class ProfileResponse(BaseModel):
     id: UUID
     description: str
+    location: str
     education_experiences: list['EducationResponse'] = []
     work_experiences: list['WorkExperienceResponse'] = []
 
 class ProfileUpdate(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-    
     description: Optional[str] = None
-    # Add more fields as necessary
+    location: Optional[str] = None
 
 class WorkExperienceRequest(BaseModel):
     company_id: Optional[UUID] = None
