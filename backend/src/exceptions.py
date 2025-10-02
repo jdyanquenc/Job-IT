@@ -18,7 +18,6 @@ class ProfileError(HTTPException):
     """Base exception for profile-related errors"""
     pass
 
-
 class ProfileNotFoundError(ProfileError):
     def __init__(self, profile_id=None):
         message = "Profile not found" if profile_id is None else f"Profile with id {profile_id} not found"
@@ -28,6 +27,38 @@ class ProfileNotAccessibleError(ProfileError):
     def __init__(self, profile_id=None):
         message = "Profile not accessible" if profile_id is None else f"Profile with id {profile_id} is not accessible"
         super().__init__(status_code=403, detail=message)
+
+class WorkExperienceFoundError(ProfileError):
+    def __init__(self, experience_id=None):
+        message = "Work experience not found" if experience_id is None else f"Work experience with id {experience_id} not found"
+        super().__init__(status_code=404, detail=message)
+
+class WorkExperienceNotAccessibleError(ProfileError):
+    def __init__(self, experience_id=None):
+        message = "Work experience not accessible" if experience_id is None else f"Work experience with id {experience_id} is not accessible"
+        super().__init__(status_code=403, detail=message)
+
+class WorkExperienceBadRequestError(ProfileError):
+    def __init__(self, experience_id=None):
+        message = "Work experience bad request" if experience_id is None else f"Work experience with id {experience_id} bad request"
+        super().__init__(status_code=400, detail=message)
+
+
+class EducationExperienceNotFoundError(ProfileError):
+    def __init__(self, experience_id=None):
+        message = "Education experience not found" if experience_id is None else f"Education experience with id {experience_id} not found"
+        super().__init__(status_code=404, detail=message)
+
+class EducationExperienceNotAccessibleError(ProfileError):
+    def __init__(self, experience_id=None):
+        message = "Education experience not accessible" if experience_id is None else f"Education experience with id {experience_id} is not accessible"
+        super().__init__(status_code=403, detail=message)
+
+class EducationExperienceBadRequestError(ProfileError):
+    def __init__(self, experience_id=None):
+        message = "Education experience bad request" if experience_id is None else f"Education experience with id {experience_id} bad request"
+        super().__init__(status_code=400, detail=message)
+
 
 class UserError(HTTPException):
     """Base exception for user-related errors"""

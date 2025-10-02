@@ -5,6 +5,12 @@ from pydantic import BaseModel, ConfigDict, field_validator
 from src.entities.job import EmploymentType
 
 
-class SearchCompanyResponse(BaseModel):
+class SearchBaseResponse(BaseModel):
     id: UUID
     name: str
+
+class SearchCompanyResponse(SearchBaseResponse):
+    pass
+
+class SearchInstitutionResponse(SearchBaseResponse):
+    pass

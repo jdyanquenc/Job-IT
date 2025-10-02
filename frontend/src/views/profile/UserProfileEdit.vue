@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue"
 import {
-    NButton, NTimeline, NTimelineItem
+    NTimeline, NTimelineItem
 } from "naive-ui"
 
 import ResumeDescription from "./components/ResumeDescription.vue"
@@ -12,9 +12,6 @@ import ResumeSkills from "./components/ResumeSkills.vue"
 import ResumePreferences from "./components/ResumePreferences.vue"
 
 const form = ref({
-    description: "",
-    education: [],
-    work_experience: [],
     skills: [],
     languages: [],
     preferences: {
@@ -23,15 +20,6 @@ const form = ref({
         location: ""
     }
 })
-/*
-function handleSubmit() {
-    console.log("CV data:", form.value)
-    // Aquí envías los datos a tu API
-}
-*/
-function handleBack() {
-    window.history.back()
-}
 
 </script>
 
@@ -48,20 +36,15 @@ function handleBack() {
 
                 <hr class="mt-2 mb-4" />
 
-                <resume-description v-model="form.description" />
+                <resume-description />
 
-                <resume-education v-model="form.education" />
+                <resume-education />
 
-                <resume-work-experience v-model="form.work_experience" />
+                <resume-work-experience />
 
                 <resume-preferences v-model="form.preferences" />
 
                 <resume-skills v-model="form.skills" />
-
-
-                <div class="mt-6 flex justify-center">
-                    <n-button type="default" @click="handleBack()">Volver</n-button>
-                </div>
 
             </main>
 

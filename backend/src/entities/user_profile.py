@@ -10,6 +10,7 @@ class DegreeType(str, enum.Enum):
     HighSchool = "High School"
     Associate = "Associate"
     Bachelor = "Bachelor"
+    Specialization = "Specialization"
     Master = "Master"
     Doctorate = "Doctorate"
     Other = "Other"
@@ -45,7 +46,7 @@ class EducationExperience(Base):
     institution_name = Column(String, nullable=True)
     institution_id = Column(UUID(as_uuid=True), ForeignKey("educational_institution.id"), nullable=True)
     degree = Column(Enum(DegreeType), nullable=False)
-    program = Column(String, nullable=True)
+    field_of_study = Column(String, nullable=True)
     description = Column(Text, nullable=True)
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=True) # Null if currently studying

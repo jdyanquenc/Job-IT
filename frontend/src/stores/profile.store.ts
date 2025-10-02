@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 
 import { http } from '@/helpers'
-import type { Profile, WorkExperience } from '@/types/Profile'
+import type { EducationExperience, Profile, WorkExperience } from '@/types/Profile'
 
 const baseUrl = `${import.meta.env.VITE_API_URL}/profiles`
 
@@ -22,6 +22,7 @@ export const useProfileStore = defineStore('jobit-profile', {
         this.profileData = {} as {
           id: string
           description: string
+          education_experiences: EducationExperience[]
           work_experiences: WorkExperience[]
         }
       } finally {
@@ -43,11 +44,11 @@ export const useProfileStore = defineStore('jobit-profile', {
       }
     },
 
-    async addWorkExperience(newExperience: WorkExperience) {
+    async addWorkExperience(newWork: WorkExperience) {
       this.loading = true
       try {
         const url = new URL(`${baseUrl}/${this.profileData.id}/work-experiences`)
-        const createdExperience = await http.post(url.toString(), newExperience)
+        const createdExperience = await http.post(url.toString(), newWork)
         this.profileData.work_experiences.push(createdExperience)
       } catch (err) {
         console.error('Error al agregar experiencia laboral:', err)
@@ -56,18 +57,16 @@ export const useProfileStore = defineStore('jobit-profile', {
       }
     },
 
-    async updateWorkExperience(updatedExperience: WorkExperience) {
+    async updateWorkExperience(updatedWork: WorkExperience) {
       this.loading = true
       try {
-        const url = new URL(
-          `${baseUrl}/${this.profileData.id}/work-experiences/${updatedExperience.id}`,
-        )
-        await http.put(url.toString(), updatedExperience)
+        const url = new URL(`${baseUrl}/${this.profileData.id}/work-experiences/${updatedWork.id}`)
+        await http.put(url.toString(), updatedWork)
         const index = this.profileData.work_experiences.findIndex(
-          (exp) => exp.id === updatedExperience.id,
+          (exp) => exp.id === updatedWork.id,
         )
         if (index !== -1) {
-          this.profileData.work_experiences[index] = updatedExperience
+          this.profileData.work_experiences[index] = updatedWork
         }
       } catch (err) {
         console.error('Error al actualizar experiencia laboral:', err)
@@ -76,17 +75,65 @@ export const useProfileStore = defineStore('jobit-profile', {
       }
     },
 
-    async deleteWorkExperience(experienceId: string) {
+    async deleteWorkExperience(workExperienceId: string) {
       this.loading = true
       try {
-        const url = new URL(`${baseUrl}/${this.profileData.id}/work-experiences/${experienceId}`)
+        const url = new URL(
+          `${baseUrl}/${this.profileData.id}/work-experiences/${workExperienceId}`,
+        )
         await http.delete(url.toString())
 
         this.profileData.work_experiences = this.profileData.work_experiences.filter(
-          (exp) => exp.id !== experienceId,
+          (exp) => exp.id !== workExperienceId,
         )
       } catch (err) {
         console.error('Error al eliminar experiencia laboral:', err)
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async addEducation(newEducation: EducationExperience) {
+      this.loading = true
+      try {
+        const url = new URL(`${baseUrl}/${this.profileData.id}/educations`)
+        const createdEducation = await http.post(url.toString(), newEducation)
+        this.profileData.education_experiences.push(createdEducation)
+      } catch (err) {
+        console.error('Error al agregar educación:', err)
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async updateEducation(updatedEducation: EducationExperience) {
+      this.loading = true
+      try {
+        const url = new URL(`${baseUrl}/${this.profileData.id}/educations/${updatedEducation.id}`)
+        await http.put(url.toString(), updatedEducation)
+        const index = this.profileData.education_experiences.findIndex(
+          (edu) => edu.id === updatedEducation.id,
+        )
+        if (index !== -1) {
+          this.profileData.education_experiences[index] = updatedEducation
+        }
+      } catch (err) {
+        console.error('Error al actualizar educación:', err)
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async deleteEducation(educationId: string) {
+      this.loading = true
+      try {
+        const url = new URL(`${baseUrl}/${this.profileData.id}/educations/${educationId}`)
+        await http.delete(url.toString())
+        this.profileData.education_experiences = this.profileData.education_experiences.filter(
+          (edu) => edu.id !== educationId,
+        )
+      } catch (err) {
+        console.error('Error al eliminar educación:', err)
       } finally {
         this.loading = false
       }

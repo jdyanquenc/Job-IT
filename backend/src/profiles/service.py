@@ -4,11 +4,12 @@ from sqlalchemy import UUID
 from sqlalchemy.orm import Session
 
 from src.entities.company import Company, CompanyType
+from src.entities.educational_institution import EducationalInstitution
 
 from . import models
 from src.auth.models import TokenData
-from src.entities.user_profile import UserProfile, WorkExperience
-from src.exceptions import ProfileNotAccessibleError, ProfileNotFoundError
+from src.entities.user_profile import EducationExperience, UserProfile, WorkExperience
+from src.exceptions import EducationExperienceBadRequestError, EducationExperienceNotAccessibleError, EducationExperienceNotAccessibleError, ProfileNotAccessibleError, ProfileNotFoundError, WorkExperienceBadRequestError, WorkExperienceFoundError, WorkExperienceNotAccessibleError
 from src.profiles.models import ProfileResponse, ProfileUpdate, WorkExperienceRequest, WorkExperienceResponse
 
 
@@ -24,12 +25,27 @@ def get_profile(current_user: TokenData, db: Session, profile_id: UUID) -> Profi
         logging.warning(f"Profile {profile_id} not found")
         raise ProfileNotFoundError(profile_id)
 
+    # Order education experiences by start_date descending
+    profile.education_experiences.sort(key=lambda ee: ee.start_date, reverse=True)
+
     # Order work experiences by start_date descending
     profile.work_experiences.sort(key=lambda we: we.start_date, reverse=True)
 
     return ProfileResponse(
         id=profile.id,
         description=profile.description,
+        education_experiences=[
+            models.EducationResponse(
+                id=ee.id,
+                institution_id=ee.institution_id,
+                institution_name=ee.institution_name,
+                degree=ee.degree,
+                field_of_study=ee.field_of_study,
+                start_date=ee.start_date,
+                end_date=ee.end_date,
+                description=ee.description
+            ) for ee in profile.education_experiences
+        ],
         work_experiences=[
             WorkExperienceResponse(
                 id=we.id,
@@ -68,7 +84,8 @@ def update_profile(current_user: TokenData, db: Session, profile_id: UUID, profi
         description=profile.description
     )
 
-def add_working_experience(current_user: TokenData, db: Session, profile_id: UUID, work_experience: models.WorkExperienceRequest) -> WorkExperienceResponse:
+
+def add_working_experience(current_user: TokenData, db: Session, profile_id: UUID, work_experience: WorkExperienceRequest) -> WorkExperienceResponse:
     if current_user.get_uuid() != profile_id:
         logging.warning(f"Unauthorized work experience addition attempt by user {current_user.get_uuid()} to profile {profile_id}")
         raise ProfileNotAccessibleError(profile_id)
@@ -124,22 +141,22 @@ def add_working_experience(current_user: TokenData, db: Session, profile_id: UUI
     )
 
 
-def update_working_experience(current_user: TokenData, db: Session, profile_id: UUID, experience_id: UUID, work_experience: models.WorkExperienceRequest) -> WorkExperienceResponse:
+def update_working_experience(current_user: TokenData, db: Session, profile_id: UUID, experience_id: UUID, work_experience: WorkExperienceRequest) -> WorkExperienceResponse:
     if current_user.get_uuid() != profile_id:
         logging.warning(f"Unauthorized work experience update attempt by user {current_user.get_uuid()} to experience {experience_id}")
-        raise ProfileNotAccessibleError(experience_id)
+        raise WorkExperienceNotAccessibleError(experience_id)
 
     experience = db.query(WorkExperience).filter(WorkExperience.id == experience_id).filter(WorkExperience.user_profile_id == profile_id).first()
     if not experience:
         logging.warning(f"Work experience {experience_id} not found for update")
-        raise ProfileNotFoundError(experience_id)
+        raise WorkExperienceFoundError(experience_id)
    
     # Update only the fields provided in the update request
     if work_experience.company_id:
         existing_company = db.query(Company).filter(Company.id == work_experience.company_id).first()
         if not existing_company:
             logging.warning(f"Company {work_experience.company_id} not found for work experience update")
-            raise ProfileNotAccessibleError(f"Company {work_experience.company_id} not found")
+            raise WorkExperienceBadRequestError(f"Company {work_experience.company_id} not found")
         experience.company_id = existing_company.id
         experience.company_name = existing_company.name
     
@@ -183,4 +200,126 @@ def delete_working_experience(current_user: TokenData, db: Session, profile_id: 
     db.commit()
 
     logging.info(f"Work experience {experience_id} deleted by user {current_user.get_uuid()}")
+    return
+
+
+def add_education(current_user: TokenData, db: Session, profile_id: UUID, education: models.EducationRequest) -> models.EducationResponse:
+    if current_user.get_uuid() != profile_id:
+        logging.warning(f"Unauthorized education addition attempt by user {current_user.get_uuid()} to profile {profile_id}")
+        raise EducationExperienceNotAccessibleError(profile_id)
+    
+    profile = db.query(UserProfile).filter(UserProfile.id == profile_id).first()
+    if not profile:
+        logging.warning(f"Profile {profile_id} not found for adding education")
+        raise ProfileNotFoundError(profile_id)
+
+    # Check if institution_id is provided else create a new institution entry
+    if not education.institution_id:
+        new_institution = EducationalInstitution(
+            id=uuid4(),
+            name=education.institution_name
+        )
+        db.add(new_institution)
+        db.commit()
+        db.refresh(new_institution)
+        education.institution_id = new_institution.id
+    else:
+        existing_institution = db.query(EducationalInstitution).filter(EducationalInstitution.id == education.institution_id).first()
+        if not existing_institution:
+            logging.warning(f"Institution {education.institution_id} not found for education addition")
+            raise EducationExperienceBadRequestError(f"Institution {education.institution_id} not found")
+        
+        education.institution_id = existing_institution.id
+        education.institution_name = existing_institution.name
+
+    new_education = EducationExperience(
+        id=uuid4(),
+        institution_id=education.institution_id,
+        institution_name=education.institution_name,
+        degree=education.degree,
+        field_of_study=education.field_of_study,
+        start_date=education.start_date,
+        end_date=education.end_date,
+        description=education.description
+    )
+    profile.education_experiences.append(new_education)
+    
+    db.commit()
+    db.refresh(profile)
+
+    logging.info(f"Education added to profile {profile_id} by user {current_user.get_uuid()}")
+    return models.EducationResponse(
+        id=new_education.id,
+        institution_id=new_education.institution_id,
+        institution_name=new_education.institution_name,
+        degree=new_education.degree,
+        field_of_study=new_education.field_of_study,
+        start_date=new_education.start_date,
+        end_date=new_education.end_date,
+        description=new_education.description
+    )
+
+
+def update_education(current_user: TokenData, db: Session, profile_id: UUID, education_id: UUID, education: models.EducationRequest) -> models.EducationResponse:
+    if current_user.get_uuid() != profile_id:
+        logging.warning(f"Unauthorized education update attempt by user {current_user.get_uuid()} to education {education_id}")
+        raise EducationExperienceNotAccessibleError(education_id)
+
+    education_exp = db.query(EducationExperience).filter(EducationExperience.id == education_id).filter(EducationExperience.user_profile_id == profile_id).first()
+    if not education_exp:
+        logging.warning(f"Education experience {education_id} not found for update")
+        raise EducationExperienceNotAccessibleError(education_id)
+   
+    # Update only the fields provided in the update request
+    if education.institution_id:
+        existing_institution = db.query(EducationalInstitution).filter(EducationalInstitution.id == education.institution_id).first()
+        if not existing_institution:
+            logging.warning(f"Institution {education.institution_id} not found for education update")
+            raise EducationExperienceBadRequestError(f"Institution {education.institution_id} not found")
+        education_exp.institution_id = existing_institution.id
+        education_exp.institution_name = existing_institution.name
+    
+    if education.institution_name:
+        education_exp.institution_name = education.institution_name
+    if education.degree:
+        education_exp.degree = education.degree
+    if education.field_of_study:
+        education_exp.field_of_study = education.field_of_study
+    if education.start_date:
+        education_exp.start_date = education.start_date
+    if education.end_date:
+        education_exp.end_date = education.end_date
+    if education.description:
+        education_exp.description = education.description
+
+    db.commit()
+    db.refresh(education_exp)
+
+    logging.info(f"Education experience {education_id} updated by user {current_user.get_uuid()}")
+    return models.EducationResponse(
+        id=education_exp.id,
+        institution_id=education_exp.institution_id,
+        institution_name=education_exp.institution_name,
+        degree=education_exp.degree,
+        field_of_study=education_exp.field_of_study,
+        start_date=education_exp.start_date,
+        end_date=education_exp.end_date,
+        description=education_exp.description
+    )
+
+
+def delete_education(current_user: TokenData, db: Session, profile_id: UUID, education_id: UUID) -> None:
+    if current_user.get_uuid() != profile_id:
+        logging.warning(f"Unauthorized education deletion attempt by user {current_user.get_uuid()} to education {education_id}")
+        raise EducationExperienceNotAccessibleError(education_id)
+
+    education_exp = db.query(EducationExperience).filter(EducationExperience.id == education_id).filter(EducationExperience.user_profile_id == profile_id).first()
+    if not education_exp:
+        logging.warning(f"Education experience {education_id} not found for deletion")
+        raise EducationExperienceNotAccessibleError(education_id)
+    
+    db.delete(education_exp)
+    db.commit()
+
+    logging.info(f"Education experience {education_id} deleted by user {current_user.get_uuid()}")
     return

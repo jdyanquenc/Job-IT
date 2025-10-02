@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict
 class ProfileResponse(BaseModel):
     id: UUID
     description: str
+    education_experiences: list['EducationResponse'] = []
     work_experiences: list['WorkExperienceResponse'] = []
 
 class ProfileUpdate(BaseModel):
@@ -25,4 +26,17 @@ class WorkExperienceRequest(BaseModel):
     description: Optional[str] = None
 
 class WorkExperienceResponse(WorkExperienceRequest):
+    id: UUID
+
+
+class EducationRequest(BaseModel):
+    institution_id: Optional[UUID] = None
+    institution_name: str
+    degree: str
+    field_of_study: str
+    start_date: datetime
+    end_date: Optional[datetime] = None
+    description: Optional[str] = None
+
+class EducationResponse(EducationRequest):
     id: UUID

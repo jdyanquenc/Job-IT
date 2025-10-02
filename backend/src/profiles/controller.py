@@ -38,3 +38,20 @@ def update_working_experience(db: DbSession, profile_id: UUID, experience_id: UU
 @require_any_role([Role.CANDIDATE])
 def delete_working_experience(db: DbSession, profile_id: UUID, experience_id: UUID, current_user: CurrentUser):
     return service.delete_working_experience(current_user, db, profile_id, experience_id)
+
+
+@router.post("/{profile_id}/educations", response_model=models.EducationResponse)
+@require_any_role([Role.CANDIDATE])
+def add_education(db: DbSession, profile_id: UUID, education: models.EducationRequest, current_user: CurrentUser):
+    return service.add_education(current_user, db, profile_id, education)
+
+@router.put("/{profile_id}/educations/{education_id}", response_model=models.EducationResponse)
+@require_any_role([Role.CANDIDATE])
+def update_education(db: DbSession, profile_id: UUID, education_id: UUID, education: models.EducationRequest, current_user: CurrentUser):
+    return service.update_education(current_user, db, profile_id, education_id, education)
+
+
+@router.delete("/{profile_id}/educations/{education_id}", status_code=204)
+@require_any_role([Role.CANDIDATE])
+def delete_education(db: DbSession, profile_id: UUID, education_id: UUID, current_user: CurrentUser):
+    return service.delete_education(current_user, db, profile_id, education_id)

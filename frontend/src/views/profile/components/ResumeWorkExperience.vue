@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue"
-import { useCompanyStore, useProfileStore } from "@/stores"
+import { useCatalogueStore, useProfileStore } from "@/stores"
 import { validate as isValidUUID } from 'uuid';
 import {
     NForm, NFormItem, NInput, NDatePicker, NModal,
@@ -11,7 +11,7 @@ import { Add, Pencil, Trash } from "@vicons/ionicons5"
 import type { WorkExperience } from "@/types"
 
 
-const companyStore = useCompanyStore()
+const catalogueStore = useCatalogueStore()
 const profileStore = useProfileStore()
 
 const showModal = ref(false)
@@ -41,14 +41,18 @@ function saveExperience() {
     } else {
         profileStore.updateWorkExperience(tempExperience.value)
     }
-
-    // Reset temporary experience and close modal
-    tempExperience.value = createExperience()
     showModal.value = false
+}
+
+function newExperience() {
+    tempExperience.value = createExperience()
+    catalogueStore.fetchCompanies("")
+    showModal.value = true
 }
 
 function editExperience(id: string) {
     tempExperience.value = { ...profileStore.profileData.work_experiences.find(exp => exp.id === id) } as WorkExperience
+    catalogueStore.fetchCompanies(tempExperience.value.company_name)
     showModal.value = true
 }
 
@@ -103,7 +107,7 @@ function formatDate(date: number | null) {
             </n-card>
 
             <!-- Botón para abrir modal -->
-            <n-button type="primary" @click="showModal = true" ghost size="medium">
+            <n-button type="primary" @click="newExperience()" ghost size="medium">
                 <template #icon>
                     <Add />
                 </template>
@@ -116,9 +120,10 @@ function formatDate(date: number | null) {
     <n-modal v-model:show="showModal" preset="dialog" title="Agregar Experiencia Laboral">
         <n-form :model="tempExperience" label-placement="top">
             <n-form-item label="Empresa">
-                <n-select v-model:value="tempExperience.company_id" :options="companyStore.options" filterable tag
-                    :loading="companyStore.loading" :clearable="true" placeholder="Selecciona o escribe para buscar"
-                    :on-search="companyStore.fetchOptions" :on-create="(label) => ({ label, value: '-1' })" />
+                <n-select v-model:value="tempExperience.company_id" :options="catalogueStore.companies" filterable tag
+                    :loading="catalogueStore.loadingCompanies" :clearable="true"
+                    placeholder="Selecciona o escribe para buscar" :on-search="catalogueStore.fetchCompanies"
+                    :on-create="(label) => ({ label, value: label })" />
             </n-form-item>
             <n-form-item label="Cargo">
                 <n-input v-model:value="tempExperience.position" />
