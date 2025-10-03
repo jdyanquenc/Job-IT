@@ -1,11 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
+import { HomeView } from '@/views'
 import { useAuthStore } from '@/stores'
 import accountRoutes from './account.routes'
 import usersRoutes from './users.routes'
 import jobsRoutes from './jobs.routes'
 import companyJobsRoutes from './company-jobs.routes'
-import { HomeView } from '@/views'
+import profileRoutes from './profile.routes'
 
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -16,8 +17,9 @@ export const router = createRouter({
     { ...usersRoutes },
     { ...jobsRoutes },
     { ...companyJobsRoutes },
+    { ...profileRoutes },
     // catch all redirect to home page
-    { path: '/:pathMatch(.*)*', redirect: '/' },
+    { path: '/:pathMatch(.*)*', redirect: '/jobs' },
   ],
 })
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { ref, computed, watch } from 'vue';
+import { ref, watch } from 'vue';
 import { useRoute, RouterLink } from 'vue-router'
 import { useAuthStore } from '@/stores';
 
@@ -9,7 +9,6 @@ import { NDropdown, NAvatar, NText } from 'naive-ui';
 const route = useRoute();
 const authStore = useAuthStore();
 
-const isAccountRoute = computed(() => route.path.startsWith("/accounts/"));
 
 // Opciones del menú
 const options = [
@@ -55,16 +54,33 @@ const getColorFromName = (name: string) => {
     return palette[hash % palette.length]
 }
 
+const redirectToProfile = () => {
+    if (authStore.isCandidate()) {
+        return `/profile/edit/${authStore.getUserId()}`
+    } else if (authStore.isCompanyManager()) {
+        return "/company-profile"
+    } else {
+        return "/"
+    }
+}
+
 // Computed values
 const userName = ref(authStore.getTokenData()?.name || "Usuario Anónimo")
 const initials = ref(getInitials(userName.value))
 const avatarColor = ref(getColorFromName(userName.value))
+const isAccountRoute = ref(route.path.startsWith("/accounts/"));
 
-watch(() => authStore.userToken, () => {
+watch(() => authStore.isTokenValid, () => {
     // Si el token cambia (login/logout), recalcular iniciales y color
     userName.value = authStore.getTokenData()?.name || "Usuario Anónimo"
     initials.value = getInitials(userName.value)
     avatarColor.value = getColorFromName(userName.value)
+})
+
+watch(() => route.path, () => {
+    // Si la ruta cambia, verificar si es una ruta de cuenta
+    // Esto afecta la visibilidad de los enlaces de registro/inicio de sesión
+    isAccountRoute.value = route.path.startsWith("/accounts/")
 })
 
 </script>
@@ -86,7 +102,8 @@ watch(() => authStore.userToken, () => {
                     <RouterLink to="/">Inicio ▾</RouterLink>
 
                     <RouterLink v-if="authStore.isCandidate()" to="/jobs">Ofertas ▾</RouterLink>
-                    <RouterLink v-if="authStore.isCandidate()" to="/profile">Mi Hoja de Vida ▾</RouterLink>
+                    <RouterLink v-if="authStore.isCandidate()" :to="redirectToProfile()">Mi Hoja de
+                        Vida ▾</RouterLink>
                     <RouterLink v-if="authStore.isCandidate()" to="/jobs/applications">Mis postulaciones ▾</RouterLink>
                     <RouterLink v-if="authStore.isCandidate()" to="/jobs/recommendations">Mis recomendaciones ▾
                     </RouterLink>
