@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from src.entities.company import Company, CompanyType
 from src.entities.educational_institution import EducationalInstitution
+from src.entities.user import User
 
 from . import models
 from src.auth.models import TokenData
@@ -24,6 +25,9 @@ def get_profile(current_user: TokenData, db: Session, profile_id: UUID) -> Profi
     if not profile:
         logging.warning(f"Profile {profile_id} not found")
         raise ProfileNotFoundError(profile_id)
+    
+    # Fetch associated user to get additional details
+    user = db.query(User).filter(User.id == profile_id).first()
 
     # Order education experiences by start_date descending
     if not profile.education_experiences:
@@ -37,6 +41,8 @@ def get_profile(current_user: TokenData, db: Session, profile_id: UUID) -> Profi
 
     return ProfileResponse(
         id=profile.id,
+        full_name=user.full_name if user and user.full_name else "",
+        title=profile.title if profile.title else "",
         description=profile.description if profile.description else "",
         location=profile.location if profile.location else "",
         salary_range=profile.salary_range if profile.salary_range else "",
@@ -78,7 +84,13 @@ def update_profile(current_user: TokenData, db: Session, profile_id: UUID, profi
         logging.warning(f"Profile {profile_id} not found for update")
         raise ProfileNotFoundError(profile_id)
     
+    # Fetch associated user to get additional details
+    user = db.query(User).filter(User.id == current_user.get_uuid()).first()
+    
     # Update only the fields provided in the update request
+    if profile_update.title is not None:
+        profile.title = profile_update.title
+
     if profile_update.description is not None:
         profile.description = profile_update.description
     
@@ -100,8 +112,10 @@ def update_profile(current_user: TokenData, db: Session, profile_id: UUID, profi
     logging.info(f"Profile {profile_id} updated by user {current_user.get_uuid()}")
     return ProfileResponse(
         id=profile.id,
-        description=profile.description,
-        location=profile.location,
+        full_name=user.full_name if user and user.full_name else "",
+        title=profile.title if profile.title else "",
+        description=profile.description if profile.description else "",
+        location=profile.location if profile.location else "",
         salary_range=profile.salary_range if profile.salary_range else "",
         modality=profile.modality if profile.modality else "",
         skills=profile.skills if profile.skills else []

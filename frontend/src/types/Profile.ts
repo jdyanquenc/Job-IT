@@ -1,5 +1,7 @@
 export interface Profile {
   id: string
+  full_name: string
+  title: string
   description: string
   location: string
   salary_range: string

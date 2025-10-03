@@ -73,6 +73,7 @@ class UserProfile(Base):
     location = Column(String, nullable=True)
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
+    title = Column(String, nullable=True)
     description = Column(String, nullable=True)
     salary_range = Column(String, nullable=True)
     modality = Column(String, nullable=True)  # e.g., Remote, On-site, Hybrid

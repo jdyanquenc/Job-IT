@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref } from "vue"
 import {
     NTimeline, NTimelineItem
 } from "naive-ui"
@@ -11,15 +10,23 @@ import ResumeSkills from "./components/ResumeSkills.vue"
 //import ResumeLanguages from "./components/ResumeLanguages.vue"
 import ResumePreferences from "./components/ResumePreferences.vue"
 
-const form = ref({
-    skills: [],
-    languages: [],
-    preferences: {
-        salary_range: null,
-        job_type: null,
-        location: ""
-    }
+import { useRoute } from "vue-router"
+import { useProfileStore } from "@/stores"
+import { watch } from "vue"
+import { storeToRefs } from "pinia"
+
+const route = useRoute()
+const profileStore = useProfileStore()
+const { profile } = storeToRefs(profileStore)
+
+const id = route.params.id
+
+
+watch(() => id, () => {
+    profileStore.load(id as string)
 })
+
+profileStore.load(id as string)
 
 </script>
 
@@ -32,7 +39,7 @@ const form = ref({
             <!-- Main content -->
             <main class="p-2 flex-1 basis-3/4">
 
-                <h2 class="text-2xl mb-2">Jesus Yanquen</h2>
+                <h2 class="text-2xl mb-2"> {{ profile.full_name }} </h2>
 
                 <hr class="mt-2 mb-4" />
 
@@ -42,9 +49,9 @@ const form = ref({
 
                 <resume-work-experience />
 
-                <resume-preferences v-model="form.preferences" />
+                <resume-preferences />
 
-                <resume-skills v-model="form.skills" />
+                <resume-skills />
 
             </main>
 

@@ -1,8 +1,10 @@
 from datetime import datetime
+import string
 from typing import Optional
 from uuid import UUID
 from pydantic import BaseModel, ConfigDict, field_validator
 from src.entities.job import EmploymentType
+from src.users.models import UserResponse
 
 
 class JobBase(BaseModel):
@@ -64,3 +66,19 @@ class JobDetailResponse(JobBase):
     company_image_url: str
     
     model_config = ConfigDict(from_attributes=True)
+
+
+class JobApplicationResponse(BaseModel):
+    job_id: UUID
+    user_id: UUID
+    first_name: str
+    last_name: str
+    title: str
+    description: str
+    skills: list[str]
+    location: str    
+    status: str
+    applied_at: datetime
+    
+    model_config = ConfigDict(from_attributes=True)
+

@@ -69,7 +69,8 @@ const hover = ref(false)
                 <span class="font-bold text-lg">{{ props.job.salary_range }}</span>
             </div>
             <div class="flex gap-2">
-                <n-button type="primary" :ghost="!hover">
+                <n-button type="primary" :ghost="!hover"
+                    @click="$router.push({ name: 'ApplicantList', params: { id: props.job.id } })">
                     Ver Postulantes
                 </n-button>
                 <n-button type="warning" :ghost="!hover"

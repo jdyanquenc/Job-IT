@@ -65,6 +65,7 @@ function handleSearch(value: string) {
     })
 }
 
+handleSearch('')
 </script>
 
 <template>

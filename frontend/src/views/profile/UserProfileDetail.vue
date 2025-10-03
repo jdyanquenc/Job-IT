@@ -3,7 +3,7 @@
 import { watch } from 'vue'
 import { storeToRefs } from 'pinia';
 
-import { useJobsStore } from '@/stores';
+import { useProfileStore } from '@/stores';
 import { useLoadingBar } from 'naive-ui'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -11,33 +11,54 @@ import { NCard, NSpace, NText, NSkeleton, NDivider, NButton, NIcon } from "naive
 import { BriefcaseOutline, CashOutline, GlobeOutline, SchoolOutline, MailOutline, CallOutline } from "@vicons/ionicons5"
 
 
+
 const route = useRoute()
 const router = useRouter()
-const jobsStore = useJobsStore();
+const profileStore = useProfileStore()
 const loadingBar = useLoadingBar()
+
 
 const id = route.params.id
 
-const { job } = storeToRefs(jobsStore);
+const { profile } = storeToRefs(profileStore);
 
+const degree_options = [
+    { label: 'Bachillerato', value: 'HighSchool' },
+    { label: 'Técnico', value: 'Associate' },
+    { label: 'Pregrado', value: 'Bachelor' },
+    { label: 'Especialización', value: 'Specialization' },
+    { label: 'Maestría', value: 'Master' },
+    { label: 'Doctorado', value: 'Doctorate' },
+    { label: 'Otro', value: 'Other' },
+]
 
-async function loadJobData() {
+async function loadProfileData() {
     loadingBar.start()
     try {
-        await jobsStore.getById(id as string)
+        await profileStore.load(id as string)
         loadingBar.finish()
     } catch {
         loadingBar.error()
-        router.push('/404')
+        router.push("404")
     }
 }
 
-loadJobData()
+function translateDegree(degree: string) {
+    const option = degree_options.find(opt => opt.value === degree)
+    return option ? option.label : degree
+}
 
+function formatDate(date: number | null) {
+    if (!date) return ""
+    const d = new Date(date)
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`
+}
 
 watch(() => id, () => {
-    loadJobData()
+    loadProfileData()
 })
+
+loadProfileData()
 
 
 </script>
@@ -57,34 +78,54 @@ watch(() => id, () => {
             <main class="p-2 ml-5 flex-1 basis-2/3">
 
                 <article class="prose prose-gray">
+                    <h1 class="text-2xl font-bold">{{ profile.full_name }}</h1>
+                    <div class="text-gray-500">
+                        <span>{{ profile.title }}</span> <span>{{ profile.location }}</span>
+                    </div>
+
                     <h2>Acerca de Mi</h2>
                     <p>
-                        <span v-if="!job.job_description" class="mb-2">
+                        <span v-if="!profile.description" class="mb-2">
                             <n-skeleton text :repeat="2" /> <n-skeleton text style="width: 60%" />
                         </span>
-                        <n-text v-if="job.job_description">{{ job.job_description }}</n-text>
+                        <n-text v-if="profile.description">{{ profile.description }}</n-text>
                     </p>
 
                     <h2>Educación</h2>
                     <p>
-                        <span v-if="!job.responsibilities" class="mb-2">
+                        <span v-if="!profile.education_experiences" class="mb-2">
                             <n-skeleton text :repeat="2" /> <n-skeleton text style="width: 60%" />
                         </span>
-                        <n-text v-if="job.responsibilities">{{ job.responsibilities }}</n-text>
                     </p>
+                    <div v-if="profile.education_experiences">
+                        <p v-for="education in profile.education_experiences" :key="education.id" class="mb-2">
+                            <span class="font-semibold">{{ education.institution_name }}</span><br />
+                            <span class="mt-1 text-gray-500">{{ translateDegree(education.degree) }} -
+                                {{ education.field_of_study }}</span>
+                        </p>
+                    </div>
 
                     <h2>Experiencia Laboral</h2>
                     <p>
-                        <span v-if="!job.benefits" class="mb-2">
+                        <span v-if="!profile.work_experiences" class="mb-2">
                             <n-skeleton text :repeat="2" /> <n-skeleton text style="width: 60%" />
                         </span>
-                        <n-text v-if="job.benefits">{{ job.benefits }}</n-text>
                     </p>
+                    <div v-if="profile.work_experiences">
+                        <p v-for="experience in profileStore.profile.work_experiences" :key="experience.id">
+                            <span class="font-semibold">{{ experience.company_name }}</span><br />
+                            <span class="mt-1 text-gray-500">{{ experience.position }}</span><br />
+                            <span>
+                                {{ formatDate(experience.start_date) }} -
+                                {{ experience.end_date ? formatDate(experience.end_date) : "Actualidad" }}
+                            </span>
+                        </p>
+                    </div>
 
-                    <div v-if="job.tags && job.tags.length">
+                    <div v-if="profile.skills && profile.skills.length">
                         <h2>Habilidades</h2>
                         <ul>
-                            <li v-for="(tag, index) in job.tags" :key="index">{{ tag }}</li>
+                            <li v-for="(skill, index) in profile.skills" :key="index">{{ skill }}</li>
                         </ul>
                     </div>
 
@@ -113,21 +154,21 @@ watch(() => id, () => {
                             <n-icon size="20">
                                 <CashOutline />
                             </n-icon>
-                            <span><strong>Salario Esperado</strong>: $26k – $30k</span>
+                            <span><strong>Salario Esperado</strong>: $26k - $30k</span>
                         </n-space>
 
                         <n-space>
                             <n-icon size="20">
                                 <GlobeOutline />
                             </n-icon>
-                            <span><strong>Idiomas</strong>: Inglés, Alemán</span>
+                            <span><strong>Idiomas</strong>: Español, Inglés</span>
                         </n-space>
 
                         <n-space>
                             <n-icon size="20">
                                 <SchoolOutline />
                             </n-icon>
-                            <span><strong>Nivel Educativo</strong>: Master</span>
+                            <span><strong>Nivel Educativo</strong>: Especialización</span>
                         </n-space>
                     </n-space>
 
@@ -135,7 +176,7 @@ watch(() => id, () => {
 
                     <n-space vertical size="medium">
                         <n-space>
-                            <span>205 North Michigan Avenue, Suite 810 Chicago, 60601, USA</span>
+                            <span>Bogotá, Colombia</span>
                         </n-space>
                         <n-space>
                             <n-icon size="20">
@@ -147,7 +188,7 @@ watch(() => id, () => {
                             <n-icon size="20">
                                 <MailOutline />
                             </n-icon>
-                            <span>contact@Evara.com</span>
+                            <span>candidato@yopmail.com</span>
                         </n-space>
                     </n-space>
 
@@ -156,7 +197,7 @@ watch(() => id, () => {
                             <n-icon size="18" class="mr-2">
                                 <MailOutline />
                             </n-icon>
-                            Send Message
+                            Enviar mensaje
                         </n-button>
                     </div>
                 </n-card>

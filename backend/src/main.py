@@ -9,6 +9,7 @@ from .entities.user_profile import UserProfile  # Import models to register them
 from .entities.company import Company           # Import models to register them
 from .entities.job import JobEntry, JobDetail   # Import models to register them
 from .entities.educational_institution import EducationalInstitution  # Import models to register them
+from .entities.job_application import JobApplication  # Import models to register them
 from .api import register_routes
 from .logging import configure_logging, LogLevels
 
