@@ -1,62 +1,41 @@
 <script setup lang="ts">
-import { computed } from "vue"
 import { useProfileStore } from "@/stores"
 import InlineEditableInput from "@/components/InlineEditableInput.vue"
+import InlineEditableSelect from "@/components/InlineEditableSelect.vue";
 import {
-    NSelect, NRadioGroup, NRadio, NFormItem, NSpace, NInput
+    NSpace
 } from "naive-ui"
-import { storeToRefs } from "pinia"
-
-const props = defineProps({
-    modelValue: { type: Object, required: true }
-})
 
 const profileStore = useProfileStore()
 
-const { profile } = storeToRefs(profileStore)
-
-const emit = defineEmits(["update:modelValue"])
-
-// Proxy reactivo para evitar mutar directamente el prop
-const localValue = computed(() => props.modelValue)
-
-function updateField(field: string, value: unknown) {
-    emit("update:modelValue", { ...props.modelValue, [field]: value })
-}
-
 const salaryOptions = [
-    { label: "$10k - $15k", value: "10-15" },
-    { label: "$15k - $20k", value: "15-20" },
-    { label: "$20k - $25k", value: "20-25" },
-    { label: "$25k - $30k", value: "25-30" }
+    { label: "$10k - $15k", value: "1" },
+    { label: "$15k - $20k", value: "2" },
+    { label: "$20k - $25k", value: "3" },
+    { label: "$25k - $30k", value: "4" }
 ]
+
+const modalityOptions = [
+    { label: "Remoto", value: "remote" },
+    { label: "Presencial", value: "onsite" },
+    { label: "Híbrido", value: "hybrid" }
+]
+
 </script>
 
 
 <template>
     <n-space vertical>
 
-        <n-form-item label="Tipo de empleo preferido">
-            <n-radio-group :value="localValue.job_type" @update:value="updateField('job_type', $event)">
-                <n-space>
-                    <n-radio value="remote">Remoto</n-radio>
-                    <n-radio value="onsite">Presencial</n-radio>
-                    <n-radio value="hybrid">Híbrido</n-radio>
-                </n-space>
-            </n-radio-group>
-        </n-form-item>
+        <InlineEditableSelect v-model="profileStore.profile.modality" label="Tipo de empleo preferido"
+            :options="modalityOptions" placeholder="Selecciona una modalidad" @save="profileStore.updateModality" />
 
-        <inline-editable-input v-model="profile.location" label="Lugar de Residencia" type="text"
+        <InlineEditableInput v-model="profileStore.profile.location" label="Lugar de Residencia" type="text"
             placeholder="Ej: Bogotá, Colombia" @save="profileStore.updateLocation" />
 
-        <n-form-item label="Lugar de Residencia Old">
-            <n-input :value="localValue.location" placeholder="Ej: Ciudad de México, CDMX"
-                @update:value="updateField('location', $event)" />
-        </n-form-item>
+        <InlineEditableSelect v-model="profileStore.profile.salary_range" label="Rango Salarial Estimado"
+            :options="salaryOptions" placeholder="Selecciona un rango salarial"
+            @save="profileStore.updateSalaryRange" />
 
-        <n-form-item label="Rango Salarial Estimado">
-            <n-select :value="localValue.salary_range" :options="salaryOptions" placeholder="Selecciona rango"
-                @update:value="updateField('salary_range', $event)" />
-        </n-form-item>
     </n-space>
 </template>

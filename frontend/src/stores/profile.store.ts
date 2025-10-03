@@ -16,13 +16,20 @@ export const useProfileStore = defineStore('jobit-profile', {
       try {
         const url = new URL(`${baseUrl}/${id}`)
         const data = await http.get(url.toString())
-        this.profile = data
+        this.profile = {
+          ...this.profile,
+          ...data,
+          skills: Array.isArray(data.skills) ? data.skills : [],
+        }
       } catch (err) {
         console.error('Error al cargar perfil:', err)
         this.profile = {} as {
           id: string
           description: string
           location: string
+          salary_range: string
+          modality: string
+          skills: string[]
           education_experiences: EducationExperience[]
           work_experiences: WorkExperience[]
         }
@@ -54,6 +61,48 @@ export const useProfileStore = defineStore('jobit-profile', {
       } catch (err) {
         console.error('Error al actualizar la ubicación:', err)
         this.profile.location = ''
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async updateSalaryRange(newSalaryRange: string) {
+      this.loading = true
+      try {
+        const url = new URL(`${baseUrl}/${this.profile.id}`)
+        await http.put(url.toString(), { salary_range: newSalaryRange })
+        this.profile.salary_range = newSalaryRange
+      } catch (err) {
+        console.error('Error al actualizar el rango salarial:', err)
+        this.profile.salary_range = ''
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async updateModality(newModality: string) {
+      this.loading = true
+      try {
+        const url = new URL(`${baseUrl}/${this.profile.id}`)
+        await http.put(url.toString(), { modality: newModality })
+        this.profile.modality = newModality
+      } catch (err) {
+        console.error('Error al actualizar la modalidad:', err)
+        this.profile.modality = ''
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async updateSkills(newSkills: string[]) {
+      this.loading = true
+      try {
+        const url = new URL(`${baseUrl}/${this.profile.id}`)
+        await http.put(url.toString(), { skills: newSkills })
+        this.profile.skills = newSkills
+      } catch (err) {
+        console.error('Error al actualizar las habilidades:', err)
+        this.profile.skills = []
       } finally {
         this.loading = false
       }

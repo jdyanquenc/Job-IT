@@ -74,6 +74,8 @@ class UserProfile(Base):
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
     description = Column(String, nullable=True)
+    salary_range = Column(String, nullable=True)
+    modality = Column(String, nullable=True)  # e.g., Remote, On-site, Hybrid
     skills = Column(JSONB, nullable=True)
 
     work_experiences = relationship("WorkExperience", back_populates="user_profile")

@@ -2,8 +2,11 @@ export interface Profile {
   id: string
   description: string
   location: string
+  salary_range: string
+  modality: string
   education_experiences: EducationExperience[]
   work_experiences: WorkExperience[]
+  skills: string[]
 }
 
 export interface WorkExperience {

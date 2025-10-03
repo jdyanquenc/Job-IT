@@ -39,6 +39,9 @@ def get_profile(current_user: TokenData, db: Session, profile_id: UUID) -> Profi
         id=profile.id,
         description=profile.description if profile.description else "",
         location=profile.location if profile.location else "",
+        salary_range=profile.salary_range if profile.salary_range else "",
+        modality=profile.modality if profile.modality else "",
+        skills=profile.skills if profile.skills else [],
         education_experiences=[
             models.EducationResponse(
                 id=ee.id,
@@ -82,6 +85,15 @@ def update_profile(current_user: TokenData, db: Session, profile_id: UUID, profi
     if profile_update.location is not None:
         profile.location = profile_update.location
     
+    if profile_update.salary_range is not None:
+        profile.salary_range = profile_update.salary_range
+    
+    if profile_update.modality is not None:
+        profile.modality = profile_update.modality
+    
+    if profile_update.skills is not None:
+        profile.skills = profile_update.skills
+    
     db.commit()
     db.refresh(profile)
 
@@ -89,7 +101,10 @@ def update_profile(current_user: TokenData, db: Session, profile_id: UUID, profi
     return ProfileResponse(
         id=profile.id,
         description=profile.description,
-        location=profile.location
+        location=profile.location,
+        salary_range=profile.salary_range if profile.salary_range else "",
+        modality=profile.modality if profile.modality else "",
+        skills=profile.skills if profile.skills else []
     )
 
 
