@@ -13,6 +13,10 @@ class JobCreationError(JobError):
     def __init__(self, error: str):
         super().__init__(status_code=500, detail=f"Failed to create job: {error}")
 
+class JobAccessError(JobError):
+    def __init__(self, job_id=None):
+        message = "Job access forbidden" if job_id is None else f"Access to job with id {job_id} is forbidden"
+        super().__init__(status_code=403, detail=message)
 
 class ProfileError(HTTPException):
     """Base exception for profile-related errors"""

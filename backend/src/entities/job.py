@@ -33,9 +33,11 @@ class JobEntry(Base):
     updated_at = Column(DateTime, nullable=True)
     is_active = Column(Boolean, nullable=False, default=True)
 
+    # ORM
     detail = relationship(
         "JobDetail", back_populates="entry", uselist=False, cascade="all, delete"
     )
+
 
     def __repr__(self):
         return f"<JobEntry(job_id='{self.id}', job_title='{self.job_title}', company_id='{self.company_id}', employment_type='{self.employment_type}', is_active={self.is_active})>"

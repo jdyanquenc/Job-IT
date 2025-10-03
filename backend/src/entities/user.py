@@ -1,5 +1,5 @@
-from sqlalchemy import Column, String, Enum
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import UUID, Column, String, Enum
+from sqlalchemy.orm import relationship
 import uuid
 import enum
 from ..database.core import Base 
@@ -29,6 +29,10 @@ class User(Base):
     identification_type = Column(Enum(IdentificationType), nullable=True)
     identification_number = Column(String, nullable=True)
     role = Column(Enum(Role), nullable=False)
+
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
 
     def __repr__(self):
         return f"<User(email='{self.email}', first_name='{self.first_name}', last_name='{self.last_name}')>"

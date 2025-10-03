@@ -7,6 +7,8 @@ from pydantic import BaseModel, ConfigDict
 
 class ProfileResponse(BaseModel):
     id: UUID
+    full_name: str
+    title: str
     description: str
     location: str
     salary_range: str
@@ -16,6 +18,7 @@ class ProfileResponse(BaseModel):
     work_experiences: list['WorkExperienceResponse'] = []
 
 class ProfileUpdate(BaseModel):
+    title: Optional[str] = None
     description: Optional[str] = None
     location: Optional[str] = None
     salary_range: Optional[str] = None

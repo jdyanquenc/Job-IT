@@ -25,6 +25,8 @@ export const useProfileStore = defineStore('jobit-profile', {
         console.error('Error al cargar perfil:', err)
         this.profile = {} as {
           id: string
+          full_name: string
+          title: string
           description: string
           location: string
           salary_range: string
@@ -33,6 +35,20 @@ export const useProfileStore = defineStore('jobit-profile', {
           education_experiences: EducationExperience[]
           work_experiences: WorkExperience[]
         }
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async updateTitle(newTitle: string) {
+      this.loading = true
+      try {
+        const url = new URL(`${baseUrl}/${this.profile.id}`)
+        await http.put(url.toString(), { title: newTitle })
+        this.profile.title = newTitle
+      } catch (err) {
+        console.error('Error al actualizar el título:', err)
+        this.profile.title = ''
       } finally {
         this.loading = false
       }

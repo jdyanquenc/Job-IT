@@ -5,12 +5,16 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
+from src.entities.company_user import CompanyUser
+from src.entities.job_application import JobApplication
+from src.entities.user import User
+
 from . import models
 from src.auth.models import TokenData
 from src.entities.job import  JobEntry, JobDetail
 from src.entities.company import Company
 from src.entities.country import Country
-from src.exceptions import JobCreationError, JobNotFoundError
+from src.exceptions import JobAccessError, JobCreationError, JobNotFoundError
 import logging
 
 def create_job(current_user: TokenData, db: Session, job: models.JobCreate) -> models.JobResponse:
@@ -213,6 +217,51 @@ def delete_job(current_user: TokenData, db: Session, job_id: UUID) -> None:
     db.delete(job)
     db.commit()
     logging.info(f"Job {job_id} deleted by user {current_user.get_uuid()}")
+
+
+def get_job_applications(current_user: TokenData, db: Session, job_id: UUID, query: str, page: int = 1, page_size: int = 20) -> list[models.JobApplicationResponse]:
+    # Check user permission to view job applications
+    job = db.query(JobEntry).filter(JobEntry.id == job_id).first()
+    company_user = db.query(CompanyUser).filter(CompanyUser.user_id == current_user.get_uuid()).first()
+
+    if company_user.company_id != job.company_id:
+        logging.warning(f"User {current_user.get_uuid()} does not have permission to view applications for job {job_id}")
+        raise JobAccessError(job_id)
+
+    stmt = text("""
+        SELECT ja.job_id, ja.user_id, u.first_name, u.last_name, up.title, up.description, up.skills, up.location, ja.status, ja.applied_at
+        FROM job_application ja
+        JOIN users u ON u.id = ja.user_id
+        JOIN user_profile up ON up.id = u.id
+        WHERE ja.job_id = :job_id
+        AND (:query = '' OR (u.first_name || ' ' || u.last_name || ' ' || up.title || ' ' || up.description || ' ' || up.skills) ILIKE '%' || :query || '%')
+        ORDER BY ja.applied_at DESC
+        LIMIT :limit OFFSET :offset
+    """)
+    results = db.execute(stmt, {
+        "query": query,
+        "limit": page_size,
+        "offset": (page - 1) * page_size,
+        "job_id": job_id
+    }).fetchall()
+
+    applications = [
+        models.JobApplicationResponse(
+            job_id = job_id,
+            user_id = user_id,
+            first_name = first_name,
+            last_name = last_name,
+            title = title,
+            description = description,
+            skills = skills,
+            location = location,
+            status = status,
+            applied_at = applied_at
+        )
+        for job_id, user_id, first_name, last_name, title, description, skills, location, status, applied_at in results
+    ]
+
+    return applications
 
 
 def model_from_dto(dto, model_cls):
