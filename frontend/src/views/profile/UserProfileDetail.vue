@@ -4,8 +4,7 @@ import { watch } from 'vue'
 import { storeToRefs } from 'pinia';
 
 import { useProfileStore } from '@/stores';
-import { useLoadingBar } from 'naive-ui'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 
 import { NCard, NSpace, NText, NSkeleton, NDivider, NButton, NIcon } from "naive-ui"
 import { BriefcaseOutline, CashOutline, GlobeOutline, SchoolOutline, MailOutline, CallOutline } from "@vicons/ionicons5"
@@ -13,9 +12,7 @@ import { BriefcaseOutline, CashOutline, GlobeOutline, SchoolOutline, MailOutline
 
 
 const route = useRoute()
-const router = useRouter()
 const profileStore = useProfileStore()
-const loadingBar = useLoadingBar()
 
 
 const id = route.params.id
@@ -33,14 +30,7 @@ const degree_options = [
 ]
 
 async function loadProfileData() {
-    loadingBar.start()
-    try {
-        await profileStore.load(id as string)
-        loadingBar.finish()
-    } catch {
-        loadingBar.error()
-        router.push("404")
-    }
+    await profileStore.load(id as string)
 }
 
 function translateDegree(degree: string) {

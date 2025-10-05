@@ -3,8 +3,7 @@ import { ref, watch } from 'vue'
 import { storeToRefs } from 'pinia';
 
 import { useJobsStore } from '@/stores';
-import { useLoadingBar } from 'naive-ui'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 
 import { NCard, NImage, NText, NSkeleton, NDivider, NButton, NGrid, NGi, NIcon } from "naive-ui"
 import {
@@ -14,9 +13,7 @@ import {
 
 
 const route = useRoute()
-const router = useRouter()
 const jobsStore = useJobsStore();
-const loadingBar = useLoadingBar()
 
 const id = route.params.id
 
@@ -24,14 +21,7 @@ const { job } = storeToRefs(jobsStore);
 const hover = ref(false)
 
 async function loadJobData() {
-    loadingBar.start()
-    try {
-        await jobsStore.getById(id as string)
-        loadingBar.finish()
-    } catch {
-        loadingBar.error()
-        router.push('/404')
-    }
+    await jobsStore.getById(id as string)
 }
 
 loadJobData()

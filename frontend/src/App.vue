@@ -16,11 +16,22 @@ const customLocale = {
   }
 }
 
+import { onMounted, ref } from 'vue'
+import { setLoadingBar } from '@/helpers/loading-bar'
+
+const loadingBarProvider = ref(null)
+
+onMounted(() => {
+  if (loadingBarProvider.value) {
+    setLoadingBar(loadingBarProvider.value)
+  }
+})
+
 </script>
 
 <template>
   <n-config-provider :locale="customLocale">
-    <n-loading-bar-provider>
+    <n-loading-bar-provider ref="loadingBarProvider">
       <div>
         <header>
           <Navbar />

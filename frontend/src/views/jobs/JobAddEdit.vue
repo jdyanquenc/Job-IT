@@ -14,14 +14,13 @@ import { storeToRefs } from 'pinia';
 import type { RegisterJob, EmploymentType } from '@/types';
 
 import { useJobsStore } from '@/stores';
-import { useLoadingBar } from 'naive-ui'
 import { useRoute, useRouter } from 'vue-router'
 
 
 const route = useRoute()
 const router = useRouter()
 const message = useMessage();
-const loadingBar = useLoadingBar()
+
 const jobsStore = useJobsStore();
 
 const { job } = storeToRefs(jobsStore);
@@ -168,10 +167,8 @@ if (id) {
 
 async function loadJobData(id: string) {
     isLoading.value = true;
-    loadingBar.start()
     try {
         await jobsStore.getById(id)
-        loadingBar.finish()
 
         model.value.job_title = job.value.job_title;
         model.value.job_description = job.value.job_description;
@@ -188,7 +185,6 @@ async function loadJobData(id: string) {
         model.value.country_code = job.value.country_code;
 
     } catch {
-        loadingBar.error()
         router.push('/company-jobs')
         message.error('Cannot load job data');
     } finally {

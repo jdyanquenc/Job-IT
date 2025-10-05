@@ -4,7 +4,6 @@ import { storeToRefs } from 'pinia';
 
 import { useApplicantsStore } from '@/stores';
 import { NSelect, NPagination } from 'naive-ui'
-import { useLoadingBar } from 'naive-ui'
 
 import SearchBar from '@/components/SearchBar.vue'
 import ApplicantCard from './ApplicantCard.vue';
@@ -15,7 +14,6 @@ const applicantsStore = useApplicantsStore();
 const { applicants } = storeToRefs(applicantsStore);
 
 const route = useRoute()
-const loadingBar = useLoadingBar()
 const sort = ref('relevance')
 const page = ref(1)
 const pageSize = ref(12)
@@ -40,11 +38,8 @@ const id = String(route.params.id)
 
 
 
-function handleSearch(id: string, value: string) {
-    loadingBar.start()
-    applicantsStore.find(id, value).finally(() => {
-        loadingBar.finish()
-    })
+async function handleSearch(id: string, value: string) {
+    await applicantsStore.find(id, value)
 }
 
 watch(() => id, () => {

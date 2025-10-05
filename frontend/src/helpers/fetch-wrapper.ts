@@ -1,12 +1,30 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useAuthStore } from '@/stores'
+import { getLoadingBar } from '@/helpers/loading-bar'
+
+// helper functions to make API calls using fetch
+// wrap fetch call and add loading bar
+
+function wrapFetch<T extends (...args: any[]) => Promise<any>>(fetchFunction: T) {
+  return async (...args: Parameters<T>): Promise<Awaited<ReturnType<T>>> => {
+    const loadingBar = getLoadingBar()
+    loadingBar?.start()
+    try {
+      return await fetchFunction(...args)
+    } finally {
+      loadingBar?.finish()
+    }
+  }
+}
+
+// export HTTP methods
 
 export const http = {
-  get: request('GET'),
-  post: request('POST'),
-  put: request('PUT'),
-  delete: request('DELETE'),
-  form: formRequest,
+  get: wrapFetch(request('GET')),
+  post: wrapFetch(request('POST')),
+  put: wrapFetch(request('PUT')),
+  delete: wrapFetch(request('DELETE')),
+  form: wrapFetch(formRequest),
 }
 
 function request(method: 'GET' | 'POST' | 'PUT' | 'DELETE') {
