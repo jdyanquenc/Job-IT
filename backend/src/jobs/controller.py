@@ -38,13 +38,13 @@ def delete_job(db: DbSession, job_id: UUID, current_user: CurrentUser):
 
 
 @router.get("/search", response_model=List[models.JobResponse])
-def get_active_jobs(db: DbSession, current_user: OptionalCurrentUser = None, query: Optional[str] = None, page: Optional[int] = None):
+def get_active_jobs(db: DbSession, current_user: OptionalCurrentUser, query: Optional[str] = None, page: Optional[int] = None):
     return service.get_active_jobs(current_user, db, query, page)
 
 
 @router.get("/{job_id}", response_model=models.JobDetailResponse)
-def get_job(db: DbSession, job_id: UUID):
-    return service.get_job_by_id(db, job_id)
+def get_job(db: DbSession, current_user: OptionalCurrentUser, job_id: UUID):
+    return service.get_job_by_id(current_user, db, job_id)
 
 
 @router.get("/{job_id}/applications", response_model=List[models.JobApplicationResponse])

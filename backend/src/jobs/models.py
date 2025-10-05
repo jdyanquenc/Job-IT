@@ -65,6 +65,7 @@ class JobDetailResponse(JobBase):
     country_code: str
     company_name: str
     company_image_url: str
+    has_applied: bool
     
     model_config = ConfigDict(from_attributes=True)
 

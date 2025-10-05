@@ -43,6 +43,7 @@ export interface JobDetail {
   company_name: string
   tags: []
   salary_range: string
+  has_applied: boolean
   created_at: Date
   updated_at: Date | null
   expires_at: Date | null

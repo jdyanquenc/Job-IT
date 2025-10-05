@@ -148,7 +148,7 @@ def get_active_jobs(current_user: OptionalCurrentUser, db: Session, query: str, 
     return jobs
 
 
-def get_job_by_id(db: Session, job_id: UUID) -> models.JobDetailResponse:
+def get_job_by_id(current_user: OptionalCurrentUser, db: Session, job_id: UUID) -> models.JobDetailResponse:
     job = db.query(JobEntry).filter(JobEntry.id == job_id).first()
     if not job:
         logging.warning(f"Job {job_id} not found")
@@ -156,6 +156,7 @@ def get_job_by_id(db: Session, job_id: UUID) -> models.JobDetailResponse:
     
     company = db.query(Company).filter(Company.id == job.company_id).first()
     country = db.query(Country).filter(Country.id == job.country_id).first()
+    has_applied = db.query(JobApplication).filter(JobApplication.job_id == job_id).filter(JobApplication.user_id == current_user.get_uuid() if current_user else None).first() is not None
 
     logging.info(f"Retrieved Job with ID {job_id}")
     return models.JobDetailResponse(
@@ -177,7 +178,8 @@ def get_job_by_id(db: Session, job_id: UUID) -> models.JobDetailResponse:
         location = job.location,
         country_code = country.iso_code,
         company_name = company.name,
-        company_image_url = company.image_url or ""
+        company_image_url = company.image_url or "",
+        has_applied = has_applied
     )
 
 

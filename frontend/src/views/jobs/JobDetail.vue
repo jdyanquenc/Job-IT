@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { storeToRefs } from 'pinia';
+import { useDialog, useMessage } from 'naive-ui'
 
 import { useJobsStore } from '@/stores';
 import { useRoute } from 'vue-router'
@@ -13,7 +14,9 @@ import {
 
 
 const route = useRoute()
-const jobsStore = useJobsStore();
+const dialog = useDialog()
+const message = useMessage()
+const jobsStore = useJobsStore()
 
 const id = route.params.id
 
@@ -32,13 +35,22 @@ watch(() => id, () => {
 })
 
 
-/*
-const employmentInfo = {
-    industry: "Mechanical",
-    jobLevel: "Experienced (Non - Manager)",
-    location: "Dallas, Texas Remote Friendly",
+function handleApply(jobId: string) {
+    dialog.success({
+        title: 'Confirmar postulación',
+        content: '¿Seguro que deseas postularte a esta oferta?',
+        positiveText: 'Sí, postularme',
+        negativeText: 'Cancelar',
+        onPositiveClick: async () => {
+            jobsStore.applyToJob(jobId).then(() => {
+                message.success('Te has postulado correctamente a la oferta.')
+            }).finally(() => {
+                // Cerrar el diálogo
+                dialog.destroyAll()
+            })
+        }
+    })
 }
-*/
 
 const company = {
     name: "AliThemes",
@@ -139,7 +151,7 @@ const similarJobs = [
                                 <n-icon :component="CalendarOutline" />
                                 <n-text strong>Fecha límite:</n-text>
                                 <n-text>{{ job.expires_at ? new Date(job.expires_at).toLocaleDateString() : 'N/A'
-                                }}</n-text>
+                                    }}</n-text>
                             </div>
                         </n-gi>
 
@@ -194,8 +206,9 @@ const similarJobs = [
                     </div>
 
                     <div class="flex justify-center">
-                        <n-button type="primary" :ghost="!hover" @mouseenter="hover = true" @mouseleave="hover = false">
-                            Postularme
+                        <n-button type="primary" :ghost="!hover" @click="handleApply(job.id)"
+                            :disabled="job.has_applied">
+                            {{ job.has_applied ? 'Postulado' : 'Postularme' }}
                         </n-button>
                     </div>
                 </article>
@@ -265,7 +278,7 @@ const similarJobs = [
                                 <div class="flex justify-between text-sm text-gray-500 space-x-2">
                                     <span class="text-primary-500 font-semibold">{{ job.salary }}</span>
                                     <n-icon class="items-right" :component="LocationOutline" /> <span>{{ job.location
-                                    }}</span>
+                                        }}</span>
                                 </div>
                             </div>
                         </div>
