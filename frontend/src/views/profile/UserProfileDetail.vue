@@ -10,10 +10,8 @@ import { NCard, NSpace, NText, NSkeleton, NDivider, NButton, NIcon } from "naive
 import { BriefcaseOutline, CashOutline, GlobeOutline, SchoolOutline, MailOutline, CallOutline } from "@vicons/ionicons5"
 
 
-
 const route = useRoute()
 const profileStore = useProfileStore()
-
 
 const id = route.params.id
 
