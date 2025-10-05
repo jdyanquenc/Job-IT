@@ -42,6 +42,12 @@ export const useJobsStore = defineStore('jobit-jobs', {
 
     async applyToJob(id: string) {
       await http.post(`${baseUrl}/${id}/apply`)
+      this.jobs = this.jobs.map((job) => {
+        if (job.id === id) {
+          return { ...job, has_applied: true }
+        }
+        return job
+      })
     },
   },
 })

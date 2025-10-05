@@ -48,7 +48,7 @@ function handleApply(jobId: string) {
 </script>
 
 <template>
-    <n-card class="max-w-sm min-h-[400px] rounded-2xl shadow-md p-2" @mouseenter="hover = true"
+    <n-card class="max-w-sm min-h-[420px] rounded-2xl shadow-md p-2" @mouseenter="hover = true"
         @mouseleave="hover = false">
         <!-- Header -->
         <div class="flex items-center justify-between mb-2">
@@ -91,7 +91,7 @@ function handleApply(jobId: string) {
         <!-- Skills -->
         <div class="flex flex-wrap gap-2 mb-3">
             <n-tag v-for="skill in props.job.tags" :key="skill" :type="hover ? 'success' : 'default'" round>{{ skill
-                }}</n-tag>
+            }}</n-tag>
         </div>
 
         <!-- Footer -->
@@ -99,8 +99,8 @@ function handleApply(jobId: string) {
             <div>
                 <span class="font-bold text-lg">{{ props.job.salary_range }}</span>
             </div>
-            <n-button type="primary" :ghost="!hover" @click="handleApply(job.id)">
-                Postularme
+            <n-button type="primary" :ghost="!hover" @click="handleApply(job.id)" :disabled="job.has_applied">
+                {{ job.has_applied ? 'Postulado' : 'Postularme' }}
             </n-button>
         </div>
     </n-card>

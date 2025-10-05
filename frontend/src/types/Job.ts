@@ -24,6 +24,7 @@ export interface Job {
   country_code: string
   company_name: string
   company_image_url: string | null
+  has_applied: boolean
 }
 
 export interface JobDetail {
