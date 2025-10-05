@@ -1,18 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useAuthStore } from '@/stores'
 import { getLoadingBar } from '@/helpers/loading-bar'
+import { getMessageProvider } from '@/helpers/message'
+import { error_messages } from './error_messages'
 
 // helper functions to make API calls using fetch
 // wrap fetch call and add loading bar
 
-function wrapFetch<T extends (...args: any[]) => Promise<any>>(fetchFunction: T) {
+function requestWrapper<T extends (...args: any[]) => Promise<any>>(fetchFunction: T) {
   return async (...args: Parameters<T>): Promise<Awaited<ReturnType<T>>> => {
     const loadingBar = getLoadingBar()
     loadingBar?.start()
     try {
-      return await fetchFunction(...args)
-    } finally {
+      const result = await fetchFunction(...args)
       loadingBar?.finish()
+      return result
+    } catch (error) {
+      loadingBar?.error()
+      throw error
     }
   }
 }
@@ -20,11 +25,11 @@ function wrapFetch<T extends (...args: any[]) => Promise<any>>(fetchFunction: T)
 // export HTTP methods
 
 export const http = {
-  get: wrapFetch(request('GET')),
-  post: wrapFetch(request('POST')),
-  put: wrapFetch(request('PUT')),
-  delete: wrapFetch(request('DELETE')),
-  form: wrapFetch(formRequest),
+  get: requestWrapper(request('GET')),
+  post: requestWrapper(request('POST')),
+  put: requestWrapper(request('PUT')),
+  delete: requestWrapper(request('DELETE')),
+  form: requestWrapper(formRequest),
 }
 
 function request(method: 'GET' | 'POST' | 'PUT' | 'DELETE') {
@@ -87,16 +92,39 @@ async function handleResponse(response: any) {
 
   // check for error response
   if (!response.ok) {
-    const { userToken: user, logout } = useAuthStore()
-    if ([401, 403].includes(response.status) && user) {
-      // auto logout if 401 Unauthorized or 403 Forbidden response returned from api
+    const { logout } = useAuthStore()
+    if ([401].includes(response.status)) {
+      // auto logout if 401 Unauthorized response returned from api
       logout()
+    }
+    if ([403].includes(response.status)) {
+      // show message if 403 Forbidden response returned from api redirect to 403 page
+      window.location.href = '/403'
+    }
+    if ([404].includes(response.status)) {
+      // redirect to 404 page
+      window.location.href = '/404'
+    }
+    if ([500].includes(response.status)) {
+      // redirect to 500 page
+      window.location.href = '/500'
+    }
+    if ([400].includes(response.status)) {
+      const messageProvider = getMessageProvider()
+      messageProvider?.error(getFriendlyErrorMessage(data))
     }
 
     // get error message from body or default to response status
-    const error = (data && data.message) || response.status
-    return Promise.reject(error)
+    return Promise.reject(getFriendlyErrorMessage(data))
   }
 
   return data
+}
+
+function getFriendlyErrorMessage(error: any): string {
+  const error_code = error.detail.error_code
+  if (error_code in error_messages) {
+    return error_messages[error_code as keyof typeof error_messages]
+  }
+  return 'Ocurrió un error inesperado.'
 }

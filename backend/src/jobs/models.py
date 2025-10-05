@@ -42,6 +42,7 @@ class JobResponse(BaseModel):
     expires_at: Optional[datetime] = None
     company_name: str
     company_image_url: str
+    has_applied: bool
 
     @field_validator("employment_type", mode='before')
     def normalize_employment_type(cls, v):
