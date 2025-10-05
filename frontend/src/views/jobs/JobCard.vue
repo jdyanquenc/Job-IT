@@ -1,9 +1,7 @@
 <script setup lang="ts">
 
-
 import { ref } from "vue"
-import { useDialog, useMessage } from 'naive-ui'
-import { useJobsStore } from '@/stores'
+import { useJobApplication } from '@/composables/useJobApplication'
 
 import { NCard, NButton, NImage, NTag, NIcon, NText } from "naive-ui";
 
@@ -22,28 +20,7 @@ const props = defineProps({
 })
 
 const hover = ref(false)
-
-const dialog = useDialog()
-const message = useMessage()
-const jobsStore = useJobsStore()
-
-function handleApply(jobId: string) {
-    dialog.success({
-        title: 'Confirmar postulación',
-        content: '¿Seguro que deseas postularte a esta oferta?',
-        positiveText: 'Sí, postularme',
-        negativeText: 'Cancelar',
-        onPositiveClick: async () => {
-            jobsStore.applyToJob(jobId).then(() => {
-                message.success('Te has postulado correctamente a la oferta.')
-            }).finally(() => {
-                // Cerrar el diálogo
-                dialog.destroyAll()
-            })
-        }
-    })
-}
-
+const { handleApply } = useJobApplication()
 
 </script>
 
@@ -91,7 +68,7 @@ function handleApply(jobId: string) {
         <!-- Skills -->
         <div class="flex flex-wrap gap-2 mb-3">
             <n-tag v-for="skill in props.job.tags" :key="skill" :type="hover ? 'success' : 'default'" round>{{ skill
-            }}</n-tag>
+                }}</n-tag>
         </div>
 
         <!-- Footer -->

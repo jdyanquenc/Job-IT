@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { storeToRefs } from 'pinia';
-import { useDialog, useMessage } from 'naive-ui'
 
 import { useJobsStore } from '@/stores';
+import { useJobApplication } from '@/composables/useJobApplication'
 import { useRoute } from 'vue-router'
 
 import { NCard, NImage, NText, NSkeleton, NDivider, NButton, NGrid, NGi, NIcon } from "naive-ui"
@@ -14,14 +14,13 @@ import {
 
 
 const route = useRoute()
-const dialog = useDialog()
-const message = useMessage()
 const jobsStore = useJobsStore()
 
 const id = route.params.id
 
-const { job } = storeToRefs(jobsStore);
 const hover = ref(false)
+const { handleApply } = useJobApplication()
+const { job } = storeToRefs(jobsStore);
 
 async function loadJobData() {
     await jobsStore.getById(id as string)
@@ -29,28 +28,9 @@ async function loadJobData() {
 
 loadJobData()
 
-
 watch(() => id, () => {
     loadJobData()
 })
-
-
-function handleApply(jobId: string) {
-    dialog.success({
-        title: 'Confirmar postulación',
-        content: '¿Seguro que deseas postularte a esta oferta?',
-        positiveText: 'Sí, postularme',
-        negativeText: 'Cancelar',
-        onPositiveClick: async () => {
-            jobsStore.applyToJob(jobId).then(() => {
-                message.success('Te has postulado correctamente a la oferta.')
-            }).finally(() => {
-                // Cerrar el diálogo
-                dialog.destroyAll()
-            })
-        }
-    })
-}
 
 const company = {
     name: "AliThemes",
@@ -151,7 +131,7 @@ const similarJobs = [
                                 <n-icon :component="CalendarOutline" />
                                 <n-text strong>Fecha límite:</n-text>
                                 <n-text>{{ job.expires_at ? new Date(job.expires_at).toLocaleDateString() : 'N/A'
-                                    }}</n-text>
+                                }}</n-text>
                             </div>
                         </n-gi>
 
@@ -278,7 +258,7 @@ const similarJobs = [
                                 <div class="flex justify-between text-sm text-gray-500 space-x-2">
                                     <span class="text-primary-500 font-semibold">{{ job.salary }}</span>
                                     <n-icon class="items-right" :component="LocationOutline" /> <span>{{ job.location
-                                        }}</span>
+                                    }}</span>
                                 </div>
                             </div>
                         </div>
