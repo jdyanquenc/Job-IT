@@ -4,7 +4,6 @@ import { storeToRefs } from 'pinia';
 
 import { useCompanyJobsStore } from '@/stores';
 import { NSelect, NPagination, NButton } from 'naive-ui'
-import { useLoadingBar } from 'naive-ui'
 
 import SearchBar from '@/components/SearchBar.vue'
 import FilterGroup from '@/components/FilterGroup.vue'
@@ -14,7 +13,6 @@ import CompanyJobCard from './CompanyJobCard.vue';
 const companyJobsStore = useCompanyJobsStore();
 const { jobs } = storeToRefs(companyJobsStore);
 
-const loadingBar = useLoadingBar()
 const sort = ref('relevance')
 const page = ref(1)
 const pageSize = ref(12)
@@ -58,11 +56,8 @@ const salaryOptions = [
 ]
 
 
-function handleSearch(value: string) {
-    loadingBar.start()
-    companyJobsStore.find(value).finally(() => {
-        loadingBar.finish()
-    })
+async function handleSearch(value: string) {
+    await companyJobsStore.find(value)
 }
 
 handleSearch('')
