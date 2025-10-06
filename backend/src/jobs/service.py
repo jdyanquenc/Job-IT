@@ -92,7 +92,8 @@ def get_company_jobs(current_user: TokenData, db: Session, query: str, page: int
             location = location,
             country_code = country_code,
             company_name = company_name,
-            company_image_url = image_url or ""
+            company_image_url = image_url or "",
+            has_applied = False  # Company jobs view does not track applications
         )
         for id, job_title, job_short_description, remote, employment_type, tags, salary_range, expires_at, created_at, company_name, location, country_code, image_url in results
     ]
