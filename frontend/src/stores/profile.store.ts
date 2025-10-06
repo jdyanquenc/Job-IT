@@ -31,6 +31,7 @@ export const useProfileStore = defineStore('jobit-profile', {
           location: string
           salary_range: string
           modality: string
+          photo_url: string | null
           skills: string[]
           education_experiences: EducationExperience[]
           work_experiences: WorkExperience[]

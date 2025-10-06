@@ -9,6 +9,7 @@ export interface Profile {
   education_experiences: EducationExperience[]
   work_experiences: WorkExperience[]
   skills: string[]
+  photo_url: string | null
 }
 
 export interface WorkExperience {

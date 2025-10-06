@@ -4,13 +4,14 @@ import { watch } from 'vue'
 import { storeToRefs } from 'pinia';
 
 import { useProfileStore } from '@/stores';
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
-import { NCard, NSpace, NText, NSkeleton, NDivider, NButton, NIcon } from "naive-ui"
-import { BriefcaseOutline, CashOutline, GlobeOutline, SchoolOutline, MailOutline, CallOutline } from "@vicons/ionicons5"
+import { NCard, NSpace, NImage, NText, NSkeleton, NDivider, NButton, NIcon } from "naive-ui"
+import { ArrowBackOutline, BriefcaseOutline, LocationOutline, CashOutline, GlobeOutline, SchoolOutline, MailOutline, CallOutline } from "@vicons/ionicons5"
 
 
 const route = useRoute()
+const router = useRouter()
 const profileStore = useProfileStore()
 
 const id = route.params.id
@@ -54,8 +55,12 @@ loadProfileData()
 <template>
     <div class="w-full">
 
-        <div class="flex mt-4 ml-2">
-            <h2 class="text-2xl font-bold mb-2">{{ }}</h2>
+        <div class="flex items-center align-left ml-8">
+            <n-image :src="profile.photo_url || '/images/template/icons/photo-default.svg'" width="80" />
+            <div class="ml-4">
+                <h4 class="font-semibold text-lg">{{ profile.full_name }}</h4>
+                <p class="text-gray-500 text-sm">{{ profile.title }}</p>
+            </div>
         </div>
 
         <hr class="mt-2 mb-2" />
@@ -66,12 +71,8 @@ loadProfileData()
             <main class="p-2 ml-5 flex-1 basis-2/3">
 
                 <article class="prose prose-gray">
-                    <h1 class="text-2xl font-bold">{{ profile.full_name }}</h1>
-                    <div class="text-gray-500">
-                        <span>{{ profile.title }}</span> <span>{{ profile.location }}</span>
-                    </div>
 
-                    <h2>Acerca de Mi</h2>
+                    <h3>Acerca de Mi</h3>
                     <p>
                         <span v-if="!profile.description" class="mb-2">
                             <n-skeleton text :repeat="2" /> <n-skeleton text style="width: 60%" />
@@ -79,7 +80,7 @@ loadProfileData()
                         <n-text v-if="profile.description">{{ profile.description }}</n-text>
                     </p>
 
-                    <h2>Educación</h2>
+                    <h3>Educación</h3>
                     <p>
                         <span v-if="!profile.education_experiences" class="mb-2">
                             <n-skeleton text :repeat="2" /> <n-skeleton text style="width: 60%" />
@@ -93,7 +94,7 @@ loadProfileData()
                         </p>
                     </div>
 
-                    <h2>Experiencia Laboral</h2>
+                    <h3>Experiencia Laboral</h3>
                     <p>
                         <span v-if="!profile.work_experiences" class="mb-2">
                             <n-skeleton text :repeat="2" /> <n-skeleton text style="width: 60%" />
@@ -111,7 +112,7 @@ loadProfileData()
                     </div>
 
                     <div v-if="profile.skills && profile.skills.length">
-                        <h2>Habilidades</h2>
+                        <h3>Habilidades</h3>
                         <ul>
                             <li v-for="(skill, index) in profile.skills" :key="index">{{ skill }}</li>
                         </ul>
@@ -119,6 +120,12 @@ loadProfileData()
 
                 </article>
 
+                <n-button class="mt-6" type="default" @click="router.back()">
+                    <n-icon size="18" class="mr-2">
+                        <ArrowBackOutline />
+                    </n-icon>
+                    Volver
+                </n-button>
 
             </main>
 
@@ -164,19 +171,22 @@ loadProfileData()
 
                     <n-space vertical size="medium">
                         <n-space>
-                            <span>Bogotá, Colombia</span>
+                            <n-icon size="20">
+                                <LocationOutline />
+                            </n-icon>
+                            <span><strong>Ubicación</strong>: {{ profile.location }}</span>
                         </n-space>
                         <n-space>
                             <n-icon size="20">
                                 <CallOutline />
                             </n-icon>
-                            <span>(123) 456-7890</span>
+                            <span><strong>Teléfono</strong>: (123) 456-7890</span>
                         </n-space>
                         <n-space>
                             <n-icon size="20">
                                 <MailOutline />
                             </n-icon>
-                            <span>candidato@yopmail.com</span>
+                            <span><strong>Email</strong>: candidato@yopmail.com</span>
                         </n-space>
                     </n-space>
 

@@ -51,7 +51,8 @@ def create_job(current_user: TokenData, db: Session, job: models.JobCreate) -> m
             created_at = new_job_entry.created_at,
             expires_at = new_job_entry.expires_at,
             company_name = company.name,
-            company_image_url = company.image_url or ""
+            company_image_url = company.image_url or "",
+            has_applied = False
         )
 
     except Exception as e:
