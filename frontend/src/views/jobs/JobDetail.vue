@@ -6,7 +6,7 @@ import { useJobsStore } from '@/stores';
 import { useJobApplication } from '@/composables/useJobApplication'
 import { useRoute } from 'vue-router'
 
-import { NCard, NImage, NText, NSkeleton, NDivider, NButton, NGrid, NGi, NIcon } from "naive-ui"
+import { NAlert, NCard, NImage, NText, NSkeleton, NDivider, NButton, NGrid, NGi, NIcon } from "naive-ui"
 import {
     CallOutline, MailOutline, LocationOutline, TimeOutline, BriefcaseOutline,
     CashOutline, BarChartOutline, CalendarOutline,
@@ -26,6 +26,7 @@ async function loadJobData() {
     await jobsStore.getById(id as string)
 }
 
+scrollTo(0, 0)
 loadJobData()
 
 watch(() => id, () => {
@@ -68,6 +69,10 @@ const similarJobs = [
 
 <template>
     <div class="w-full">
+
+        <n-alert type="success" v-if="job && job.has_applied" show-icon>
+            Ya te encuentras postulado a esta oferta.
+        </n-alert>
 
         <div class="flex mt-4 ml-2">
             <h2 class="text-2xl font-bold mb-2">{{ job.job_title }}</h2>
@@ -131,7 +136,7 @@ const similarJobs = [
                                 <n-icon :component="CalendarOutline" />
                                 <n-text strong>Fecha límite:</n-text>
                                 <n-text>{{ job.expires_at ? new Date(job.expires_at).toLocaleDateString() : 'N/A'
-                                }}</n-text>
+                                    }}</n-text>
                             </div>
                         </n-gi>
 
@@ -258,7 +263,7 @@ const similarJobs = [
                                 <div class="flex justify-between text-sm text-gray-500 space-x-2">
                                     <span class="text-primary-500 font-semibold">{{ job.salary }}</span>
                                     <n-icon class="items-right" :component="LocationOutline" /> <span>{{ job.location
-                                    }}</span>
+                                        }}</span>
                                 </div>
                             </div>
                         </div>
