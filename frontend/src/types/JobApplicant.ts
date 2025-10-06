@@ -1,4 +1,4 @@
-export interface Applicant {
+export interface JobApplicant {
   job_id: string
   user_id: string
   status: string

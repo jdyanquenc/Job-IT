@@ -104,8 +104,8 @@ watch(() => route.path, () => {
                     <RouterLink v-if="authStore.isCandidate()" to="/jobs">Ofertas ▾</RouterLink>
                     <RouterLink v-if="authStore.isCandidate()" :to="redirectToProfile()">Mi Hoja de
                         Vida ▾</RouterLink>
-                    <RouterLink v-if="authStore.isCandidate()" to="/jobs/applications">Mis postulaciones ▾</RouterLink>
-                    <RouterLink v-if="authStore.isCandidate()" to="/jobs/recommendations">Mis recomendaciones ▾
+                    <RouterLink v-if="authStore.isCandidate()" to="/job-applications">Mis postulaciones ▾</RouterLink>
+                    <RouterLink v-if="authStore.isCandidate()" to="/job-recommendations">Mis recomendaciones ▾
                     </RouterLink>
 
                     <RouterLink v-if="authStore.isCompanyManager()" to="/jobs">Ofertas ▾</RouterLink>

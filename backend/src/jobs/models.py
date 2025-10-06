@@ -70,7 +70,7 @@ class JobDetailResponse(JobBase):
     model_config = ConfigDict(from_attributes=True)
 
 
-class JobApplicationResponse(BaseModel):
+class JobApplicantResponse(BaseModel):
     job_id: UUID
     user_id: UUID
     first_name: str
@@ -84,3 +84,10 @@ class JobApplicationResponse(BaseModel):
     
     model_config = ConfigDict(from_attributes=True)
 
+
+class JobApplicationResponse(JobResponse):
+    pass
+
+
+class JobRecommendationResponse(JobResponse):
+    pass

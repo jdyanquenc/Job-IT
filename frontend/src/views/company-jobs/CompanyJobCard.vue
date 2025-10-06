@@ -60,7 +60,7 @@ const hover = ref(false)
         <!-- Skills -->
         <div class="flex flex-wrap gap-2 mb-3">
             <n-tag v-for="skill in props.job.tags" :key="skill" :type="hover ? 'success' : 'default'" round>{{ skill
-            }}</n-tag>
+                }}</n-tag>
         </div>
 
         <!-- Footer -->
@@ -70,7 +70,7 @@ const hover = ref(false)
             </div>
             <div class="flex gap-2">
                 <n-button type="primary" :ghost="!hover"
-                    @click="$router.push({ name: 'ApplicantList', params: { id: props.job.id } })">
+                    @click="$router.push({ name: 'JobApplicantList', params: { id: props.job.id } })">
                     Ver Postulantes
                 </n-button>
                 <n-button type="warning" :ghost="!hover"
