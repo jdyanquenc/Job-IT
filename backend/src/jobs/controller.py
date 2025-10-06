@@ -6,7 +6,7 @@ from ..entities.user import Role
 from ..database.core import DbSession
 from . import  models
 from . import service
-from ..auth.service import CurrentUser, require_any_role
+from ..auth.service import CurrentUser, OptionalCurrentUser, require_any_role
 
 router = APIRouter(
     prefix="/jobs",
@@ -25,7 +25,6 @@ def get_company_jobs(db: DbSession, current_user: CurrentUser, query: Optional[s
     return service.get_company_jobs(current_user, db, query, page)
 
 
-
 @router.put("/{job_id}", response_model=models.JobDetailResponse)
 @require_any_role([Role.COMPANY_MANAGER, Role.ADMIN])
 def update_job(db: DbSession, job_id: UUID, todo_update: models.JobUpdate, current_user: CurrentUser):
@@ -39,15 +38,22 @@ def delete_job(db: DbSession, job_id: UUID, current_user: CurrentUser):
 
 
 @router.get("/search", response_model=List[models.JobResponse])
-def get_active_jobs(db: DbSession, query: Optional[str] = None, page: Optional[int] = None):
-    return service.get_active_jobs(db, query, page)
+def get_active_jobs(db: DbSession, current_user: OptionalCurrentUser, query: Optional[str] = None, page: Optional[int] = None):
+    return service.get_active_jobs(current_user, db, query, page)
 
 
 @router.get("/{job_id}", response_model=models.JobDetailResponse)
-def get_job(db: DbSession, job_id: UUID):
-    return service.get_job_by_id(db, job_id)
+def get_job(db: DbSession, current_user: OptionalCurrentUser, job_id: UUID):
+    return service.get_job_by_id(current_user, db, job_id)
 
 
 @router.get("/{job_id}/applications", response_model=List[models.JobApplicationResponse])
+@require_any_role([Role.COMPANY_MANAGER, Role.ADMIN])
 def get_job_applications(db: DbSession, current_user: CurrentUser, job_id: UUID, query: Optional[str] = None, page: Optional[int] = None):
     return service.get_job_applications(current_user, db, job_id, query, page)
+
+
+@router.post("/{job_id}/apply", status_code=status.HTTP_201_CREATED)
+@require_any_role([Role.CANDIDATE])
+def apply_to_job(db: DbSession, current_user: CurrentUser, job_id: UUID):
+    service.apply_to_job(current_user, db, job_id)

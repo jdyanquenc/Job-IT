@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { NMessageProvider, NLoadingBarProvider, NConfigProvider, NBackTop, esAR } from 'naive-ui';
+import { NMessageProvider, NLoadingBarProvider, NConfigProvider, NDialogProvider, NBackTop, esAR } from 'naive-ui';
 import { RouterView } from 'vue-router'
 import Navbar from '@/components/NavBar.vue';
 import FooterPanel from '@/components/FooterPanel.vue';
@@ -17,13 +17,17 @@ const customLocale = {
 }
 
 import { onMounted, ref } from 'vue'
-import { setLoadingBar } from '@/helpers/loading-bar'
+import { setLoadingBar, setMessageProvider } from '@/helpers'
 
 const loadingBarProvider = ref(null)
+const messageProvider = ref(null)
 
 onMounted(() => {
   if (loadingBarProvider.value) {
     setLoadingBar(loadingBarProvider.value)
+  }
+  if (messageProvider.value) {
+    setMessageProvider(messageProvider.value)
   }
 })
 
@@ -32,23 +36,25 @@ onMounted(() => {
 <template>
   <n-config-provider :locale="customLocale">
     <n-loading-bar-provider ref="loadingBarProvider">
-      <div>
-        <header>
-          <Navbar />
-        </header>
-        <main>
-          <div class="max-w-screen-xl mx-auto mt-5 mb-5">
-            <div class="flex justify-between items-center main-container">
-              <n-message-provider>
-                <RouterView />
-              </n-message-provider>
-            </div>
+      <n-dialog-provider>
+        <n-message-provider ref="messageProvider">
+          <div>
+            <header>
+              <Navbar />
+            </header>
+            <main>
+              <div class="max-w-screen-xl mx-auto mt-5 mb-5">
+                <div class="flex justify-between items-center main-container">
+                  <RouterView />
+                </div>
+              </div>
+            </main>
+            <footer>
+              <FooterPanel />
+            </footer>
           </div>
-        </main>
-        <footer>
-          <FooterPanel />
-        </footer>
-      </div>
+        </n-message-provider>
+      </n-dialog-provider>
     </n-loading-bar-provider>
     <n-back-top :right="100" />
   </n-config-provider>

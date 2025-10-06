@@ -20,6 +20,18 @@ export const router = createRouter({
     { ...companyJobsRoutes },
     { ...profileRoutes },
     { ...applicantsRoutes },
+    {
+      path: '/403',
+      component: () => import('@/views/errors/Forbidden.vue'),
+    },
+    {
+      path: '/404',
+      component: () => import('@/views/errors/NotFound.vue'),
+    },
+    {
+      path: '/500',
+      component: () => import('@/views/errors/ServerError.vue'),
+    },
     // catch all redirect to home page
     { path: '/:pathMatch(.*)*', redirect: '/jobs' },
   ],

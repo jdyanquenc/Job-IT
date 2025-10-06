@@ -1,12 +1,14 @@
 from datetime import datetime, timezone
+from typing import Optional
 from uuid import uuid4, UUID
 
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
+from src.auth.service import CurrentUser, OptionalCurrentUser
 from src.entities.company_user import CompanyUser
-from src.entities.job_application import JobApplication
+from src.entities.job_application import JobApplication, JobApplicationStatus
 from src.entities.user import User
 
 from . import models
@@ -14,7 +16,7 @@ from src.auth.models import TokenData
 from src.entities.job import  JobEntry, JobDetail
 from src.entities.company import Company
 from src.entities.country import Country
-from src.exceptions import JobAccessError, JobCreationError, JobNotFoundError
+from src.exceptions import JobAccessError, JobAlreadyAppliedError, JobCreationError, JobNotFoundError
 import logging
 
 def create_job(current_user: TokenData, db: Session, job: models.JobCreate) -> models.JobResponse:
@@ -49,7 +51,8 @@ def create_job(current_user: TokenData, db: Session, job: models.JobCreate) -> m
             created_at = new_job_entry.created_at,
             expires_at = new_job_entry.expires_at,
             company_name = company.name,
-            company_image_url = company.image_url or ""
+            company_image_url = company.image_url or "",
+            has_applied = False
         )
 
     except Exception as e:
@@ -90,7 +93,8 @@ def get_company_jobs(current_user: TokenData, db: Session, query: str, page: int
             location = location,
             country_code = country_code,
             company_name = company_name,
-            company_image_url = image_url or ""
+            company_image_url = image_url or "",
+            has_applied = False  # Company jobs view does not track applications
         )
         for id, job_title, job_short_description, remote, employment_type, tags, salary_range, expires_at, created_at, company_name, location, country_code, image_url in results
     ]
@@ -99,13 +103,14 @@ def get_company_jobs(current_user: TokenData, db: Session, query: str, page: int
     return jobs
 
 
-def get_active_jobs(db: Session, query: str, page: int = 1, page_size: int = 20) -> list[models.JobResponse]:
+def get_active_jobs(current_user: OptionalCurrentUser, db: Session, query: str, page: int = 1, page_size: int = 20) -> list[models.JobResponse]:
 
     stmt = text("""
-        SELECT j.id, j.job_title, j.job_short_description, j.remote, j.employment_type, j.tags, j.salary_range, j.expires_at, j.created_at, c.name AS company_name, j.location, co.iso_code AS country_code, c.image_url
+        SELECT j.id, j.job_title, j.job_short_description, j.remote, j.employment_type, j.tags, j.salary_range, j.expires_at, j.created_at, c.name AS company_name, j.location, co.iso_code AS country_code, c.image_url, (CASE WHEN ja.job_id IS NOT NULL THEN TRUE ELSE FALSE END) AS has_applied
         FROM job_entry j
         JOIN company c ON c.id = j.company_id
         JOIN country co ON co.id = j.country_id
+        LEFT JOIN job_application ja ON ja.job_id = j.id AND ja.user_id = :user_id
         WHERE is_active = true
         AND (:query = '' OR search_vector @@ plainto_tsquery('english', :query))
         ORDER BY ts_rank_cd(search_vector, plainto_tsquery('english', :query)) DESC
@@ -113,9 +118,12 @@ def get_active_jobs(db: Session, query: str, page: int = 1, page_size: int = 20)
     """)
     results = db.execute(stmt, {
         "query": query,
+        "user_id": current_user.get_uuid() if current_user else None,
         "limit": page_size,
         "offset": (page - 1) * page_size
     }).fetchall()
+
+    logging.info(f"User {current_user.get_uuid() if current_user else None} retrieved active jobs with query '{query}' on page {page}")
 
     # Convert to list of Pydantic models
     jobs = [
@@ -132,16 +140,17 @@ def get_active_jobs(db: Session, query: str, page: int = 1, page_size: int = 20)
             location = location,
             country_code = country_code,
             company_name = company_name,
-            company_image_url = image_url or ""
+            company_image_url = image_url or "",
+            has_applied = has_applied
         )
-        for id, job_title, job_short_description, remote, employment_type, tags, salary_range, expires_at, created_at, company_name, location, country_code, image_url in results
+        for id, job_title, job_short_description, remote, employment_type, tags, salary_range, expires_at, created_at, company_name, location, country_code, image_url, has_applied in results
     ]
 
     logging.info(f"Retrieved {len(jobs)} jobs")
     return jobs
 
 
-def get_job_by_id(db: Session, job_id: UUID) -> models.JobDetailResponse:
+def get_job_by_id(current_user: OptionalCurrentUser, db: Session, job_id: UUID) -> models.JobDetailResponse:
     job = db.query(JobEntry).filter(JobEntry.id == job_id).first()
     if not job:
         logging.warning(f"Job {job_id} not found")
@@ -149,6 +158,7 @@ def get_job_by_id(db: Session, job_id: UUID) -> models.JobDetailResponse:
     
     company = db.query(Company).filter(Company.id == job.company_id).first()
     country = db.query(Country).filter(Country.id == job.country_id).first()
+    has_applied = db.query(JobApplication).filter(JobApplication.job_id == job_id).filter(JobApplication.user_id == current_user.get_uuid() if current_user else None).first() is not None
 
     logging.info(f"Retrieved Job with ID {job_id}")
     return models.JobDetailResponse(
@@ -170,7 +180,8 @@ def get_job_by_id(db: Session, job_id: UUID) -> models.JobDetailResponse:
         location = job.location,
         country_code = country.iso_code,
         company_name = company.name,
-        company_image_url = company.image_url or ""
+        company_image_url = company.image_url or "",
+        has_applied = has_applied
     )
 
 
@@ -262,6 +273,30 @@ def get_job_applications(current_user: TokenData, db: Session, job_id: UUID, que
     ]
 
     return applications
+
+
+def apply_to_job(current_user: TokenData, db: Session, job_id: UUID) -> None:
+    job = db.query(JobEntry).filter(JobEntry.id == job_id, JobEntry.is_active == True).first()
+    if not job:
+        logging.warning(f"Job {job_id} not found or inactive for user {current_user.get_uuid()}")
+        raise JobNotFoundError(job_id)
+
+    existing_application = db.query(JobApplication).filter(JobApplication.job_id == job_id, JobApplication.user_id == current_user.get_uuid()).first()
+    if existing_application:
+        logging.warning(f"User {current_user.get_uuid()} has already applied to job {job_id}")
+        raise JobAlreadyAppliedError(job_id)
+
+    new_application = JobApplication(
+        job_id = job_id,
+        user_id = current_user.get_uuid(),
+        status = JobApplicationStatus.Applied,
+        applied_at = datetime.now(timezone.utc)
+    )
+    db.add(new_application)
+    db.commit()
+    logging.info(f"User {current_user.get_uuid()} applied to job {job_id}")
+    return
+    
 
 
 def model_from_dto(dto, model_cls):

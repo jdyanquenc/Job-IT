@@ -1,6 +1,7 @@
 <script setup lang="ts">
 
 import { ref } from "vue"
+import { useJobApplication } from '@/composables/useJobApplication'
 
 import { NCard, NButton, NImage, NTag, NIcon, NText } from "naive-ui";
 
@@ -19,13 +20,12 @@ const props = defineProps({
 })
 
 const hover = ref(false)
-
-
+const { handleApply } = useJobApplication()
 
 </script>
 
 <template>
-    <n-card class="max-w-sm min-h-[400px] rounded-2xl shadow-md p-2" @mouseenter="hover = true"
+    <n-card class="max-w-sm min-h-[420px] rounded-2xl shadow-md p-2" @mouseenter="hover = true"
         @mouseleave="hover = false">
         <!-- Header -->
         <div class="flex items-center justify-between mb-2">
@@ -76,8 +76,8 @@ const hover = ref(false)
             <div>
                 <span class="font-bold text-lg">{{ props.job.salary_range }}</span>
             </div>
-            <n-button type="primary" :ghost="!hover">
-                Postularme
+            <n-button type="primary" :ghost="!hover" @click="handleApply(job.id)" :disabled="job.has_applied">
+                {{ job.has_applied ? 'Postulado' : 'Postularme' }}
             </n-button>
         </div>
     </n-card>

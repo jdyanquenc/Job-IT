@@ -24,6 +24,7 @@ export interface Job {
   country_code: string
   company_name: string
   company_image_url: string | null
+  has_applied: boolean
 }
 
 export interface JobDetail {
@@ -42,6 +43,7 @@ export interface JobDetail {
   company_name: string
   tags: []
   salary_range: string
+  has_applied: boolean
   created_at: Date
   updated_at: Date | null
   expires_at: Date | null

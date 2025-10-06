@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from src.entities.company_user import CompanyUser
 from src.entities.user import Role, User
 from . import models
-from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from fastapi.security import HTTPBearer, OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from ..exceptions import AuthenticationError, AuthorizationError
 import logging
 import os
@@ -25,6 +25,8 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl='auth/token')
 bcrypt_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
+
+optional_oauth2_bearer = HTTPBearer(auto_error=False) 
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -75,6 +77,16 @@ def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]) -> models.To
 
 CurrentUser = Annotated[models.TokenData, Depends(get_current_user)]
 
+def get_optional_current_user(token: Optional[str] = Depends(optional_oauth2_bearer)) -> Optional[models.TokenData]:
+    if token is None:
+        return None
+    try:
+        return verify_token(token.credentials)
+    except PyJWTError:
+        return None
+
+OptionalCurrentUser = Annotated[Optional[models.TokenData], Depends(get_optional_current_user)]
+
 """ def require_any_role(allowed_roles: list[Role]):
     def role_dependency(current_user: CurrentUser):
         if current_user.role not in [role.name for role in allowed_roles]:
@@ -91,7 +103,7 @@ def require_any_role(allowed_roles: list[Role]):
     def decorator(func):
         @wraps(func)
         async def wrapper(*args, current_user: CurrentUser, **kwargs):
-            if current_user.role not in [role.name for role in allowed_roles]:
+            if current_user and current_user.role not in [role.name for role in allowed_roles]:
                 raise AuthorizationError()
             return func(*args, current_user=current_user, **kwargs)
         return wrapper
