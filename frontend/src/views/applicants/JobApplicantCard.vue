@@ -5,11 +5,11 @@ import { ref } from "vue"
 import { NCard, NImage, NTag, NRate } from "naive-ui";
 
 
-import type { Applicant } from "@/types";
+import type { JobApplicant } from "@/types";
 
 const props = defineProps({
     applicant: {
-        type: Object as () => Applicant,
+        type: Object as () => JobApplicant,
         required: true
     }
 })

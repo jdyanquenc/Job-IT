@@ -1,4 +1,4 @@
-export type EmploymentType = 'Full-time' | 'Part-time' | 'Contract'
+import type { EmploymentType } from './EmploymentType'
 
 export interface CompanyBasicInfo {
   id: string | null

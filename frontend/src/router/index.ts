@@ -7,7 +7,9 @@ import usersRoutes from './users.routes'
 import jobsRoutes from './jobs.routes'
 import companyJobsRoutes from './company-jobs.routes'
 import profileRoutes from './profile.routes'
-import applicantsRoutes from './applicants.routes'
+import jobApplicantsRoutes from './job-applicants.routes'
+import jobApplicationsRoutes from './job-applications.routes'
+import jobRecommendationsRoutes from './job-recommendations.routes'
 
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,7 +21,9 @@ export const router = createRouter({
     { ...jobsRoutes },
     { ...companyJobsRoutes },
     { ...profileRoutes },
-    { ...applicantsRoutes },
+    { ...jobApplicantsRoutes },
+    { ...jobApplicationsRoutes },
+    { ...jobRecommendationsRoutes },
     {
       path: '/403',
       component: () => import('@/views/errors/Forbidden.vue'),

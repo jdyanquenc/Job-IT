@@ -2,16 +2,16 @@
 import { ref, watch } from 'vue'
 import { storeToRefs } from 'pinia';
 
-import { useApplicantsStore } from '@/stores';
+import { useJobApplicantsStore } from '@/stores';
 import { NSelect, NPagination } from 'naive-ui'
 
 import SearchBar from '@/components/SearchBar.vue'
-import ApplicantCard from './ApplicantCard.vue';
+import JobApplicantCard from './JobApplicantCard.vue';
 import { useRoute } from 'vue-router';
 
 
-const applicantsStore = useApplicantsStore();
-const { applicants } = storeToRefs(applicantsStore);
+const applicantsStore = useJobApplicantsStore();
+const { job_applicants } = storeToRefs(applicantsStore);
 
 const route = useRoute()
 const sort = ref('relevance')
@@ -80,14 +80,14 @@ handleSearch(id, '')
 
                 <div class="flex flex-col gap-4">
 
-                    <ApplicantCard v-for="applicant in applicants" :key="applicant.user_id" :applicant="applicant"
-                        class="hover-up" />
+                    <JobApplicantCard v-for="applicant in job_applicants" :key="applicant.user_id"
+                        :applicant="applicant" class="hover-up" />
 
                     <div class="col-span-1 md:col-span-2 lg:col-span-3 text-gray-500">
-                        <p v-if="applicants.length === 0" class="text-center">
+                        <p v-if="job_applicants.length === 0" class="text-center">
                             No se encontraron postulantes.
                         </p>
-                        <n-pagination v-if="applicants.length !== 0" v-model:page="page" :page-size="pageSize"
+                        <n-pagination v-if="job_applicants.length !== 0" v-model:page="page" :page-size="pageSize"
                             :item-count="total" :page-sizes="pageSizes.map(o => o.value)"
                             class="mt-4 flex justify-center" />
                     </div>

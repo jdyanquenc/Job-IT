@@ -48,7 +48,8 @@ const model = ref<RegisterJob>({
     employment_type: 'Full-time',
     expires_at: new Date(new Date().setDate(new Date().getDate() + 30)),
     company_image_url: '',
-    company_name: ''
+    company_name: '',
+    has_applied: false
 })
 
 const experience_options = [

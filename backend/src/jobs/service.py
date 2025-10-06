@@ -16,7 +16,7 @@ from src.auth.models import TokenData
 from src.entities.job import  JobEntry, JobDetail
 from src.entities.company import Company
 from src.entities.country import Country
-from src.exceptions import JobAccessError, JobAlreadyAppliedError, JobCreationError, JobNotFoundError
+from src.exceptions import JobAccessError, JobAlreadyAppliedError, JobCreationError, JobNotFoundError, UserNotFoundError
 import logging
 
 def create_job(current_user: TokenData, db: Session, job: models.JobCreate) -> models.JobResponse:
@@ -106,7 +106,7 @@ def get_company_jobs(current_user: TokenData, db: Session, query: str, page: int
 def get_active_jobs(current_user: OptionalCurrentUser, db: Session, query: str, page: int = 1, page_size: int = 20) -> list[models.JobResponse]:
 
     stmt = text("""
-        SELECT j.id, j.job_title, j.job_short_description, j.remote, j.employment_type, j.tags, j.salary_range, j.expires_at, j.created_at, c.name AS company_name, j.location, co.iso_code AS country_code, c.image_url, (CASE WHEN ja.job_id IS NOT NULL THEN TRUE ELSE FALSE END) AS has_applied
+        SELECT j.id, j.job_title, j.job_short_description, j.remote, j.employment_type, j.tags, j.salary_range, j.expires_at, j.created_at, c.name AS company_name, j.location, co.iso_code AS country_code, c.image_url, (ja.job_id IS NOT NULL) AS has_applied
         FROM job_entry j
         JOIN company c ON c.id = j.company_id
         JOIN country co ON co.id = j.country_id
@@ -230,7 +230,30 @@ def delete_job(current_user: TokenData, db: Session, job_id: UUID) -> None:
     logging.info(f"Job {job_id} deleted by user {current_user.get_uuid()}")
 
 
-def get_job_applications(current_user: TokenData, db: Session, job_id: UUID, query: str, page: int = 1, page_size: int = 20) -> list[models.JobApplicationResponse]:
+def apply_to_job(current_user: TokenData, db: Session, job_id: UUID) -> None:
+    job = db.query(JobEntry).filter(JobEntry.id == job_id, JobEntry.is_active == True).first()
+    if not job:
+        logging.warning(f"Job {job_id} not found or inactive for user {current_user.get_uuid()}")
+        raise JobNotFoundError(job_id)
+
+    existing_application = db.query(JobApplication).filter(JobApplication.job_id == job_id, JobApplication.user_id == current_user.get_uuid()).first()
+    if existing_application:
+        logging.warning(f"User {current_user.get_uuid()} has already applied to job {job_id}")
+        raise JobAlreadyAppliedError(job_id)
+
+    new_application = JobApplication(
+        job_id = job_id,
+        user_id = current_user.get_uuid(),
+        status = JobApplicationStatus.Applied,
+        applied_at = datetime.now(timezone.utc)
+    )
+    db.add(new_application)
+    db.commit()
+    logging.info(f"User {current_user.get_uuid()} applied to job {job_id}")
+    return
+    
+
+def get_job_applicants(current_user: TokenData, db: Session, job_id: UUID, query: str, page: int = 1, page_size: int = 20) -> list[models.JobApplicantResponse]:
     # Check user permission to view job applications
     job = db.query(JobEntry).filter(JobEntry.id == job_id).first()
     company_user = db.query(CompanyUser).filter(CompanyUser.user_id == current_user.get_uuid()).first()
@@ -257,7 +280,7 @@ def get_job_applications(current_user: TokenData, db: Session, job_id: UUID, que
     }).fetchall()
 
     applications = [
-        models.JobApplicationResponse(
+        models.JobApplicantResponse(
             job_id = job_id,
             user_id = user_id,
             first_name = first_name,
@@ -275,29 +298,102 @@ def get_job_applications(current_user: TokenData, db: Session, job_id: UUID, que
     return applications
 
 
-def apply_to_job(current_user: TokenData, db: Session, job_id: UUID) -> None:
-    job = db.query(JobEntry).filter(JobEntry.id == job_id, JobEntry.is_active == True).first()
-    if not job:
-        logging.warning(f"Job {job_id} not found or inactive for user {current_user.get_uuid()}")
-        raise JobNotFoundError(job_id)
 
-    existing_application = db.query(JobApplication).filter(JobApplication.job_id == job_id, JobApplication.user_id == current_user.get_uuid()).first()
-    if existing_application:
-        logging.warning(f"User {current_user.get_uuid()} has already applied to job {job_id}")
-        raise JobAlreadyAppliedError(job_id)
+def get_job_applications(current_user: TokenData, db: Session, query: str, page: int = 1, page_size: int = 20) -> list[models.JobApplicantResponse]:
+    user = db.query(User).filter(User.id == current_user.get_uuid()).first()
+    if not user:
+        logging.warning(f"User {current_user.get_uuid()} not found")
+        raise UserNotFoundError(current_user.get_uuid())
 
-    new_application = JobApplication(
-        job_id = job_id,
-        user_id = current_user.get_uuid(),
-        status = JobApplicationStatus.Applied,
-        applied_at = datetime.now(timezone.utc)
-    )
-    db.add(new_application)
-    db.commit()
-    logging.info(f"User {current_user.get_uuid()} applied to job {job_id}")
-    return
-    
+    stmt = text("""
+        SELECT j.id, j.job_title, j.job_short_description, j.remote, j.employment_type, j.tags, j.salary_range, j.expires_at, j.created_at, c.name AS company_name, j.location, co.iso_code AS country_code, c.image_url, (ja.job_id IS NOT NULL) AS has_applied
+        FROM job_entry j
+        JOIN company c ON c.id = j.company_id
+        JOIN country co ON co.id = j.country_id
+        JOIN job_application ja ON ja.job_id = j.id AND ja.user_id = :user_id
+        WHERE j.is_active = true
+        AND ja.user_id = :user_id
+        AND (:query = '' OR search_vector @@ plainto_tsquery('english', :query))
+        ORDER BY ts_rank_cd(search_vector, plainto_tsquery('english', :query)) DESC
+        LIMIT :limit OFFSET :offset
+    """)
+    results = db.execute(stmt, {
+        "query": query,
+        "limit": page_size,
+        "offset": (page - 1) * page_size,
+        "user_id": current_user.get_uuid()
+    }).fetchall()
 
+    applications = [
+        models.JobApplicationResponse(
+            id = id,
+            job_title = job_title,
+            job_short_description = job_short_description,
+            remote = remote,
+            employment_type = employment_type,
+            tags = tags,
+            salary_range = salary_range,
+            expires_at = expires_at,
+            created_at = created_at,
+            location = location,
+            country_code = country_code,
+            company_name = company_name,
+            company_image_url = image_url or "",
+            has_applied = has_applied
+        )
+        for id, job_title, job_short_description, remote, employment_type, tags, salary_range, expires_at, created_at, company_name, location, country_code, image_url, has_applied in results
+    ]
+
+    return applications
+
+
+def get_job_recommendations(current_user: TokenData, db: Session, query: str, page: int = 1, page_size: int = 20) -> list[models.JobRecommendationResponse]:
+    user = db.query(User).filter(User.id == current_user.get_uuid()).first()
+    if not user:
+        logging.warning(f"User {current_user.get_uuid()} not found")
+        raise UserNotFoundError(current_user.get_uuid())
+
+    stmt = text("""
+        SELECT j.id, j.job_title, j.job_short_description, j.remote, j.employment_type, j.tags, j.salary_range, j.expires_at, j.created_at, c.name AS company_name, j.location, co.iso_code AS country_code, c.image_url, (ja.job_id IS NOT NULL) AS has_applied
+        FROM job_entry j
+        JOIN company c ON c.id = j.company_id
+        JOIN country co ON co.id = j.country_id
+        JOIN job_recommendation jr ON jr.job_id = j.id AND jr.user_id = :user_id
+        LEFT JOIN job_application ja ON ja.job_id = j.id AND ja.user_id = :user_id
+        WHERE j.is_active = true
+        AND jr.user_id = :user_id
+        AND (:query = '' OR search_vector @@ plainto_tsquery('english', :query))
+        ORDER BY ts_rank_cd(search_vector, plainto_tsquery('english', :query)) DESC
+        LIMIT :limit OFFSET :offset
+    """)
+    results = db.execute(stmt, {
+        "query": query,
+        "limit": page_size,
+        "offset": (page - 1) * page_size,
+        "user_id": current_user.get_uuid()
+    }).fetchall()
+
+    recommendations = [
+        models.JobRecommendationResponse(
+            id = id,
+            job_title = job_title,
+            job_short_description = job_short_description,
+            remote = remote,
+            employment_type = employment_type,
+            tags = tags,
+            salary_range = salary_range,
+            expires_at = expires_at,
+            created_at = created_at,
+            location = location,
+            country_code = country_code,
+            company_name = company_name,
+            company_image_url = image_url or "",
+            has_applied = has_applied
+        )
+        for id, job_title, job_short_description, remote, employment_type, tags, salary_range, expires_at, created_at, company_name, location, country_code, image_url, has_applied in results
+    ]
+
+    return recommendations
 
 def model_from_dto(dto, model_cls):
     valid_fields = {c.name for c in model_cls.__table__.columns}
