@@ -21,8 +21,6 @@ services:
     restart: always
     ports:
       - "80:80"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     depends_on:
       - backend
     networks:
@@ -40,7 +38,7 @@ services:
       - postgres_user
       - postgres_password
     volumes:
-      - /C/opt/postgres_data:/var/lib/postgresql/data
+      - /opt/postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     networks:
@@ -63,7 +61,7 @@ services:
       - jobit-net
 
   worker:
-    build: .
+    build: ./worker
     container_name: worker
     restart: always
     depends_on:
