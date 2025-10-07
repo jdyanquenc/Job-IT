@@ -26,13 +26,16 @@ const editMode = ref(false);
 const isLoading = ref(false);
 const isSubmitting = ref(false);
 
-const formRef = ref < FormInst | null > (null)
+const formRef = ref<FormInst | null>(null)
 
-const model = ref < RegisterUser > ({
-    firstName: null,
-    lastName: null,
-    username: null,
-    password: null
+const model = ref<RegisterUser>({
+    identification_type: null,
+    identification_number: null,
+    first_name: null,
+    last_name: null,
+    email: null,
+    password: null,
+    confirm_password: null
 })
 
 if (id) {
@@ -41,9 +44,9 @@ if (id) {
     usersStore.getById(Number(id))
         .then(() => {
             editMode.value = true;
-            model.value.firstName = user.value.firstName;
-            model.value.lastName = user.value.lastName;
-            model.value.username = user.value.username;
+            model.value.first_name = user.value.first_name;
+            model.value.last_name = user.value.last_name;
+            model.value.email = user.value.email;
             model.value.password = ''; // Password should not be pre-filled
             isLoading.value = false;
 
@@ -110,7 +113,7 @@ async function onSubmit() {
         }
         await router.push('/users');
     }
-    catch (error: any) {
+    catch (error: unknown) {
         console.error('Registration failed:', error);
     }
     finally {
@@ -128,20 +131,24 @@ async function onSubmit() {
         <n-spin :show="isLoading">
 
             <n-form ref="formRef" :model="model" :rules="rules">
-                <n-form-item path="firstName" label="First Name">
-                    <n-input v-model:value="model.firstName" @keydown.enter.prevent />
+                <n-form-item path="first_name" label="First Name">
+                    <n-input v-model:value="model.first_name" @keydown.enter.prevent />
                 </n-form-item>
 
-                <n-form-item path="lastName" label="Last Name">
-                    <n-input v-model:value="model.lastName" @keydown.enter.prevent />
+                <n-form-item path="last_name" label="Last Name">
+                    <n-input v-model:value="model.last_name" @keydown.enter.prevent />
                 </n-form-item>
 
-                <n-form-item path="username" label="Username">
-                    <n-input v-model:value="model.username" @keydown.enter.prevent />
+                <n-form-item path="email" label="Email">
+                    <n-input v-model:value="model.email" @keydown.enter.prevent />
                 </n-form-item>
 
                 <n-form-item path="password" label="Password">
                     <n-input v-model:value="model.password" type="password" @keydown.enter.prevent />
+                </n-form-item>
+
+                <n-form-item path="confirm_password" label="Confirm Password">
+                    <n-input v-model:value="model.confirm_password" type="password" @keydown.enter.prevent />
                 </n-form-item>
 
                 <n-row :gutter="[0, 24]">
