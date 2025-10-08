@@ -9,7 +9,7 @@ services:
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES}
       ALGORITHM: ${ALGORITHM}
       SECRET_KEY: ${SECRET_KEY}
-      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
     depends_on:
       - postgres
     networks:
@@ -27,18 +27,15 @@ services:
       - jobit-net
 
   postgres:
-    image: postgres:17
+    image: pgvector/pgvector:pg17
     container_name: postgres
     restart: always
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER_FILE: /run/secrets/postgres_user
-      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
-    secrets:
-      - postgres_user
-      - postgres_password
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - /opt/postgres_data:/var/lib/postgresql/data
+      - /opt/pgdata:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     networks:
@@ -49,11 +46,11 @@ services:
     container_name: rabbitmq
     restart: always
     environment:
-      RABBITMQ_DEFAULT_USER_FILE: /run/secrets/rabbitmq_user
-      RABBITMQ_DEFAULT_PASS_FILE: /run/secrets/rabbitmq_password
-    secrets:
-      - rabbitmq_user
-      - rabbitmq_password
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    volumes:
+      - rabbitmq-lib:/var/lib/rabbitmq/
+      - rabbitmq-log:/var/log/rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -68,14 +65,11 @@ services:
       - rabbitmq
       - postgres
     environment:
-      DATABASE_URL: ${DATABASE_URL}
-      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      RABBITMQ_HOST: rabbitmq
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE}
-      RABBITMQ_USER_FILE: /run/secrets/rabbitmq_user
-      RABBITMQ_PASSWORD_FILE: /run/secrets/rabbitmq_password
-    secrets:
-      - rabbitmq_user
-      - rabbitmq_password
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
     networks:
       - jobit-net
     
@@ -85,12 +79,8 @@ networks:
     driver: bridge
 
 
-secrets:
-  postgres_user:
-    file: ./secrets/postgres_user.txt
-  postgres_password:
-    file: ./secrets/postgres_password.txt
-  rabbitmq_user:
-    file: ./secrets/rabbitmq_user.txt
-  rabbitmq_password:
-    file: ./secrets/rabbitmq_password.txt
+volumes:
+  rabbitmq-lib:
+    driver: local
+  rabbitmq-log:
+    driver: local

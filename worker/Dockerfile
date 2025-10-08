@@ -25,11 +25,5 @@ COPY . .
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
-# Expone variables que vendrán de Docker secrets en runtime
-ENV POSTGRES_HOST=postgres \
-    POSTGRES_DB=jobit \
-    RABBITMQ_HOST=rabbitmq \
-    RABBITMQ_QUEUE=ofertas
-
 # Comando principal del worker
-CMD ["python", "worker.py"]
+CMD ["python", "src/worker.py"]
