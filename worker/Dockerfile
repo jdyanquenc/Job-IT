@@ -27,4 +27,3 @@ ENV PYTHONUNBUFFERED=1 \
 
 # Comando principal del worker
 CMD ["python", "src/worker.py"]
-#command: ["watchmedo", "auto-restart", "--patterns=*.py", "--recursive", "python", "src/worker.py"]
