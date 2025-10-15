@@ -9,7 +9,11 @@ services:
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES}
       ALGORITHM: ${ALGORITHM}
       SECRET_KEY: ${SECRET_KEY}
-      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}/${POSTGRES_DB}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_QUEUE: ${RABBITMQ_QUEUE}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
     depends_on:
       - postgres
     networks:
@@ -35,7 +39,8 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - /opt/pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
     networks:
@@ -65,11 +70,13 @@ services:
       - rabbitmq
       - postgres
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-      RABBITMQ_HOST: rabbitmq
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}/${POSTGRES_DB}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE}
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+    volumes:
+      - .:/app
     networks:
       - jobit-net
     
@@ -84,3 +91,6 @@ volumes:
     driver: local
   rabbitmq-log:
     driver: local
+  pgdata:
+    driver: local
+
