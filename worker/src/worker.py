@@ -69,7 +69,7 @@ def main():
             channel.queue_bind(
                 queue=RABBITMQ_QUEUE,
                 exchange='events',
-                routing_key='profile.*'  # o 'job.*' o '#' para todo
+                routing_key='#'
             )
 
             channel.basic_consume(
