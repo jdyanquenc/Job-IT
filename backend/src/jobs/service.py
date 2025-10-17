@@ -10,6 +10,7 @@ from src.auth.service import CurrentUser, OptionalCurrentUser
 from src.entities.company_user import CompanyUser
 from src.entities.job_application import JobApplication, JobApplicationStatus
 from src.entities.user import User
+from src.messaging.events import publish_event
 
 from . import models
 from src.auth.models import TokenData
@@ -39,7 +40,8 @@ def create_job(current_user: TokenData, db: Session, job: models.JobCreate) -> m
         db.refresh(new_job_entry)
         
         logging.info(f"Created new job for user: {current_user.get_uuid()}")
-        
+        publish_event("job.created", new_job_entry)
+
         return models.JobResponse(
             id = new_job_entry.id,
             job_title = new_job_entry.job_title,
@@ -213,6 +215,7 @@ def update_job(current_user: TokenData, db: Session, job_id: UUID, job_update: m
     job_detail.experience = job_update.experience
 
     db.commit()
+    publish_event("job.updated", job_entry)
     logging.info(f"Successfully updated job {job_id} for user {current_user.get_uuid()}")
     return get_job_by_id(current_user, db, job_id)
 

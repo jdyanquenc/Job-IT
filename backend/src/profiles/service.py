@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from src.entities.company import Company, CompanyType
 from src.entities.educational_institution import EducationalInstitution
 from src.entities.user import User
+from src.messaging.events import publish_event
 
 from . import models
 from src.auth.models import TokenData
@@ -108,6 +109,8 @@ def update_profile(current_user: TokenData, db: Session, profile_id: UUID, profi
     
     db.commit()
     db.refresh(profile)
+
+    publish_event("profile.updated", profile)
 
     logging.info(f"Profile {profile_id} updated by user {current_user.get_uuid()}")
     return ProfileResponse(

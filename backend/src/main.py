@@ -1,5 +1,8 @@
-from fastapi import FastAPI # type: ignore
-from fastapi.middleware.cors import CORSMiddleware # type: ignore
+from fastapi import FastAPI
+from fastapi.concurrency import asynccontextmanager
+from fastapi.middleware.cors import CORSMiddleware
+
+from .messaging import setup_rabbitmq
 
 from .database.core import engine, Base
 from .entities.country import Country           # Import models to register them
@@ -15,10 +18,21 @@ from .entities.job_recommendation import JobRecommendation  # Import models to r
 from .api import register_routes
 from .logging import configure_logging, LogLevels
 
-
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Código al iniciar la app
+    print("Iniciando aplicación...")
+    setup_rabbitmq()
+    print("RabbitMQ configurado correctamente")
+    
+    yield
+    
+    # Código al apagar la app (opcional)
+    print("Cerrando aplicación...")
+    
 configure_logging(LogLevels.info)
 
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 
 # Allowed origins
 origins = [
