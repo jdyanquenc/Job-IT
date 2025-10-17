@@ -56,6 +56,29 @@ def main():
             channel.basic_consume(queue=RABBITMQ_QUEUE, on_message_callback=callback)
             print(f"Connected to RabbitMQ. Waiting for messages in queue '{RABBITMQ_QUEUE}'...")
             channel.start_consuming()
+
+            channel.exchange_declare(
+                exchange='events',
+                exchange_type='topic',
+                durable=True
+            )
+
+            channel.queue_declare(queue=RABBITMQ_QUEUE, durable=True)
+
+            channel.queue_bind(
+                queue=RABBITMQ_QUEUE,
+                exchange='events',
+                routing_key='profile.*'  # o 'job.*' o '#' para todo
+            )
+
+            channel.basic_consume(
+                queue=RABBITMQ_QUEUE,
+                on_message_callback=callback,
+                auto_ack=False   # o True según tu lógica
+            )
+            print(f"Connected to RabbitMQ. Waiting messages in queue '{RABBITMQ_QUEUE}'...")
+            channel.start_consuming()
+
         except pika.exceptions.AMQPConnectionError:
             print("Connection to RabbitMQ failed. Retrying in 5 seconds...")
             time.sleep(5)
