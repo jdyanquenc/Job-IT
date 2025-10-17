@@ -17,6 +17,7 @@ services:
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
     depends_on:
       - postgres
+      - rabbitmq
     networks:
       - jobit-net
 
@@ -40,7 +41,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - /usr/local/postgres/data:/var/lib/postgresql/data
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
@@ -55,8 +56,8 @@ services:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
     volumes:
-      - rabbitmq-lib:/var/lib/rabbitmq/
-      - rabbitmq-log:/var/log/rabbitmq
+      - /usr/local/rabbitmq/lib:/var/lib/rabbitmq/
+      - /usr/local/rabbitmq/log:/var/log/rabbitmq/
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -68,8 +69,8 @@ services:
     container_name: worker
     restart: always
     depends_on:
-      - rabbitmq
       - postgres
+      - rabbitmq
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
       RABBITMQ_HOST: ${RABBITMQ_HOST}
@@ -87,16 +88,4 @@ networks:
   jobit-net:
     driver: bridge
 
-
-volumes:
-  rabbitmq-lib:
-    driver: local
-  rabbitmq-log:
-    driver: local
-  pgdata:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: /usr/local/postgres/data
 
