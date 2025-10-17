@@ -3,13 +3,6 @@ from dotenv import load_dotenv
 from db import init_db, upsert_embedding
 from model import generate_embedding, classify_embedding
 
-load_dotenv()
-
-RABBITMQ_HOST = os.getenv("RABBITMQ_HOST")
-RABBITMQ_QUEUE = os.getenv("RABBITMQ_QUEUE")
-RABBITMQ_USER = os.getenv("RABBITMQ_USER")
-RABBITMQ_PASSWORD = os.getenv("RABBITMQ_PASSWORD")
-
 def callback(ch, method, properties, body):
     try:
         data = json.loads(body)
@@ -31,7 +24,8 @@ def callback(ch, method, properties, body):
 
 
 
-def connect_to_rabbitmq():
+def connect_to_rabbitmq(RABBITMQ_HOST, RABBITMQ_USER, RABBITMQ_PASSWORD, RABBITMQ_QUEUE):
+
     """Attempt to connect and return a channel"""
     connection = pika.BlockingConnection(
         pika.ConnectionParameters(
@@ -50,9 +44,16 @@ def connect_to_rabbitmq():
 def main():
     init_db()
 
+    load_dotenv()
+
+    RABBITMQ_HOST = os.getenv("RABBITMQ_HOST")
+    RABBITMQ_USER = os.getenv("RABBITMQ_USER")
+    RABBITMQ_PASSWORD = os.getenv("RABBITMQ_PASSWORD")
+    RABBITMQ_QUEUE = os.getenv("RABBITMQ_QUEUE", "job_events_queue")
+
     while True:
         try:
-            connection, channel = connect_to_rabbitmq()
+            connection, channel = connect_to_rabbitmq(RABBITMQ_HOST, RABBITMQ_USER, RABBITMQ_PASSWORD, RABBITMQ_QUEUE)
             channel.basic_consume(queue=RABBITMQ_QUEUE, on_message_callback=callback)
             print(f"Connected to RabbitMQ. Waiting for messages in queue '{RABBITMQ_QUEUE}'...")
             channel.start_consuming()
