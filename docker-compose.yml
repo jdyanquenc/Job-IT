@@ -77,7 +77,7 @@ services:
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
     volumes:
-      - .:/app
+      - ./worker:/app
     networks:
       - jobit-net
     
