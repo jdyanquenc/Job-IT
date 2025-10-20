@@ -14,9 +14,6 @@ class RabbitMQService:
 
     @classmethod
     def connect(cls):
-        if not cls._config:
-            raise Exception("RabbitMQService config no cargada")
-
         if cls._connection is None or cls._connection.is_closed:
             credentials = pika.PlainCredentials(
                 cls._config["user"], cls._config["password"]

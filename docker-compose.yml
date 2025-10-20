@@ -6,6 +6,7 @@ services:
     ports:
       - "8000:8000"
     environment:
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES}
       ALGORITHM: ${ALGORITHM}
       SECRET_KEY: ${SECRET_KEY}

@@ -46,11 +46,8 @@ configure_logging(LogLevels.info)
 app = FastAPI(lifespan=lifespan)
 
 # Allowed origins
-origins = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "https://buscoempleo.com.co",
-]
+origins = os.getenv("ALLOWED_ORIGINS", "")
+origins = [o.strip() for o in origins.split(",") if o.strip()]
 
 app.add_middleware(
     CORSMiddleware,
