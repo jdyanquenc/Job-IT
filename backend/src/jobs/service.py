@@ -41,7 +41,10 @@ def create_job(current_user: TokenData, db: Session, job: models.JobCreate) -> m
         db.refresh(new_job_entry)
         
         logging.info(f"Created new job for user: {current_user.get_uuid()}")
-        RabbitMQService.publish_event("job.created", jsonable_encoder(new_job_entry))
+        try:
+            RabbitMQService.publish_event("job.created", jsonable_encoder(new_job_entry))
+        except Exception as e:
+            logging.error(f"Failed to send job.created event for job {new_job_entry.id}. Error: {str(e)}")
 
         return models.JobResponse(
             id = new_job_entry.id,
@@ -216,8 +219,12 @@ def update_job(current_user: TokenData, db: Session, job_id: UUID, job_update: m
     job_detail.experience = job_update.experience
 
     db.commit()
-    RabbitMQService.publish_event("job.updated", jsonable_encoder(job_entry))
     logging.info(f"Successfully updated job {job_id} for user {current_user.get_uuid()}")
+
+    try:
+        RabbitMQService.publish_event("job.updated", jsonable_encoder(job_entry))
+    except Exception as e:
+        logging.error(f"Failed to send job.updated event for job {job_entry.id}. Error: {str(e)}")
     return get_job_by_id(current_user, db, job_id)
 
 
