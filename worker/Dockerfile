@@ -1,7 +1,7 @@
 # ----------------------------
 # Etapa base: entorno Python ligero
 # ----------------------------
-FROM python:3.11-slim
+FROM mcr.microsoft.com/devcontainers/python:1-3.12
 
 # Define el directorio de trabajo
 WORKDIR /app
