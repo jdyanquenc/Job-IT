@@ -35,8 +35,6 @@ async def lifespan(app: FastAPI):
         password=os.getenv("RABBITMQ_PASSWORD", "guest"),
         port=int(os.getenv("RABBITMQ_PORT", 5672)),
     )
-
-    RabbitMQService.connect()
     yield
     RabbitMQService.close()
 

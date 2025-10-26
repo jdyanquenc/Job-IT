@@ -1,22 +1,27 @@
-import pika, json, os, time
+import pika, json, os, time, asyncio
 from dotenv import load_dotenv
 from db import init_db, upsert_embedding
 from model import generate_embedding, classify_embedding
 
 def callback(ch, method, properties, body):
     try:
-        data = json.loads(body)
-        uuid = data["uuid"]
-        title = data.get("title", "")
-        description = data.get("description", "")
-        text = f"{title}. {description}"
+        message = json.loads(body)
+        data = message.get("data", {})
 
-        embedding = generate_embedding(text)
-        category = classify_embedding(embedding)
-        upsert_embedding(uuid, category, embedding)
+        print(f"Data {data}")
 
-        print(f"Job offer {uuid} → category: {category}")
+        #id = data["id"]
+        #title = data.get("title", "")
+        #description = data.get("description", "")
+        #text = f"{title}. {description}"
+
+        #embedding = generate_embedding(text)
+        #category = classify_embedding(embedding)
+        #upsert_embedding(id, category, embedding)
+
         ch.basic_ack(delivery_tag=method.delivery_tag)
+
+        print(f"Job offer {message}")
 
     except Exception as e:
         print(f"Error processing message: {e}")
@@ -43,7 +48,6 @@ def connect_to_rabbitmq(RABBITMQ_HOST, RABBITMQ_USER, RABBITMQ_PASSWORD, RABBITM
 
 def main():
     init_db()
-
     load_dotenv()
 
     RABBITMQ_HOST = os.getenv("RABBITMQ_HOST")
@@ -53,11 +57,11 @@ def main():
 
     while True:
         try:
-            connection, channel = connect_to_rabbitmq(RABBITMQ_HOST, RABBITMQ_USER, RABBITMQ_PASSWORD, RABBITMQ_QUEUE)
-            channel.basic_consume(queue=RABBITMQ_QUEUE, on_message_callback=callback)
-            print(f"Connected to RabbitMQ. Waiting for messages in queue '{RABBITMQ_QUEUE}'...")
-            channel.start_consuming()
+            connection, channel = connect_to_rabbitmq(
+                RABBITMQ_HOST, RABBITMQ_USER, RABBITMQ_PASSWORD, RABBITMQ_QUEUE
+            )
 
+            # 🧩 Estas 3 declaraciones deben ir antes del consumo
             channel.exchange_declare(
                 exchange='events',
                 exchange_type='topic',
@@ -72,19 +76,21 @@ def main():
                 routing_key='job.*'
             )
 
+            # Ahora sí puedes consumir
             channel.basic_consume(
                 queue=RABBITMQ_QUEUE,
                 on_message_callback=callback,
-                auto_ack=False   # o True según tu lógica
+                auto_ack=False  # o True según tu lógica
             )
-            print(f"Connected to RabbitMQ. Waiting messages in queue '{RABBITMQ_QUEUE}'...")
+
+            print(f"✅ Conectado a RabbitMQ. Esperando mensajes en '{RABBITMQ_QUEUE}'...")
             channel.start_consuming()
 
         except pika.exceptions.AMQPConnectionError:
-            print("Connection to RabbitMQ failed. Retrying in 5 seconds...")
+            print("❌ Conexión a RabbitMQ falló. Reintentando en 5 segundos...")
             time.sleep(5)
         except KeyboardInterrupt:
-            print("Shutting down...")
+            print("👋 Saliendo...")
             try:
                 channel.stop_consuming()
                 connection.close()
@@ -92,7 +98,7 @@ def main():
                 pass
             sys.exit(0)
         except Exception as e:
-            print(f"Unexpected error: {e}")
+            print(f"⚠️ Error inesperado: {e}")
             try:
                 if channel.is_open:
                     channel.stop_consuming()
@@ -100,7 +106,7 @@ def main():
                     connection.close()
             except Exception:
                 pass
-            print("Reconnecting in 5 seconds...")
+            print("Reintentando en 5 segundos...")
             time.sleep(5)
 
 if __name__ == "__main__":

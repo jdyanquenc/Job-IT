@@ -19,7 +19,9 @@ from src.entities.job import  JobEntry, JobDetail
 from src.entities.company import Company
 from src.entities.country import Country
 from src.exceptions import JobAccessError, JobAlreadyAppliedError, JobCreationError, JobNotFoundError, UserNotFoundError
+
 import logging
+import asyncio
 
 def create_job(current_user: TokenData, db: Session, job: models.JobCreate) -> models.JobResponse:
     try:
@@ -42,7 +44,7 @@ def create_job(current_user: TokenData, db: Session, job: models.JobCreate) -> m
         
         logging.info(f"Created new job for user: {current_user.get_uuid()}")
         try:
-            RabbitMQService.publish_event("job.created", jsonable_encoder(new_job_entry))
+            asyncio.run(RabbitMQService.publish_event("job.created", jsonable_encoder(new_job_entry)))
         except Exception as e:
             logging.error(f"Failed to send job.created event for job {new_job_entry.id}. Error: {str(e)}")
 
@@ -222,7 +224,7 @@ def update_job(current_user: TokenData, db: Session, job_id: UUID, job_update: m
     logging.info(f"Successfully updated job {job_id} for user {current_user.get_uuid()}")
 
     try:
-        RabbitMQService.publish_event("job.updated", jsonable_encoder(job_entry))
+        asyncio.run(RabbitMQService.publish_event("job.updated", jsonable_encoder(job_entry)))
     except Exception as e:
         logging.error(f"Failed to send job.updated event for job {job_entry.id}. Error: {str(e)}")
     return get_job_by_id(current_user, db, job_id)
