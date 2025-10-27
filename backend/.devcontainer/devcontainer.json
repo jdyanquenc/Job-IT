@@ -14,8 +14,8 @@
 			]
 		}
 	},
-	
-	"postCreateCommand": "pip install -r requirements.txt",
 
-	"postStartCommand": "python src/worker.py"
+	"postCreateCommand": "pip install -r requirements-dev.txt",
+
+	"postStartCommand": "python -m uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload &"
 }

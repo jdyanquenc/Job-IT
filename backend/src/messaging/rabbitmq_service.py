@@ -7,19 +7,22 @@ from datetime import datetime
 class RabbitMQService:
     _connection = None
     _config = {}
+    _executor = None
 
     @classmethod
-    def load_config(cls, host, user, password, port=5672):
+    def load_config(cls, host, user, password, port=5672, executor=None):
         cls._config = {
             "host": host,
             "user": user,
             "password": password,
             "port": port,
         }
+        cls._executor = executor
+        print(f"🔌 RabbitMQ configuration loaded: {host}:{port} as {user}.")
 
     @classmethod
     def _create_connection(cls):
-        """(Re)create connection with safe defaults."""
+        """create connection with safe defaults."""
         credentials = pika.PlainCredentials(
             cls._config["user"], cls._config["password"]
         )
@@ -71,7 +74,7 @@ class RabbitMQService:
                 )
 
                 channel.close()
-                print(f"✅ Evento enviado: {event_type}")
+                print(f"✅ Event sent: {event_type}")
                 return
 
             except (
@@ -79,16 +82,24 @@ class RabbitMQService:
                 pika.exceptions.ConnectionClosedByBroker,
                 pika.exceptions.AMQPConnectionError,
             ) as e:
-                print(f"⚠️ Conexión perdida: {e}. Reintentando ({attempt}/{retries})...")
+                print(f"⚠️ Connection lost: {e}. Retrying ({attempt}/{retries})...")
                 cls._safe_close()
                 time.sleep(2**attempt)  # exponential backoff
 
             except Exception as e:
-                print(f"❌ Error al enviar evento: {e}")
+                print(f"❌ Error sending event: {e}")
                 cls._safe_close()
                 break
 
-        print(f"❌ Falló el envío de evento tras {retries} intentos: {event_type}")
+        print(f"❌ Failed to send event after {retries} attempts: {event_type}")
+
+    
+    @classmethod
+    def publish_event_async(cls, event_type: str, data: dict):
+        if cls._executor:
+            cls._executor.submit(cls.publish_event, event_type, data)
+        else:
+            cls.publish_event(event_type, data)
 
     @classmethod
     def _safe_close(cls):
@@ -102,4 +113,5 @@ class RabbitMQService:
     @classmethod
     def close(cls):
         cls._safe_close()
-        print("🔌 Conexión RabbitMQ cerrada.")
+        print("🔌 RabbitMQ connection closed.")
+

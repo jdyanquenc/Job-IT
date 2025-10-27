@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import os
 
 from .messaging.rabbitmq_service import RabbitMQService
+from concurrent.futures import ThreadPoolExecutor
 
 from .database.core import engine, Base
 from .entities.country import Country  # Import models to register them
@@ -24,6 +25,7 @@ from .entities.job_recommendation import (
 from .api import register_routes
 from .logging import configure_logging, LogLevels
 
+executor = ThreadPoolExecutor()
 
 load_dotenv()
 
@@ -34,6 +36,7 @@ async def lifespan(app: FastAPI):
         user=os.getenv("RABBITMQ_USER", "guest"),
         password=os.getenv("RABBITMQ_PASSWORD", "guest"),
         port=int(os.getenv("RABBITMQ_PORT", 5672)),
+        executor=executor
     )
     yield
     RabbitMQService.close()

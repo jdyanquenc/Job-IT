@@ -1,3 +1,4 @@
+from datetime import datetime
 import logging
 from uuid import uuid4
 from sqlalchemy import UUID
@@ -110,7 +111,8 @@ def update_profile(current_user: TokenData, db: Session, profile_id: UUID, profi
     db.commit()
     db.refresh(profile)
 
-    RabbitMQService.publish_event("profile.updated", profile)
+    send_profile_changed_event(profile, "profile.updated")
+    
 
     logging.info(f"Profile {profile_id} updated by user {current_user.get_uuid()}")
     return ProfileResponse(
@@ -363,3 +365,25 @@ def delete_education(current_user: TokenData, db: Session, profile_id: UUID, edu
 
     logging.info(f"Education experience {education_id} deleted by user {current_user.get_uuid()}")
     return
+
+
+def profile_to_dict(profile: UserProfile):
+    return {
+        "user_id": str(profile.id),
+        "updated_at": datetime.now().isoformat(),
+        "profile_detail": "{} {} {} {}".format(
+            profile.title,
+            profile.description,
+            profile.skills,
+            [education.description for education in profile.education_experiences if profile.education_experiences and len(profile.education_experiences) > 0]
+        )
+    }
+
+
+def send_profile_changed_event(profile, queue):
+    data = profile_to_dict(profile)
+    try:
+        RabbitMQService.publish_event_async(queue, data)
+        
+    except Exception as e:
+        logging.error(f"Failed to send {queue} event for profile {profile.id}. Error: {str(e)}")

@@ -43,10 +43,7 @@ def create_job(current_user: TokenData, db: Session, job: models.JobCreate) -> m
         db.refresh(new_job_entry)
         
         logging.info(f"Created new job for user: {current_user.get_uuid()}")
-        try:
-            asyncio.run(RabbitMQService.publish_event("job.created", jsonable_encoder(new_job_entry)))
-        except Exception as e:
-            logging.error(f"Failed to send job.created event for job {new_job_entry.id}. Error: {str(e)}")
+        send_job_changed_event(new_job_entry, "job.created")
 
         return models.JobResponse(
             id = new_job_entry.id,
@@ -223,12 +220,8 @@ def update_job(current_user: TokenData, db: Session, job_id: UUID, job_update: m
     db.commit()
     logging.info(f"Successfully updated job {job_id} for user {current_user.get_uuid()}")
 
-    try:
-        asyncio.run(RabbitMQService.publish_event("job.updated", jsonable_encoder(job_entry)))
-    except Exception as e:
-        logging.error(f"Failed to send job.updated event for job {job_entry.id}. Error: {str(e)}")
+    send_job_changed_event(job_entry, "job.updated")
     return get_job_by_id(current_user, db, job_id)
-
 
 
 def delete_job(current_user: TokenData, db: Session, job_id: UUID) -> None:
@@ -408,7 +401,30 @@ def get_job_recommendations(current_user: TokenData, db: Session, query: str, pa
 
     return recommendations
 
+
+
 def model_from_dto(dto, model_cls):
     valid_fields = {c.name for c in model_cls.__table__.columns}
     data = {k: v for k, v in dto.dict().items() if k in valid_fields}
     return model_cls(**data)
+
+
+def job_to_dict(job_entry):
+    return {
+        "job_id": str(job_entry.id),
+        "job_expiration": job_entry.expires_at.isoformat() if job_entry.expires_at else None,
+        "job_detail": "{} {} {} {}".format(
+            job_entry.job_title,
+            job_entry.detail.job_description,
+            job_entry.detail.responsibilities,
+            job_entry.detail.skills
+        )
+    }
+
+def send_job_changed_event(job_entry, queue):
+    data = job_to_dict(job_entry)
+    try:
+        RabbitMQService.publish_event_async(queue, data)
+        
+    except Exception as e:
+        logging.error(f"Failed to send {queue} event for job {job_entry.id}. Error: {str(e)}")
