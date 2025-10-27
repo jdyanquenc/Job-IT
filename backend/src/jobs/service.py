@@ -1,15 +1,17 @@
 from datetime import datetime, timezone
-from typing import Optional
 from uuid import uuid4, UUID
 
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy import text
 from sqlalchemy.orm import Session
-from fastapi import HTTPException
+from fastapi import FastAPI
 
-from src.auth.service import CurrentUser, OptionalCurrentUser
+from src.auth.service import OptionalCurrentUser
 from src.entities.company_user import CompanyUser
 from src.entities.job_application import JobApplication, JobApplicationStatus
 from src.entities.user import User
+from src.messaging.events import publish_event
+from src.messaging.rabbitmq_service import RabbitMQService
 
 from . import models
 from src.auth.models import TokenData
@@ -17,7 +19,9 @@ from src.entities.job import  JobEntry, JobDetail
 from src.entities.company import Company
 from src.entities.country import Country
 from src.exceptions import JobAccessError, JobAlreadyAppliedError, JobCreationError, JobNotFoundError, UserNotFoundError
+
 import logging
+import asyncio
 
 def create_job(current_user: TokenData, db: Session, job: models.JobCreate) -> models.JobResponse:
     try:
@@ -39,7 +43,8 @@ def create_job(current_user: TokenData, db: Session, job: models.JobCreate) -> m
         db.refresh(new_job_entry)
         
         logging.info(f"Created new job for user: {current_user.get_uuid()}")
-        
+        send_job_changed_event(new_job_entry, "job.created")
+
         return models.JobResponse(
             id = new_job_entry.id,
             job_title = new_job_entry.job_title,
@@ -214,8 +219,9 @@ def update_job(current_user: TokenData, db: Session, job_id: UUID, job_update: m
 
     db.commit()
     logging.info(f"Successfully updated job {job_id} for user {current_user.get_uuid()}")
-    return get_job_by_id(current_user, db, job_id)
 
+    send_job_changed_event(job_entry, "job.updated")
+    return get_job_by_id(current_user, db, job_id)
 
 
 def delete_job(current_user: TokenData, db: Session, job_id: UUID) -> None:
@@ -395,7 +401,30 @@ def get_job_recommendations(current_user: TokenData, db: Session, query: str, pa
 
     return recommendations
 
+
+
 def model_from_dto(dto, model_cls):
     valid_fields = {c.name for c in model_cls.__table__.columns}
     data = {k: v for k, v in dto.dict().items() if k in valid_fields}
     return model_cls(**data)
+
+
+def job_to_dict(job_entry):
+    return {
+        "job_id": str(job_entry.id),
+        "job_expiration": job_entry.expires_at.isoformat() if job_entry.expires_at else None,
+        "job_detail": "{} {} {} {}".format(
+            job_entry.job_title,
+            job_entry.detail.job_description,
+            job_entry.detail.responsibilities,
+            job_entry.detail.skills
+        )
+    }
+
+def send_job_changed_event(job_entry, queue):
+    data = job_to_dict(job_entry)
+    try:
+        RabbitMQService.publish_event_async(queue, data)
+        
+    except Exception as e:
+        logging.error(f"Failed to send {queue} event for job {job_entry.id}. Error: {str(e)}")
