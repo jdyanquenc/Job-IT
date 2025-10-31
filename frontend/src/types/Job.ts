@@ -63,3 +63,9 @@ export interface JobCountBySector {
   name: string
   count: number
 }
+
+export interface JobCountBySalary {
+  id: string
+  name: string
+  count: number
+}

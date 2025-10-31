@@ -14,6 +14,7 @@ import JobCard from '@/views/jobs/JobCard.vue'
 const jobsStore = useJobsStore();
 const { jobs } = storeToRefs(jobsStore);
 const { jobCountBySector } = storeToRefs(jobsStore);
+const { jobCountBySalary } = storeToRefs(jobsStore);
 
 
 const country_code = ref('US')
@@ -25,7 +26,6 @@ const total = ref(10)
 const selectedIndustries = ref([])
 const selectedSalaries = ref([])
 const searchText = ref('')
-
 
 
 const sortOptions = [
@@ -41,20 +41,10 @@ const pageSizes = [
 ]
 
 
-
-const salaryOptions = [
-    { id: 1, name: '$0k - $20k', count: 12 },
-    { id: 2, name: '$20k - $40k', count: 23 },
-    { id: 3, name: '$40k - $60k', count: 43 },
-    { id: 4, name: '$60k - $80k', count: 65 },
-    { id: 5, name: '$80k - $100k', count: 76 },
-    { id: 6, name: '> $100k', count: 10 },
-]
-
-
 async function handleSearch(value: string, pageNumber: number = page.value) {
-    await jobsStore.find(value, pageNumber, page_size.value, country_code.value, sort.value, selectedIndustries.value)
-    await jobsStore.loadJobCountBySector(value, country_code.value)
+    await jobsStore.find(value, pageNumber, page_size.value, country_code.value, sort.value, selectedIndustries.value, selectedSalaries.value)
+    await jobsStore.loadJobCountBySector(value, country_code.value, selectedIndustries.value, selectedSalaries.value)
+    await jobsStore.loadJobCountBySalary(value, country_code.value, selectedIndustries.value, selectedSalaries.value)
     window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
@@ -102,7 +92,7 @@ watch(jobCountBySector,
 
                     <hr class="mt-4 mb-3" />
 
-                    <FilterGroup title="Rango salarial" :options="salaryOptions" v-model="selectedSalaries"
+                    <FilterGroup title="Rango salarial" :options="jobCountBySalary" v-model="selectedSalaries"
                         :showAllOption="false" />
                 </nav>
             </aside>

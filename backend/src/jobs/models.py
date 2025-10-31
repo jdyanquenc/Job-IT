@@ -13,6 +13,11 @@ class JobCountBySectorResponse(BaseModel):
     name: str
     count: int
 
+class JobCountBySalaryResponse(BaseModel):
+    id: int
+    name: str
+    count: int
+
 class JobBase(BaseModel):
     job_title: str
     job_description: str
