@@ -75,8 +75,9 @@ const { handleApply } = useJobApplication()
         <div class="flex items-center justify-between">
             <div>
                 <span class="font-bold text-lg">
-                    {{ Number(props.job.salary_min) / 1000 }}k - {{ Number(props.job.salary_max) / 1000 }}k
-                    <small>{{ props.job.currency_code }}</small>
+                    {{ Number(props.job.salary_min) }}k - {{ Number(props.job.salary_max) }}k <small>{{
+                        props.job.currency_code
+                        }}</small>
                 </span>
             </div>
             <n-button type="primary" :ghost="!hover" @click="handleApply(job.id)" :disabled="job.has_applied">
