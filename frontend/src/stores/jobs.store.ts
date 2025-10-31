@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 
 import { http } from '@/helpers'
-import type { RegisterJob, Job, JobDetail } from '@/types'
+import type { RegisterJob, Job, JobDetail, JobCountBySector } from '@/types'
 
 const baseUrl = `${import.meta.env.VITE_API_URL}/jobs`
 
@@ -9,20 +9,42 @@ export const useJobsStore = defineStore('jobit-jobs', {
   state: () => ({
     jobs: [] as Job[],
     job: {} as JobDetail,
+    jobCountBySector: [] as JobCountBySector[],
   }),
   actions: {
     async register(request: RegisterJob) {
       await http.post(`${baseUrl}`, request)
     },
 
-    async find(query: string = '', page: number = 1) {
+    async find(
+      query: string = '',
+      page: number,
+      page_size: number,
+      country_code: string,
+      sort: string,
+      sector_ids: string[] = [],
+    ) {
       const url = new URL(`${baseUrl}/search`)
       const params = {
         query,
         page: page.toString(),
+        page_size: page_size.toString(),
+        country_code,
+        sort_by: sort,
+        sector_ids: sector_ids.join(','),
       }
       url.search = new URLSearchParams(params).toString()
       this.jobs = await http.get(url.toString())
+    },
+
+    async loadJobCountBySector(query: string = '', country_code: string = '') {
+      const url = new URL(`${baseUrl}/sectors/counts`)
+      const params = {
+        query,
+        country_code,
+      }
+      url.search = new URLSearchParams(params).toString()
+      this.jobCountBySector = await http.get(url.toString())
     },
 
     async getById(id: string) {

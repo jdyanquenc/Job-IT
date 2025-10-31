@@ -8,19 +8,16 @@ from .messaging.rabbitmq_service import RabbitMQService
 from concurrent.futures import ThreadPoolExecutor
 
 from .database.core import engine, Base
+from .entities.sector import Sector  # Import models to register them
+from .entities.currency import Currency  # Import models to register them
 from .entities.country import Country  # Import models to register them
-from .entities.todo import Todo  # Import models to register them
 from .entities.user import User  # Import models to register them
 from .entities.user_profile import UserProfile  # Import models to register them
 from .entities.company import Company  # Import models to register them
 from .entities.job import JobEntry, JobDetail  # Import models to register them
-from .entities.educational_institution import (
-    EducationalInstitution,
-)  # Import models to register them
+from .entities.educational_institution import EducationalInstitution  # Import models to register them
 from .entities.job_application import JobApplication  # Import models to register them
-from .entities.job_recommendation import (
-    JobRecommendation,
-)  # Import models to register them
+from .entities.job_recommendation import JobRecommendation  # Import models to register them
 
 from .api import register_routes
 from .logging import configure_logging, LogLevels

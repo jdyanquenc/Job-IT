@@ -18,16 +18,15 @@ class Company(Base):
     name = Column(String, nullable=False)
     registration_number = Column(String, unique=True, nullable=True)
     description = Column(String, nullable=True)
-    sector = Column(String, nullable=True)
-    industry = Column(String, nullable=True)
     image_url = Column(String, nullable=True)
+    industry = Column(String, nullable=True)
 
     city = Column(String, nullable=True)
     state = Column(String, nullable=True)
     zip = Column(String, nullable=True)
     
     country_id = Column(UUID(as_uuid=True), ForeignKey("country.id"), nullable=True, index=True)
-    
+    sector_id = Column(UUID(as_uuid=True), ForeignKey("sector.id"), nullable=True, index=True)
 
     def __repr__(self):
         return f"<Company(name='{self.name}', registration_number='{self.registration_number}')>"

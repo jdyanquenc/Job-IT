@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { watch } from 'vue';
 import { storeToRefs } from 'pinia';
 
 import { useJobsStore } from '@/stores';
@@ -12,11 +13,14 @@ import JobCard from '@/views/jobs/JobCard.vue'
 
 const jobsStore = useJobsStore();
 const { jobs } = storeToRefs(jobsStore);
+const { jobCountBySector } = storeToRefs(jobsStore);
 
+
+const country_code = ref('US')
 const sort = ref('relevance')
 const page = ref(1)
-const pageSize = ref(12)
-const total = ref(200)
+const page_size = ref(12)
+const total = ref(10)
 
 const selectedIndustries = ref([])
 const selectedSalaries = ref([])
@@ -36,13 +40,7 @@ const pageSizes = [
     { label: '36 / pág', value: 36 }
 ]
 
-const industryOptions = [
-    { id: 1, name: 'Software', count: 12 },
-    { id: 2, name: 'Finance', count: 23 },
-    { id: 3, name: 'Recruting', count: 43 },
-    { id: 4, name: 'Management', count: 65 },
-    { id: 5, name: 'Advertising', count: 76 },
-]
+
 
 const salaryOptions = [
     { id: 1, name: '$0k - $20k', count: 12 },
@@ -54,11 +52,29 @@ const salaryOptions = [
 ]
 
 
-async function handleSearch(value: string) {
-    await jobsStore.find(value)
+async function handleSearch(value: string, pageNumber: number = page.value) {
+    await jobsStore.find(value, pageNumber, page_size.value, country_code.value, sort.value, selectedIndustries.value)
+    await jobsStore.loadJobCountBySector(value, country_code.value)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+function onPageSizeChange(new_page_size: number) {
+    page_size.value = new_page_size
+    handleSearch(searchText.value, 1)
 }
 
 handleSearch('')
+
+// Calcular el total  sumando el conteo de cada sector en un watch
+
+watch(jobCountBySector,
+    (newVal) => {
+        total.value = newVal?.map(sector => sector.count).reduce((a, b) => a + b, 0) || 0
+    },
+    { immediate: true }
+);
+
+
 
 </script>
 
@@ -66,7 +82,8 @@ handleSearch('')
     <div class="w-full mx-auto">
 
         <div class="flex mb-4">
-            <SearchBar v-model="searchText" @search="handleSearch" placeholder="Descubre nuevos retos para ti..." />
+            <SearchBar v-model="searchText" @search="handleSearch(searchText, 1)"
+                placeholder="Descubre nuevos retos para ti..." />
         </div>
 
         <div class="flex flex-col md:flex-row items-start gap-4">
@@ -80,13 +97,13 @@ handleSearch('')
 
                     <hr class="mt-4 mb-3" />
 
-                    <FilterGroup title="Industria" :options="industryOptions" v-model="selectedIndustries"
-                        allOptionLabel="Todos" />
+                    <FilterGroup title="Industria" :options="jobCountBySector" v-model="selectedIndustries"
+                        :showAllOption="false" />
 
                     <hr class="mt-4 mb-3" />
 
                     <FilterGroup title="Rango salarial" :options="salaryOptions" v-model="selectedSalaries"
-                        allOptionLabel="Todos" />
+                        :showAllOption="false" />
                 </nav>
             </aside>
 
@@ -94,15 +111,18 @@ handleSearch('')
             <main class="p-2 w-full md:w-3/4">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center md:block hidden">
-                        <span>Mostrando <strong>41-60 </strong>de <strong>944 </strong>ofertas</span>
+                        <span>Mostrando <strong>{{ (page - 1) * page_size + 1 }}-{{ Math.min(page * page_size, total)
+                                }}</strong> de <strong>{{ total }}</strong> ofertas</span>
                     </div>
                     <div class="flex items-center">
                         <div class="flex items-center gap-3">
                             <span>Mostrar:</span>
-                            <n-select :options="pageSizes" v-model:value="pageSize" :consistent-menu-width="false" />
+                            <n-select :options="pageSizes" v-model:value="page_size" :consistent-menu-width="false"
+                                @update:value="onPageSizeChange" />
 
                             <span>Orden:</span>
-                            <n-select :options="sortOptions" v-model:value="sort" :consistent-menu-width="false" />
+                            <n-select :options="sortOptions" v-model:value="sort" :consistent-menu-width="false"
+                                @update:value="handleSearch(searchText, 1)" />
                         </div>
                     </div>
                 </div>
@@ -116,8 +136,9 @@ handleSearch('')
                         <p v-if="jobs.length === 0" class="text-center">
                             No se encontraron ofertas de trabajo.
                         </p>
-                        <n-pagination v-if="jobs.length !== 0" v-model:page="page" :page-size="pageSize"
+                        <n-pagination v-if="jobs.length !== 0" v-model:page="page" :page-size="page_size"
                             :item-count="total" :page-sizes="pageSizes.map(o => o.value)"
+                            @update:page="handleSearch(searchText)" @update:page-size="onPageSizeChange"
                             class="mt-4 flex justify-center" />
                     </div>
                 </div>

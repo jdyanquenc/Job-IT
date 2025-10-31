@@ -38,9 +38,11 @@ const model = ref<RegisterJob>({
     job_description: '',
     skills: '',
     responsibilities: '',
-    experience: '',
+    experience_min_years: '',
     benefits: '',
-    salary_range: '',
+    salary_min: '',
+    salary_max: '',
+    currency_code: 'USD',
     location: '',
     country_code: '',
     remote: false,
@@ -53,26 +55,21 @@ const model = ref<RegisterJob>({
 })
 
 const experience_options = [
-    { label: 'Sin experiencia', value: 'No experience' },
-    { label: '1 año', value: '1 year' },
-    { label: '2 años', value: '2 years' },
-    { label: '3 años', value: '3 years' },
-    { label: '4 años', value: '4 years' },
-    { label: '5 años', value: '5 years' },
-    { label: '6 años', value: '6 years' },
-    { label: '7 años', value: '7 years' },
-    { label: '8 años', value: '8 years' },
-    { label: '9 años', value: '9 years' },
-    { label: '10+ años', value: '10+ years' }
+    { label: 'Sin experiencia', value: '0' },
+    { label: '1 - 3 años', value: '1' },
+    { label: '3 - 5 años', value: '3' },
+    { label: '5 - 7 años', value: '5' },
+    { label: '7 - 10 años', value: '7' },
+    { label: '10+ años', value: '10' },
 ]
 
 const salary_range_options = [
-    { label: 'Menos de $20,000', value: 'Less than $20,000' },
-    { label: '$20,000 - $40,000', value: '$20,000 - $40,000' },
-    { label: '$40,000 - $60,000', value: '$40,000 - $60,000' },
-    { label: '$60,000 - $80,000', value: '$60,000 - $80,000' },
-    { label: '$80,000 - $100,000', value: '$80,000 - $100,000' },
-    { label: 'Más de $100,000', value: 'More than $100,000' }
+    { label: 'A convenir', value: '0' },
+    { label: '$20,000 - $40,000', value: '20,000' },
+    { label: '$40,000 - $60,000', value: '40,000' },
+    { label: '$60,000 - $80,000', value: '60,000' },
+    { label: '$80,000 - $100,000', value: '80,000' },
+    { label: 'Más de $100,000', value: '100,000' }
 ]
 
 const countries = [
@@ -125,7 +122,12 @@ const rules: FormRules = {
     benefits: {
         required: false
     },
-    salary_range: {
+    salary_min: {
+        required: true,
+        message: 'Este campo es requerido',
+        trigger: 'blur'
+    },
+    salary_max: {
         required: true,
         message: 'Este campo es requerido',
         trigger: 'blur'
@@ -175,9 +177,10 @@ async function loadJobData(id: string) {
         model.value.job_description = job.value.job_description;
         model.value.skills = job.value.skills;
         model.value.responsibilities = job.value.responsibilities;
-        model.value.experience = job.value.experience;
+        model.value.experience_min_years = job.value.experience_min_years;
         model.value.benefits = job.value.benefits;
-        model.value.salary_range = job.value.salary_range;
+        model.value.salary_min = job.value.salary_min;
+        model.value.salary_max = job.value.salary_max;
         model.value.remote = job.value.remote;
         model.value.tags = job.value.tags || [];
         model.value.employment_type = job.value.employment_type;
@@ -280,12 +283,12 @@ async function onSubmit() {
                         </n-form-item>
 
                         <n-form-item path="experience" label="Experiencia">
-                            <n-select v-model:value="model.experience" :options="experience_options"
+                            <n-select v-model:value="model.experience_min_years" :options="experience_options"
                                 placeholder="Selecciona la experiencia requerida" />
                         </n-form-item>
 
                         <n-form-item path="salary_range" label="Rango salarial">
-                            <n-select v-model:value="model.salary_range" :options="salary_range_options"
+                            <n-select v-model:value="model.salary_min" :options="salary_range_options"
                                 placeholder="Selecciona el rango salarial" />
                         </n-form-item>
 

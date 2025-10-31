@@ -7,19 +7,31 @@ from src.entities.job import EmploymentType
 from src.users.models import UserResponse
 
 
+
+class JobCountBySectorResponse(BaseModel):
+    id: UUID
+    name: str
+    count: int
+
 class JobBase(BaseModel):
     job_title: str
     job_description: str
     responsibilities: str
     skills: str
     benefits: str
-    experience: str
     remote: bool
     location: str
     employment_type: EmploymentType
+    experience_min_years: Optional[int] = None
+    salary_min: Optional[int] = None
+    salary_max: Optional[int] = None
+    currency_code: Optional[str] = None
+    
     tags: Optional[list[str]] = None
-    salary_range: Optional[str] = None
     expires_at: Optional[datetime] = None
+    contact_person: Optional[str] = None
+    contact: Optional[str] = None
+    
 
 
 class JobCreate(JobBase):
@@ -36,8 +48,12 @@ class JobResponse(BaseModel):
     job_short_description: str
     remote: bool
     employment_type: EmploymentType
+    salary_min: Optional[int] = None
+    salary_max: Optional[int] = None
+    experience_min_years: Optional[int] = None
+    currency_code: Optional[str] = None
     tags: list[str]
-    salary_range: str
+
     created_at: datetime 
     expires_at: Optional[datetime] = None
     company_name: str
