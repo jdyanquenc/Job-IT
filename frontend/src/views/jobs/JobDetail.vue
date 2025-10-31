@@ -111,7 +111,8 @@ const similarJobs = [
                             <div class="flex items-center space-x-2">
                                 <n-icon :component="CashOutline" />
                                 <n-text strong>Rango salarial:</n-text>
-                                <n-text>{{ job.salary_range }}</n-text>
+                                <n-text>{{ (Number(job.salary_min || 0) / 1000) }}k - {{ (Number(job.salary_max || 0)
+                                    /1000) }}k {{ job.currency_code }}</n-text>
                             </div>
                         </n-gi>
 
@@ -119,7 +120,7 @@ const similarJobs = [
                             <div class="flex items-center space-x-2">
                                 <n-icon :component="BarChartOutline" />
                                 <n-text strong>Experiencia:</n-text>
-                                <n-text>{{ job.experience }}</n-text>
+                                <n-text>{{ job.experience_min_years }} años</n-text>
                             </div>
                         </n-gi>
 
@@ -136,7 +137,7 @@ const similarJobs = [
                                 <n-icon :component="CalendarOutline" />
                                 <n-text strong>Fecha límite:</n-text>
                                 <n-text>{{ job.expires_at ? new Date(job.expires_at).toLocaleDateString() : 'N/A'
-                                    }}</n-text>
+                                }}</n-text>
                             </div>
                         </n-gi>
 
@@ -263,7 +264,7 @@ const similarJobs = [
                                 <div class="flex justify-between text-sm text-gray-500 space-x-2">
                                     <span class="text-primary-500 font-semibold">{{ job.salary }}</span>
                                     <n-icon class="items-right" :component="LocationOutline" /> <span>{{ job.location
-                                        }}</span>
+                                    }}</span>
                                 </div>
                             </div>
                         </div>

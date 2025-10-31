@@ -16,7 +16,9 @@ export interface Job {
   remote: boolean
   employment_type: EmploymentType
   tags: [string]
-  salary_range: string
+  salary_min: string
+  salary_max: string
+  currency_code: string
   created_at: Date
   updated_at: Date | null
   expires_at: Date | null
@@ -34,7 +36,7 @@ export interface JobDetail {
   responsibilities: string
   skills: string
   benefits: string
-  experience: string
+  experience_min_years: string
   remote: boolean
   employment_type: EmploymentType
   location: string
@@ -42,7 +44,9 @@ export interface JobDetail {
   company_image_url: string
   company_name: string
   tags: []
-  salary_range: string
+  salary_min: string
+  salary_max: string
+  currency_code: string
   has_applied: boolean
   created_at: Date
   updated_at: Date | null
@@ -52,4 +56,10 @@ export interface JobDetail {
 export interface RegisterJob extends Omit<JobDetail, 'id' | 'created_at' | 'updated_at'> {
   location: string
   country_code: string
+}
+
+export interface JobCountBySector {
+  id: string
+  name: string
+  count: number
 }

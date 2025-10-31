@@ -1,7 +1,7 @@
 import pytest
 from uuid import uuid4
-from src.todos import service as todos_service
-from src.todos.models import TodoCreate
+from src.companies import service as todos_service
+from src.companies.models import TodoCreate
 from src.exceptions import JobNotFoundError
 from src.entities.todo import Todo
 

@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { ref, watch } from "vue"
 import { NCheckboxGroup, NCheckbox, NTag } from "naive-ui"
 
@@ -9,7 +9,7 @@ const props = defineProps({
         required: true
     },
     options: {
-        type: Array,
+        type: Array<{ id: number | string; name: string; count: number }>,
         required: true,
     },
     showAllOption: {
@@ -47,7 +47,7 @@ const toogleAll = () => {
 }
 
 // Manejar cambios de selección
-const handleChange = (values) => {
+const handleChange = (values: number[]) => {
     // Eliminar duplicados y actualizar el modelo
     selected.value = [...new Set(values)]
 
@@ -78,7 +78,7 @@ watch(
                 {{ allOptionLabel }}
             </n-checkbox>
             <n-tag round size="small" :bordered="false" type="info" class="shadow !bg-green-100 !text-green-600">
-                {{options.map(opt => opt.count).reduce((a, b) => a + b, 0)}}
+                {{options?.map(opt => opt.count).reduce((a, b) => a + b, 0)}}
             </n-tag>
         </div>
 
