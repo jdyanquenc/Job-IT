@@ -119,7 +119,7 @@ def get_company_jobs(current_user: TokenData, db: Session, query: str, page: int
     return jobs
 
 
-def get_active_jobs(current_user: OptionalCurrentUser, db: Session, country_code: str, query: str, page: int = 1, page_size: int = 20, sort_by: str = 'relevance', sector_ids: Optional[list[UUID]] = None) -> list[models.JobResponse]:
+def get_active_jobs(current_user: OptionalCurrentUser, db: Session, country_code: str, query: str, page: int = 1, page_size: int = 20, sort_by: str = 'relevance', sector_ids: list[UUID] = None) -> list[models.JobResponse]:
 
     if sort_by not in ['relevance', 'date', 'salary']:
         sort_by = 'relevance'
@@ -188,8 +188,14 @@ def get_active_jobs(current_user: OptionalCurrentUser, db: Session, country_code
     return jobs
 
 
-def get_active_job_sectors(db: Session, country_code: str, query: str) -> list[models.JobCountBySectorResponse]:
-    stmt = text("""
+def get_active_job_sectors(db: Session, country_code: str, query: str, sector_ids: list[UUID]) -> list[models.JobCountBySectorResponse]:
+
+    if sector_ids:
+        sector_filter = "AND c.sector_id = ANY(:sector_ids)"
+    else:
+        sector_filter = ""
+
+    stmt = text(f"""
         SELECT s.id, s."name", COALESCE(z.job_count, 0)
         FROM sector s
         LEFT JOIN (
@@ -198,6 +204,7 @@ def get_active_job_sectors(db: Session, country_code: str, query: str) -> list[m
             JOIN company c ON c.id = j.company_id
             JOIN country co ON co.id = j.country_id
             WHERE is_active = true
+            {sector_filter}
             AND co.iso_code = :country_code
             AND (:query = '' OR search_vector @@ plainto_tsquery('english', :query))
             GROUP BY c.sector_id
@@ -206,7 +213,8 @@ def get_active_job_sectors(db: Session, country_code: str, query: str) -> list[m
     """)
     results = db.execute(stmt, {
         "country_code": country_code,
-        "query": query
+        "query": query,
+        "sector_ids": sector_ids
     }).fetchall()
 
     sectors = [

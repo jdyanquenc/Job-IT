@@ -43,8 +43,8 @@ def get_active_jobs(db: DbSession, current_user: OptionalCurrentUser, country_co
 
 
 @router.get("/sectors/counts", response_model=List[models.JobCountBySectorResponse])
-def get_active_job_sectors(db: DbSession, country_code: str, query: Optional[str] = None):
-    return service.get_active_job_sectors(db, country_code, query)
+def get_active_job_sectors(db: DbSession, country_code: str, query: Optional[str] = None, sector_ids: Optional[list[UUID]] = None):
+    return service.get_active_job_sectors(db, country_code, query, sector_ids)
 
 
 @router.get("/{job_id}", response_model=models.JobDetailResponse)

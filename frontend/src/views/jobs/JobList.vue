@@ -60,7 +60,7 @@ async function handleSearch(value: string, pageNumber: number = page.value) {
 
 function onPageSizeChange(new_page_size: number) {
     page_size.value = new_page_size
-    handleSearch(searchText.value)
+    handleSearch(searchText.value, 1)
 }
 
 handleSearch('')
@@ -111,12 +111,14 @@ watch(jobCountBySector,
             <main class="p-2 w-full md:w-3/4">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center md:block hidden">
-                        <span>Mostrando <strong>41-60 </strong>de <strong>944 </strong>ofertas</span>
+                        <span>Mostrando <strong>{{ (page - 1) * page_size + 1 }}-{{ Math.min(page * page_size, total)
+                                }}</strong> de <strong>{{ total }}</strong> ofertas</span>
                     </div>
                     <div class="flex items-center">
                         <div class="flex items-center gap-3">
                             <span>Mostrar:</span>
-                            <n-select :options="pageSizes" v-model:value="page_size" :consistent-menu-width="false" />
+                            <n-select :options="pageSizes" v-model:value="page_size" :consistent-menu-width="false"
+                                @update:value="onPageSizeChange" />
 
                             <span>Orden:</span>
                             <n-select :options="sortOptions" v-model:value="sort" :consistent-menu-width="false"

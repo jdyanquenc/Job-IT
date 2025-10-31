@@ -89,7 +89,8 @@ watch(
                     {{ item.name }}
                 </n-checkbox>
 
-                <n-tag round size="small" :bordered="false" type="info" class="shadow !bg-green-100 !text-green-600">
+                <n-tag round size="small" :bordered="false" type="info"
+                    :class="item.count > 0 ? 'shadow !bg-green-100 !text-green-600' : 'shadow !bg-gray-100 !text-gray-600'">
                     {{ item.count }}
                 </n-tag>
             </div>
