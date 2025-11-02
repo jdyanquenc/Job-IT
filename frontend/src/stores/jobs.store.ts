@@ -34,7 +34,7 @@ export const useJobsStore = defineStore('jobit-jobs', {
         country_code,
         sort_by: sort,
         sector_ids: sector_ids.join(','),
-        salary_ids: salary_ids.join(','),
+        salary_ranges: salary_ids.join(','),
       }
       url.search = new URLSearchParams(params).toString()
       this.jobs = await http.get(url.toString())
@@ -51,7 +51,7 @@ export const useJobsStore = defineStore('jobit-jobs', {
         query,
         country_code,
         sector_ids: sector_ids.join(','),
-        salary_ids: salary_ids.join(','),
+        salary_ranges: salary_ids.join(','),
       }
       url.search = new URLSearchParams(params).toString()
       this.jobCountBySector = await http.get(url.toString())
@@ -68,7 +68,7 @@ export const useJobsStore = defineStore('jobit-jobs', {
         query,
         country_code,
         sector_ids: sector_ids.join(','),
-        salary_ids: salary_ids.join(','),
+        salary_ranges: salary_ids.join(','),
       }
       url.search = new URLSearchParams(params).toString()
       this.jobCountBySalary = await http.get(url.toString())
