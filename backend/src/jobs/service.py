@@ -119,7 +119,7 @@ def get_company_jobs(current_user: TokenData, db: Session, query: str, page: int
     return jobs
 
 
-def get_active_jobs(current_user: OptionalCurrentUser, db: Session, country_code: str, query: str, page: int = 1, page_size: int = 20, sort_by: str = 'relevance', sector_ids: list[UUID] = None) -> list[models.JobResponse]:
+def get_active_jobs(current_user: OptionalCurrentUser, db: Session, country_code: str, query: str, page: int, page_size: int, sort_by: str, sector_ids: list[UUID], salary_ranges: list[int]) -> list[models.JobResponse]:
 
     if sort_by not in ['relevance', 'date', 'salary']:
         sort_by = 'relevance'
@@ -128,6 +128,11 @@ def get_active_jobs(current_user: OptionalCurrentUser, db: Session, country_code
         sector_filter = "AND c.sector_id = ANY(:sector_ids)"
     else:
         sector_filter = ""
+    
+    if salary_ranges:
+        salary_filter = "AND EXISTS (SELECT 1 FROM job_salary js WHERE (j.salary_min >= js.min_salary AND j.salary_max <= js.max_salary) AND js.id = ANY(:salary_ranges))"
+    else:
+        salary_filter = ""
 
     order_by_clause = {
         'relevance': "ORDER BY ts_rank_cd(search_vector, plainto_tsquery('english', :query)) DESC",
@@ -136,7 +141,7 @@ def get_active_jobs(current_user: OptionalCurrentUser, db: Session, country_code
     }.get(sort_by)
 
     stmt = text(f"""
-        SELECT j.id, j.job_title, j.job_short_description, j.remote, j.employment_type, j.tags, j.salary_min, j.salary_max, j.experience_min_years, cu.code, j.expires_at, j.created_at, c.name AS company_name, j.location, co.iso_code AS country_code, c.image_url, (ja.job_id IS NOT NULL) AS has_applied
+        SELECT j.id, j.job_title, j.job_short_description, j.remote, j.employment_type, j.tags, (j.salary_min / cu.divisor), (j.salary_max / cu.divisor), j.experience_min_years, cu.code, j.expires_at, j.created_at, c.name AS company_name, j.location, co.iso_code AS country_code, c.image_url, (ja.job_id IS NOT NULL) AS has_applied
         FROM job_entry j
         JOIN company c ON c.id = j.company_id
         JOIN country co ON co.id = j.country_id
@@ -144,8 +149,9 @@ def get_active_jobs(current_user: OptionalCurrentUser, db: Session, country_code
         LEFT JOIN job_application ja ON ja.job_id = j.id AND ja.user_id = :user_id
         WHERE is_active = true
         AND co.iso_code = :country_code
-        {sector_filter}
         AND (:query = '' OR search_vector @@ plainto_tsquery('english', :query))
+        {sector_filter}
+        {salary_filter}
         {order_by_clause}
         LIMIT :limit OFFSET :offset
     """)
@@ -188,12 +194,17 @@ def get_active_jobs(current_user: OptionalCurrentUser, db: Session, country_code
     return jobs
 
 
-def get_active_job_sectors(db: Session, country_code: str, query: str, sector_ids: list[UUID]) -> list[models.JobCountBySectorResponse]:
+def get_job_count_by_sectors(db: Session, country_code: str, query: str, sector_ids: list[UUID], salary_ranges: list[int]) -> list[models.JobCountBySectorResponse]:
 
     if sector_ids:
         sector_filter = "AND c.sector_id = ANY(:sector_ids)"
     else:
         sector_filter = ""
+
+    if salary_ranges:
+        salary_filter = "AND EXISTS (SELECT 1 FROM job_salary js WHERE (j.salary_min >= js.min_salary AND j.salary_max <= js.max_salary) AND js.id = ANY(:salary_ranges))"
+    else:
+        salary_filter = ""
 
     stmt = text(f"""
         SELECT s.id, s."name", COALESCE(z.job_count, 0)
@@ -204,9 +215,10 @@ def get_active_job_sectors(db: Session, country_code: str, query: str, sector_id
             JOIN company c ON c.id = j.company_id
             JOIN country co ON co.id = j.country_id
             WHERE is_active = true
-            {sector_filter}
             AND co.iso_code = :country_code
             AND (:query = '' OR search_vector @@ plainto_tsquery('english', :query))
+            {sector_filter}
+            {salary_filter}
             GROUP BY c.sector_id
         ) z ON z.sector_id = s.id
         ORDER BY s.sort
@@ -214,7 +226,8 @@ def get_active_job_sectors(db: Session, country_code: str, query: str, sector_id
     results = db.execute(stmt, {
         "country_code": country_code,
         "query": query,
-        "sector_ids": sector_ids
+        "sector_ids": sector_ids,
+        "salary_ranges": salary_ranges
     }).fetchall()
 
     sectors = [
@@ -229,6 +242,61 @@ def get_active_job_sectors(db: Session, country_code: str, query: str, sector_id
     logging.info(f"Retrieved {len(sectors)} job sectors for country {country_code} with query '{query}'")
     return sectors
 
+
+def get_job_count_by_salaries(db: Session, country_code: str, query: str, sector_ids: list[UUID], salary_ranges: list[int]) -> list[models.JobCountBySalaryResponse]:
+
+    if sector_ids:
+        sector_filter = "AND c.sector_id = ANY(:sector_ids)"
+    else:
+        sector_filter = ""
+    
+    if salary_ranges:
+        salary_filter = "AND js.id = ANY(:salary_ranges)"
+    else:
+        salary_filter = ""
+
+    stmt = text(f"""
+        SELECT
+            js.id AS range_id,
+            js.display_name,
+            COALESCE(z.job_count, 0) AS job_count
+        FROM job_salary js
+        LEFT JOIN (
+            SELECT  
+                js.id,
+                count(1) AS job_count
+            FROM job_entry j
+            JOIN country co ON co.id = j.country_id
+            JOIN job_salary js ON (j.salary_min >= js.min_salary AND j.salary_max <= js.max_salary)
+            WHERE j.is_active = true
+            AND co.iso_code = :country_code
+            AND (:query = '' OR j.search_vector @@ plainto_tsquery('english', :query))
+            {sector_filter}
+            {salary_filter}
+            GROUP BY js.id
+
+        ) z ON z.id = js.id
+        ORDER BY js.id DESC 
+
+    """)
+    results = db.execute(stmt, {
+        "country_code": country_code,
+        "query": query,
+        "sector_ids": sector_ids,
+        "salary_ranges": salary_ranges
+    }).fetchall()
+
+    salaries = [
+        models.JobCountBySalaryResponse(
+            id = range_id,
+            name = display_name,
+            count = job_count
+        )
+        for range_id, display_name, job_count in results
+    ]
+
+    logging.info(f"Retrieved {len(salaries)} job salary ranges for country {country_code}")
+    return salaries
 
 def get_job_by_id(current_user: OptionalCurrentUser, db: Session, job_id: UUID) -> models.JobDetailResponse:
     job = db.query(JobEntry).filter(JobEntry.id == job_id).first()
@@ -393,10 +461,11 @@ def get_job_applications(current_user: TokenData, db: Session, query: str, page:
         raise UserNotFoundError(current_user.get_uuid())
 
     stmt = text("""
-        SELECT j.id, j.job_title, j.job_short_description, j.remote, j.employment_type, j.tags, j.salary_range, j.expires_at, j.created_at, c.name AS company_name, j.location, co.iso_code AS country_code, c.image_url, (ja.job_id IS NOT NULL) AS has_applied
+        SELECT j.id, j.job_title, j.job_short_description, j.remote, j.employment_type, j.tags, (j.salary_min / cu.divisor), (j.salary_max / cu.divisor), cu.code, j.expires_at, j.created_at, c.name AS company_name, j.location, co.iso_code AS country_code, c.image_url, (ja.job_id IS NOT NULL) AS has_applied
         FROM job_entry j
         JOIN company c ON c.id = j.company_id
         JOIN country co ON co.id = j.country_id
+        JOIN currency cu ON cu.id = j.currency_id
         JOIN job_application ja ON ja.job_id = j.id AND ja.user_id = :user_id
         WHERE j.is_active = true
         AND ja.user_id = :user_id
@@ -419,7 +488,9 @@ def get_job_applications(current_user: TokenData, db: Session, query: str, page:
             remote = remote,
             employment_type = employment_type,
             tags = tags,
-            salary_range = salary_range,
+            salary_min = salary_min,
+            salary_max = salary_max,
+            currency_code = currency_code,
             expires_at = expires_at,
             created_at = created_at,
             location = location,
@@ -428,7 +499,7 @@ def get_job_applications(current_user: TokenData, db: Session, query: str, page:
             company_image_url = image_url or "",
             has_applied = has_applied
         )
-        for id, job_title, job_short_description, remote, employment_type, tags, salary_range, expires_at, created_at, company_name, location, country_code, image_url, has_applied in results
+        for id, job_title, job_short_description, remote, employment_type, tags, salary_min, salary_max, currency_code, expires_at, created_at, company_name, location, country_code, image_url, has_applied in results
     ]
 
     return applications
@@ -441,10 +512,11 @@ def get_job_recommendations(current_user: TokenData, db: Session, query: str, pa
         raise UserNotFoundError(current_user.get_uuid())
 
     stmt = text("""
-        SELECT j.id, j.job_title, j.job_short_description, j.remote, j.employment_type, j.tags, j.salary_range, j.expires_at, j.created_at, c.name AS company_name, j.location, co.iso_code AS country_code, c.image_url, (ja.job_id IS NOT NULL) AS has_applied
+        SELECT j.id, j.job_title, j.job_short_description, j.remote, j.employment_type, j.tags, (j.salary_min / cu.divisor), (j.salary_max / cu.divisor), cu.code, j.expires_at, j.created_at, c.name AS company_name, j.location, co.iso_code AS country_code, c.image_url, (ja.job_id IS NOT NULL) AS has_applied
         FROM job_entry j
         JOIN company c ON c.id = j.company_id
         JOIN country co ON co.id = j.country_id
+        JOIN currency cu ON cu.id = j.currency_id
         JOIN job_recommendation jr ON jr.job_id = j.id AND jr.user_id = :user_id
         LEFT JOIN job_application ja ON ja.job_id = j.id AND ja.user_id = :user_id
         WHERE j.is_active = true
@@ -468,7 +540,9 @@ def get_job_recommendations(current_user: TokenData, db: Session, query: str, pa
             remote = remote,
             employment_type = employment_type,
             tags = tags,
-            salary_range = salary_range,
+            salary_min = salary_min,
+            salary_max = salary_max,
+            currency_code = currency_code,
             expires_at = expires_at,
             created_at = created_at,
             location = location,
@@ -477,7 +551,7 @@ def get_job_recommendations(current_user: TokenData, db: Session, query: str, pa
             company_image_url = image_url or "",
             has_applied = has_applied
         )
-        for id, job_title, job_short_description, remote, employment_type, tags, salary_range, expires_at, created_at, company_name, location, country_code, image_url, has_applied in results
+        for id, job_title, job_short_description, remote, employment_type, tags, salary_min, salary_max, currency_code, expires_at, created_at, company_name, location, country_code, image_url, has_applied in results
     ]
 
     return recommendations
