@@ -10,6 +10,7 @@ class EmploymentType(str, enum.Enum):
     FullTime = "Full-time"
     PartTime = "Part-time"
     Contract = "Contract"
+    Other = "Other"
 
 
 class JobEntry(Base):

@@ -1,5 +1,5 @@
-from fastapi import APIRouter, status
-from typing import List, Optional
+from fastapi import APIRouter, Depends, Query, status
+from typing import List, Optional, Union
 from uuid import UUID
 
 from ..entities.user import Role
@@ -38,18 +38,13 @@ def delete_job(db: DbSession, job_id: UUID, current_user: CurrentUser):
 
 
 @router.get("/search", response_model=List[models.JobResponse])
-def get_active_jobs(db: DbSession, current_user: OptionalCurrentUser, country_code: str, query: Optional[str] = None, page: Optional[int] = None, page_size: Optional[int] = None, sort_by: Optional[str] = None, sector_ids: Optional[list[UUID]] = None, salary_ranges: Optional[list[int]] = None):
-    return service.get_active_jobs(current_user, db, country_code, query, page, page_size, sort_by, sector_ids, salary_ranges)
+def get_active_jobs(db: DbSession, current_user: OptionalCurrentUser, filters: models.JobFilters = Depends(models.get_job_filters)):
+    return service.get_active_jobs(current_user, db, filters)
 
 
-@router.get("/sectors/counts", response_model=List[models.JobCountBySectorResponse])
-def get_job_count_by_sectors(db: DbSession, country_code: str, query: Optional[str] = None, sector_ids: Optional[list[UUID]] = None, salary_ranges: Optional[list[int]] = None):
-    return service.get_job_count_by_sectors(db, country_code, query, sector_ids, salary_ranges)
-
-
-@router.get("/salaries/counts", response_model=List[models.JobCountBySalaryResponse])
-def get_job_count_by_salaries(db: DbSession, country_code: str, query: Optional[str] = None, sector_ids: Optional[list[UUID]] = None, salary_ranges: Optional[list[int]] = None):
-    return service.get_job_count_by_salaries(db, country_code, query, sector_ids, salary_ranges)
+@router.get("/counts", response_model=List[models.JobCountsResponse])
+def get_active_jobs_counts(db: DbSession, filters: models.JobFilters = Depends(models.get_job_filters)):
+    return service.get_active_jobs_counts(db, filters)
 
 
 @router.get("/{job_id}", response_model=models.JobDetailResponse)
@@ -79,3 +74,4 @@ def get_job_applications(db: DbSession, current_user: CurrentUser, query: Option
 @require_any_role([Role.CANDIDATE])
 def get_job_recommendations(db: DbSession, current_user: CurrentUser, query: Optional[str] = None, page: Optional[int] = None):
     return service.get_job_recommendations(current_user, db, query, page)
+

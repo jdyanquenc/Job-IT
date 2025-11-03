@@ -68,17 +68,18 @@ const { handleApply } = useJobApplication()
         <!-- Skills -->
         <div class="flex flex-wrap gap-2 mb-3">
             <n-tag v-for="skill in props.job.tags" :key="skill" :type="hover ? 'success' : 'default'" round>{{ skill
-            }}</n-tag>
+                }}</n-tag>
         </div>
 
         <!-- Footer -->
         <div class="flex items-center justify-between">
             <div>
-                <span class="font-bold text-lg">
+                <span class="font-bold text-lg" v-if="props.job.currency_code">
                     {{ Number(props.job.salary_min) }}k - {{ Number(props.job.salary_max) }}k <small>{{
                         props.job.currency_code
-                        }}</small>
+                    }}</small>
                 </span>
+                <span class="font-bold text-lg" v-else>A convenir</span>
             </div>
             <n-button type="primary" :ghost="!hover" @click="handleApply(job.id)" :disabled="job.has_applied">
                 {{ job.has_applied ? 'Postulado' : 'Postularme' }}

@@ -1,22 +1,49 @@
 from datetime import datetime
-import string
 from typing import Optional
-from uuid import UUID
 from pydantic import BaseModel, ConfigDict, field_validator
 from src.entities.job import EmploymentType
-from src.users.models import UserResponse
+from fastapi import Query
+from uuid import UUID
 
 
+import logging
 
-class JobCountBySectorResponse(BaseModel):
-    id: UUID
+class JobFilters(BaseModel):
+    country_code: str
+    query: Optional[str] = None
+    sector_ids: Optional[list[UUID]] = None
+    salary_ranges: Optional[list[int]] = None
+
+    sort_by: Optional[str] = "relevance"
+    page: int = 1
+    page_size: int = 20
+
+    @field_validator("salary_ranges", mode="before")
+    def parse_salary_ranges(cls, v):
+        if not v:
+            return []
+        if isinstance(v, str):
+            return [int(x) for x in v.split(",") if x.strip().isdigit()]
+        return v
+
+
+    @field_validator("sector_ids", mode="before")
+    def parse_sector_ids(cls, v):
+        print("sector_ids BEFORE:", type(v), v)
+
+        if not v:
+            return []
+        if isinstance(v, str):
+            return [UUID(x) for x in v.split(",") if x.strip()]
+        return v
+
+
+class JobCountsResponse(BaseModel):
+    type: str
+    id: str
     name: str
     count: int
 
-class JobCountBySalaryResponse(BaseModel):
-    id: int
-    name: str
-    count: int
 
 class JobBase(BaseModel):
     job_title: str
@@ -57,7 +84,7 @@ class JobResponse(BaseModel):
     salary_max: Optional[int] = None
     experience_min_years: Optional[int] = None
     currency_code: Optional[str] = None
-    tags: list[str]
+    tags: list[str] = []
 
     created_at: datetime 
     expires_at: Optional[datetime] = None
@@ -112,3 +139,18 @@ class JobApplicationResponse(JobResponse):
 
 class JobRecommendationResponse(JobResponse):
     pass
+
+
+
+def get_job_filters(
+    query: Optional[str] = Query(None),
+    country_code: str = Query(...),
+    sector_ids: Optional[str] = Query(None),
+    salary_ranges: Optional[str] = Query(None),
+) -> JobFilters:
+    return JobFilters(
+        query=query,
+        country_code=country_code,
+        sector_ids=sector_ids,
+        salary_ranges=salary_ranges
+    )

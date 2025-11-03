@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 
 import { http } from '@/helpers'
-import type { RegisterJob, Job, JobDetail, JobCountBySector, JobCountBySalary } from '@/types'
+import type { RegisterJob, Job, JobDetail, JobCountSummary } from '@/types'
 
 const baseUrl = `${import.meta.env.VITE_API_URL}/jobs`
 
@@ -9,8 +9,9 @@ export const useJobsStore = defineStore('jobit-jobs', {
   state: () => ({
     jobs: [] as Job[],
     job: {} as JobDetail,
-    jobCountBySector: [] as JobCountBySector[],
-    jobCountBySalary: [] as JobCountBySalary[],
+    jobCountBySector: [] as JobCountSummary[],
+    jobCountBySalary: [] as JobCountSummary[],
+    jobCountTotal: 0,
   }),
   actions: {
     async register(request: RegisterJob) {
@@ -40,13 +41,13 @@ export const useJobsStore = defineStore('jobit-jobs', {
       this.jobs = await http.get(url.toString())
     },
 
-    async loadJobCountBySector(
+    async loadJobCounts(
       query: string = '',
       country_code: string = '',
       sector_ids: string[] = [],
       salary_ids: string[] = [],
     ) {
-      const url = new URL(`${baseUrl}/sectors/counts`)
+      const url = new URL(`${baseUrl}/counts`)
       const params = {
         query,
         country_code,
@@ -54,24 +55,25 @@ export const useJobsStore = defineStore('jobit-jobs', {
         salary_ranges: salary_ids.join(','),
       }
       url.search = new URLSearchParams(params).toString()
-      this.jobCountBySector = await http.get(url.toString())
-    },
-
-    async loadJobCountBySalary(
-      query: string = '',
-      country_code: string = '',
-      sector_ids: string[] = [],
-      salary_ids: string[] = [],
-    ) {
-      const url = new URL(`${baseUrl}/salaries/counts`)
-      const params = {
-        query,
-        country_code,
-        sector_ids: sector_ids.join(','),
-        salary_ranges: salary_ids.join(','),
-      }
-      url.search = new URLSearchParams(params).toString()
-      this.jobCountBySalary = await http.get(url.toString())
+      const counts = await http.get(url.toString())
+      this.jobCountTotal =
+        counts
+          .filter((x: { type: string }) => x.type === 'TOTAL')
+          .map((x: { count: number }) => x.count)[0] || 0
+      this.jobCountBySector = counts
+        .filter((x: { type: string }) => x.type === 'SECTOR')
+        .map((x: { id: string; name: string; count: number }) => ({
+          id: x.id,
+          name: x.name,
+          count: x.count,
+        }))
+      this.jobCountBySalary = counts
+        .filter((x: { type: string }) => x.type === 'SALARY')
+        .map((x: { id: string; name: string; count: number }) => ({
+          id: x.id,
+          name: x.name,
+          count: x.count,
+        }))
     },
 
     async getById(id: string) {

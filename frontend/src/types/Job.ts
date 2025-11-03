@@ -58,13 +58,7 @@ export interface RegisterJob extends Omit<JobDetail, 'id' | 'created_at' | 'upda
   country_code: string
 }
 
-export interface JobCountBySector {
-  id: string
-  name: string
-  count: number
-}
-
-export interface JobCountBySalary {
+export interface JobCountSummary {
   id: string
   name: string
   count: number
