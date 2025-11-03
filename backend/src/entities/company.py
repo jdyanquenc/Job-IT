@@ -19,11 +19,11 @@ class Company(Base):
     registration_number = Column(String, unique=True, nullable=True)
     description = Column(String, nullable=True)
     image_url = Column(String, nullable=True)
-    industry = Column(String, nullable=True)
-
+    
+    zip_code = Column(String, nullable=True)
+    address = Column(String, nullable=True)
     city = Column(String, nullable=True)
     state = Column(String, nullable=True)
-    zip = Column(String, nullable=True)
     
     country_id = Column(UUID(as_uuid=True), ForeignKey("country.id"), nullable=True, index=True)
     sector_id = Column(UUID(as_uuid=True), ForeignKey("sector.id"), nullable=True, index=True)

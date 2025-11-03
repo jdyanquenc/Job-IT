@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { watch } from 'vue';
 import { storeToRefs } from 'pinia';
 
 import { useJobsStore } from '@/stores';
@@ -15,13 +14,13 @@ const jobsStore = useJobsStore();
 const { jobs } = storeToRefs(jobsStore);
 const { jobCountBySector } = storeToRefs(jobsStore);
 const { jobCountBySalary } = storeToRefs(jobsStore);
+const { jobCountTotal } = storeToRefs(jobsStore);
 
 
 const country_code = ref('US')
 const sort = ref('relevance')
 const page = ref(1)
 const page_size = ref(12)
-const total = ref(10)
 
 const selectedIndustries = ref([])
 const selectedSalaries = ref([])
@@ -42,9 +41,10 @@ const pageSizes = [
 
 
 async function handleSearch(value: string, pageNumber: number = page.value) {
-    await jobsStore.find(value, pageNumber, page_size.value, country_code.value, sort.value, selectedIndustries.value, selectedSalaries.value)
-    await jobsStore.loadJobCountBySector(value, country_code.value, selectedIndustries.value, selectedSalaries.value)
-    await jobsStore.loadJobCountBySalary(value, country_code.value, selectedIndustries.value, selectedSalaries.value)
+    await Promise.all([
+        jobsStore.find(value, pageNumber, page_size.value, country_code.value, sort.value, selectedIndustries.value, selectedSalaries.value),
+        jobsStore.loadJobCounts(value, country_code.value, selectedIndustries.value, selectedSalaries.value)
+    ]);
     window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
@@ -54,17 +54,6 @@ function onPageSizeChange(new_page_size: number) {
 }
 
 handleSearch('')
-
-// Calcular el total  sumando el conteo de cada sector en un watch
-
-watch(jobCountBySector,
-    (newVal) => {
-        total.value = newVal?.map(sector => sector.count).reduce((a, b) => a + b, 0) || 0
-    },
-    { immediate: true }
-);
-
-
 
 </script>
 
@@ -87,13 +76,14 @@ watch(jobCountBySector,
 
                     <hr class="mt-4 mb-3" />
 
-                    <FilterGroup title="Industria" :options="jobCountBySector" v-model="selectedIndustries"
+                    <FilterGroup title="Rango salarial" :options="jobCountBySalary" v-model="selectedSalaries"
                         :showAllOption="false" />
 
                     <hr class="mt-4 mb-3" />
 
-                    <FilterGroup title="Rango salarial" :options="jobCountBySalary" v-model="selectedSalaries"
+                    <FilterGroup title="Industria" :options="jobCountBySector" v-model="selectedIndustries"
                         :showAllOption="false" />
+
                 </nav>
             </aside>
 
@@ -101,8 +91,9 @@ watch(jobCountBySector,
             <main class="p-2 w-full md:w-3/4">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center md:block hidden">
-                        <span>Mostrando <strong>{{ (page - 1) * page_size + 1 }}-{{ Math.min(page * page_size, total)
-                                }}</strong> de <strong>{{ total }}</strong> ofertas</span>
+                        <span>Mostrando <strong>{{ (page - 1) * page_size + 1 }}-{{ Math.min(page * page_size,
+                            jobCountTotal)
+                                }}</strong> de <strong>{{ jobCountTotal }}</strong> ofertas</span>
                     </div>
                     <div class="flex items-center">
                         <div class="flex items-center gap-3">
@@ -127,7 +118,7 @@ watch(jobCountBySector,
                             No se encontraron ofertas de trabajo.
                         </p>
                         <n-pagination v-if="jobs.length !== 0" v-model:page="page" :page-size="page_size"
-                            :item-count="total" :page-sizes="pageSizes.map(o => o.value)"
+                            :item-count="jobCountTotal" :page-sizes="pageSizes.map(o => o.value)"
                             @update:page="handleSearch(searchText)" @update:page-size="onPageSizeChange"
                             class="mt-4 flex justify-center" />
                     </div>
