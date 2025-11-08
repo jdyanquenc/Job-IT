@@ -39,9 +39,11 @@ def upsert_embedding(job_id, expires_at, embedding):
 def persist_faiss_index(faiss_bytes, index_name):
     with conn.cursor() as cur:
         cur.execute("""
-            INSERT INTO faiss_index ("name", index_data)
-            VALUES (%s, %s)
-            ON CONFLICT (name) DO UPDATE SET index_data = EXCLUDED.index_data;
+            INSERT INTO faiss_index ("name", index_data, updated_at)
+            VALUES (%s, %s, NOW())
+            ON CONFLICT (name) DO UPDATE
+            SET index_data = EXCLUDED.index_data,
+                updated_at = NOW()
         """, (index_name, faiss_bytes))
 
 
@@ -50,8 +52,8 @@ def load_faiss_index(index_name):
         cur.execute("""
             SELECT index_data
             FROM faiss_index
-            WHERE name = %s
-        """, (index_name,))
+            WHERE name = 'jobit_faiss_index'
+        """)
         row = cur.fetchone()
         if row:
             return row[0]
@@ -60,21 +62,21 @@ def load_faiss_index(index_name):
 
 # Functions related to FAISS index map
 
-def insert_faiss_index_map(job_id, position):
+def insert_faiss_index_map(job_id, position, index_name):
     # Get the next position
     with conn.cursor() as cur:
         cur.execute("""
-            INSERT INTO faiss_index_map (position, job_id)
-            VALUES (%s, %s)
-            ON CONFLICT (job_id) DO NOTHING
-        """, (position, job_id))
+            INSERT INTO faiss_index_map (position, job_id, index_name)
+            VALUES (%s, %s, %s)
+        """, (position, job_id, index_name))
 
 
-def load_faiss_index_map():
+def load_faiss_index_map(index_name):
     with conn.cursor() as cur:
         cur.execute("""
             SELECT position, job_id
             FROM faiss_index_map
+            WHERE index_name = 'jobit_faiss_index'
             ORDER BY position
         """)
         rows = cur.fetchall()
@@ -94,4 +96,46 @@ def insert_recommendation(user_id, recommended_job_id, score):
         """,
          (user_id, recommended_job_id, score, datetime.now()))
     pass
-        
+
+
+def count_jobs_without_embedding():
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT COUNT(1)
+            FROM job_entry je
+            LEFT JOIN job_embeddings jb ON jb.id = je.id
+            WHERE jb.id IS NULL
+            
+        """)
+        row = cur.fetchone()
+        if row:
+            return row[0]
+        return None
+
+
+def load_jobs(batch_size: int):
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT 
+                je.id AS job_id, 
+                je.expires_at AS job_expiration,
+                je.job_title || ' ' ||
+                jd.job_description || ' ' ||
+                jd.responsibilities || ' ' ||
+                jd.skills as job_detail
+            FROM job_entry je
+            JOIN job_detail jd ON jd.id = je.id
+            LEFT JOIN job_embeddings jb ON jb.id = je.id
+            WHERE jb.id IS NULL
+            
+            ORDER BY je.id
+            LIMIT %s
+        """, (batch_size,)) 
+
+        rows = cur.fetchall()
+
+        colnames = [desc[0] for desc in cur.description]
+
+        jobs = [dict(zip(colnames, row)) for row in rows]
+
+        return jobs
