@@ -130,7 +130,7 @@ def get_active_jobs(current_user: OptionalCurrentUser, db: Session, filters: mod
         sector_filter = ""
 
     if filters.salary_ranges:
-        salary_filter = "AND EXISTS (SELECT 1 FROM job_salary js WHERE (j.salary_min >= js.min_salary AND j.salary_max <= js.max_salary) AND js.id = ANY(:salary_ranges))"
+        salary_filter = "AND EXISTS (SELECT 1 FROM job_salary js WHERE (j.salary_min >= js.min_salary AND j.salary_max < js.max_salary) AND js.id = ANY(:salary_ranges))"
     else:
         salary_filter = ""
 

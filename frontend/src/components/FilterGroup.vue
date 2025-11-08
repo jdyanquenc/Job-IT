@@ -27,7 +27,11 @@ const props = defineProps({
 })
 
 // Emitir cambios al padre
-const emit = defineEmits(["update:modelValue", "update:allOption"])
+const emit = defineEmits([
+    "update:modelValue",
+    "update:allOption",
+    "change"
+])
 
 // Estado local
 const selected = ref([...new Set([...props.modelValue])])
@@ -44,6 +48,7 @@ const toogleAll = () => {
     // Emitir el nuevo valor al padre
     emit("update:modelValue", selected.value)
     emit("update:allOption", allSelected.value)
+    emit("change", selected.value)
 }
 
 // Manejar cambios de selección
@@ -57,6 +62,7 @@ const handleChange = (values: number[]) => {
     // Emitir el nuevo valor al padre
     emit("update:modelValue", selected.value)
     emit("update:allOption", allSelected.value)
+    emit("change", selected.value)
 }
 
 // Sincronizar con valor externo

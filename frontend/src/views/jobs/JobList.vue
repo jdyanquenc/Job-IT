@@ -77,12 +77,12 @@ handleSearch('')
                     <hr class="mt-4 mb-3" />
 
                     <FilterGroup title="Rango salarial" :options="jobCountBySalary" v-model="selectedSalaries"
-                        :showAllOption="false" />
+                        :showAllOption="false" @change="handleSearch(searchText, 1)" />
 
                     <hr class="mt-4 mb-3" />
 
                     <FilterGroup title="Industria" :options="jobCountBySector" v-model="selectedIndustries"
-                        :showAllOption="false" />
+                        :showAllOption="false" @change="handleSearch(searchText, 1)" />
 
                 </nav>
             </aside>
