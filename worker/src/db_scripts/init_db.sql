@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS job_embeddings (
 );
 
 CREATE TABLE IF NOT EXISTS faiss_index_map (
+    index_name TEXT,
     position INT PRIMARY KEY,
     job_id UUID REFERENCES job_embeddings(id),
     CONSTRAINT unique_job_id UNIQUE (job_id)
@@ -14,5 +15,6 @@ CREATE TABLE IF NOT EXISTS faiss_index_map (
 
 CREATE TABLE IF NOT EXISTS faiss_index (
     "name" TEXT PRIMARY KEY,
-    index_data BYTEA
+    index_data BYTEA,
+    updated_at TIMESTAMP
 );

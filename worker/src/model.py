@@ -28,7 +28,7 @@ def init_embedding():
     # Check if FAISS index exists or create a new one
     if index_bytes:
         faiss_index = faiss.deserialize_index(np.frombuffer(index_bytes, dtype=np.uint8))
-        id_map = load_faiss_index_map()
+        id_map = load_faiss_index_map(FAISS_INDEX_NAME)
         
         print("✅ FAISS index loaded.")
     else:
@@ -62,7 +62,7 @@ def add_faiss_index_entry(embedding):
 
 def add_faiss_index_map_entry(job_id, position):
     id_map.append((job_id, position))
-    insert_faiss_index_map(job_id, position)
+    insert_faiss_index_map(job_id, position, FAISS_INDEX_NAME)
 
 
 def update_faiss_index():
@@ -81,14 +81,11 @@ def recommend_jobs(profile_data, k=5):
 
     profile_embedding = model.encode([profile_detail], normalize_embeddings=True)
     scores, positions = faiss_index.search(profile_embedding, k)
-
     
 
     print("\n🔍 Recommended jobs:")
     for position, score in zip(positions[0], scores[0]):
         # Insert only if score is above a threshold
-        if score < 0.7:
-            continue
 
         job_id = id_map[position]
         insert_recommendation(user_id, job_id, float(score))
