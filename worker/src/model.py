@@ -30,11 +30,11 @@ def init_embedding():
         faiss_index = faiss.deserialize_index(np.frombuffer(index_bytes, dtype=np.uint8))
         id_map = load_faiss_index_map(FAISS_INDEX_NAME)
         
-        print("✅ FAISS index loaded.")
+        print("FAISS index loaded.")
     else:
         faiss_index = faiss.IndexFlatIP(384)
         id_map = []
-        print("✅ New FAISS index created.")
+        print("New FAISS index created.")
 
 
 def process_job_data(job_data):
@@ -71,7 +71,7 @@ def update_faiss_index():
         faiss_bytes = faiss.serialize_index(faiss_index).tobytes()
         persist_faiss_index(faiss_bytes, FAISS_INDEX_NAME)
         last_persist_time = datetime.now()
-        print("💾 FAISS index persisted.")
+        print("FAISS index persisted.")
 
 
 def recommend_jobs(profile_data, k=5):
@@ -83,10 +83,31 @@ def recommend_jobs(profile_data, k=5):
     scores, positions = faiss_index.search(profile_embedding, k)
     
 
-    print("\n🔍 Recommended jobs:")
+    print("\nRecommended jobs:")
     for position, score in zip(positions[0], scores[0]):
         # Insert only if score is above a threshold
 
         job_id = id_map[position]
         insert_recommendation(user_id, job_id, float(score))
         print(f"Job ID: {job_id}, Score: {score}")
+
+
+def get_related_jobs(job_id, k=5):
+    # Find the position of the job_id in the id_map
+    position = next((pos for jid, pos in id_map if jid == job_id), None)
+    if position is None:
+        return []
+
+    # Get the embedding of the job at that position
+    job_embedding = faiss_index.reconstruct(position).reshape(1, -1)
+
+    # Search for similar jobs
+    scores, positions = faiss_index.search(job_embedding, k + 1)  # +1 to exclude itself
+
+    related_jobs = []
+    for pos, score in zip(positions[0], scores[0]):
+        if pos != position:  # Exclude the original job
+            related_job_id = id_map[pos][0]
+            related_jobs.append((related_job_id, float(score)))
+
+    return related_jobs

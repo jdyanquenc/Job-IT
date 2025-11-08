@@ -47,7 +47,7 @@ def connect_to_rabbitmq(RABBITMQ_HOST, RABBITMQ_USER, RABBITMQ_PASSWORD):
 
 
 
-def main():
+def run_worker():
     init_db()
     init_embedding()
     load_dotenv()
@@ -101,8 +101,3 @@ def main():
                 pass
             print("Retrying in 5 seconds...")
             time.sleep(5)
-
-
-
-if __name__ == "__main__":
-    main()
