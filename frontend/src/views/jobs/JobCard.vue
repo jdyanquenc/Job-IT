@@ -29,7 +29,8 @@ const { handleApply } = useJobApplication()
         @mouseleave="hover = false">
         <!-- Header -->
         <div class="flex items-center justify-between mb-2">
-            <n-image :src="props.job.company_image_url || '/images/template/icons/logo-default.svg'" width="100" />
+            <n-image :src="props.job.company_image_url || '/images/template/icons/logo-default.svg'" width="100"
+                class="flex-shrink-0" />
             <div>
                 <h4 class="font-semibold text-lg">{{ props.job.company_name }}</h4>
                 <p class="text-gray-500 text-sm">{{ props.job.location }}, {{ props.job.country_code }}</p>
@@ -68,7 +69,7 @@ const { handleApply } = useJobApplication()
         <!-- Skills -->
         <div class="flex flex-wrap gap-2 mb-3">
             <n-tag v-for="skill in props.job.tags" :key="skill" :type="hover ? 'success' : 'default'" round>{{ skill
-                }}</n-tag>
+            }}</n-tag>
         </div>
 
         <!-- Footer -->
@@ -77,7 +78,7 @@ const { handleApply } = useJobApplication()
                 <span class="font-bold text-lg" v-if="props.job.currency_code">
                     {{ Number(props.job.salary_min) }}k - {{ Number(props.job.salary_max) }}k <small>{{
                         props.job.currency_code
-                    }}</small>
+                        }}</small>
                 </span>
                 <span class="font-bold text-lg" v-else>A convenir</span>
             </div>
