@@ -1,18 +1,17 @@
 from datetime import datetime, timezone
-from typing import Optional
+from http.client import HTTPException
+import os
 from uuid import uuid4, UUID
 
-from fastapi.encoders import jsonable_encoder
+import httpx
 from sqlalchemy import text
 from sqlalchemy.orm import Session
-from fastapi import FastAPI
 
 from src.auth.service import OptionalCurrentUser
 from src.entities.company_user import CompanyUser
 from src.entities.currency import Currency
 from src.entities.job_application import JobApplication, JobApplicationStatus
 from src.entities.user import User
-from src.messaging.events import publish_event
 from src.messaging.rabbitmq_service import RabbitMQService
 
 from . import models
@@ -21,9 +20,13 @@ from src.entities.job import  JobEntry, JobDetail
 from src.entities.company import Company
 from src.entities.country import Country
 from src.exceptions import JobAccessError, JobAlreadyAppliedError, JobCreationError, JobNotFoundError, UserNotFoundError
-
+from dotenv import load_dotenv
 import logging
-import asyncio
+
+
+load_dotenv()
+
+RECOMMENDATION_ENGINE_URL = os.getenv("RECOMMENDATION_ENGINE_URL", "http://localhost:5000")
 
 def create_job(current_user: TokenData, db: Session, job: models.JobCreate) -> models.JobResponse:
     try:
@@ -296,6 +299,59 @@ def get_job_by_id(current_user: OptionalCurrentUser, db: Session, job_id: UUID) 
         company_image_url = company.image_url or "",
         has_applied = has_applied
     )
+
+
+async def get_related_jobs(current_user: OptionalCurrentUser, db: Session, job_id: UUID) -> list[models.JobResponse]:
+    # Invoke the recommendation engine via HTTP to get related job IDs
+    external_url = RECOMMENDATION_ENGINE_URL + f"/jobs/{job_id}/related"
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(external_url)
+            response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
+            data = response.json()
+
+        # load related jobs details from database
+
+        related_job_ids = [str(item[0]) for item in data]
+        jobs = db.query(JobEntry).filter(JobEntry.id.in_(related_job_ids)).all()
+        job_responses = []
+        for job in jobs:
+            company = db.query(Company).filter(Company.id == job.company_id).first()
+            country = db.query(Country).filter(Country.id == job.country_id).first()
+            currency = db.query(Currency).filter(Currency.id == job.currency_id).first()
+            has_applied = db.query(JobApplication).filter(JobApplication.job_id == job.id).filter(JobApplication.user_id == current_user.get_uuid() if current_user else None).first() is not None
+
+            job_responses.append(
+                models.JobResponse(
+                    id = job.id,
+                    job_title = job.job_title,
+                    job_short_description = job.job_short_description,
+                    remote = job.remote,
+                    employment_type = job.employment_type,
+                    tags = job.tags or [],
+                    salary_min = job.salary_min,
+                    salary_max = job.salary_max,
+                    experience_min_years = job.experience_min_years,
+                    currency_code = currency.code if currency else None,
+                    expires_at = job.expires_at,
+                    created_at = job.created_at,
+                    location = job.location,
+                    country_code = country.iso_code,
+                    company_name = company.name,
+                    company_image_url = company.image_url or "",
+                    has_applied = has_applied
+                )
+            )
+        return job_responses
+
+    except httpx.RequestError as exc:
+        raise HTTPException(status_code=500, detail=f"An error occurred while requesting {exc.request.url}: {exc}")
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(status_code=exc.response.status_code, detail=f"Error response {exc.response.status_code} while requesting {exc.request.url}: {exc.response.text}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {e}")
+    
 
 
 def update_job(current_user: TokenData, db: Session, job_id: UUID, job_update: models.JobUpdate) -> models.JobDetailResponse:

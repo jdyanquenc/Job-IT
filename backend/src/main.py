@@ -47,6 +47,7 @@ app = FastAPI(lifespan=lifespan)
 origins = os.getenv("ALLOWED_ORIGINS", "")
 origins = [o.strip() for o in origins.split(",") if o.strip()]
 
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
