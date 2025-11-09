@@ -1,19 +1,17 @@
-	@echo off
+@echo off
 REM ----------------------------------------
-REM Lanza la shell de Conda, activa el entorno y ejecuta el script
+REM Launch Worker Script
 REM ----------------------------------------
 
-REM Opcional: abre Anaconda Prompt
-REM Esto depende de dónde tengas instalado Anaconda/Miniconda
+REM Activate the Conda environment
 SET "CONDA_PATH=C:\miniconda3"
 CALL "%CONDA_PATH%\Scripts\activate.bat" "%CONDA_PATH%"
 
-REM Activar el entorno específico
+REM Activate the specific environment
 call conda activate faiss_gpu
 
-REM Ejecutar el script Python
-python src/worker.py
+REM Run the Python script
+python src/app.py
 
-REM Mantener la ventana abierta después de ejecutar (opcional)
+REM Keep the window open after running (optional)
 pause
-
