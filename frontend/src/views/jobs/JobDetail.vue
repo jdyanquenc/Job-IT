@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { storeToRefs } from 'pinia';
-
+import { timeAgo } from '@/helpers';
 import { useJobsStore } from '@/stores';
 import { useJobApplication } from '@/composables/useJobApplication'
 import { useRoute } from 'vue-router'
@@ -20,10 +20,13 @@ const id = route.params.id
 
 const hover = ref(false)
 const { handleApply } = useJobApplication()
-const { job } = storeToRefs(jobsStore);
+const { job, relatedJobs } = storeToRefs(jobsStore);
 
 async function loadJobData() {
-    await jobsStore.getById(id as string)
+    await Promise.all([
+        jobsStore.getById(id as string),
+        jobsStore.getRelatedJobs(id as string)
+    ]);
 }
 
 scrollTo(0, 0)
@@ -42,27 +45,6 @@ const company = {
     email: "contact@Evara.com",
     mapEmbed: "https://maps.google.com/maps?q=chicago%20michigan%20avenue&t=&z=13&ie=UTF8&iwloc=&output=embed"
 }
-
-const similarJobs = [
-    {
-        title: "UI / UX Designer fulltime",
-        salary: "$250/Hour",
-        type: "Fulltime",
-        time: "3 mins ago",
-        location: "New York, US",
-        logo: "https://www.svgrepo.com/show/530661/genetic-data.svg"
-    },
-    {
-        title: "Java Software Engineer",
-        salary: "$500/Hour",
-        type: "Fulltime",
-        time: "5 mins ago",
-        location: "Tokyo, Japan",
-        logo: "https://www.svgrepo.com/show/530661/genetic-data.svg"
-    }
-]
-
-
 
 
 </script>
@@ -112,7 +94,7 @@ const similarJobs = [
                                 <n-icon :component="CashOutline" />
                                 <n-text strong>Rango salarial:</n-text>
                                 <n-text>{{ (Number(job.salary_min || 0) / 1000) }}k - {{ (Number(job.salary_max || 0)
-                                    /1000) }}k {{ job.currency_code }}</n-text>
+                                    / 1000) }}k {{ job.currency_code }}</n-text>
                             </div>
                         </n-gi>
 
@@ -137,7 +119,7 @@ const similarJobs = [
                                 <n-icon :component="CalendarOutline" />
                                 <n-text strong>Fecha límite:</n-text>
                                 <n-text>{{ job.expires_at ? new Date(job.expires_at).toLocaleDateString() : 'N/A'
-                                }}</n-text>
+                                    }}</n-text>
                             </div>
                         </n-gi>
 
@@ -250,19 +232,25 @@ const similarJobs = [
                 <!-- Similar Jobs -->
                 <n-card title="Trabajos similares">
                     <div class="space-y-4">
-                        <div v-for="(job, index) in similarJobs" :key="index" class="flex items-start space-x-3">
+                        <div v-for="(job, index) in relatedJobs" :key="index" class="flex items-start space-x-3">
 
-                            <n-image width="60" :src="job.logo" />
+                            <n-image width="60"
+                                :src="job.company_image_url || '/images/template/icons/logo-default.svg'"
+                                class="flex-shrink-0" />
                             <div>
-                                <n-text strong>{{ job.title }}</n-text>
+                                <n-text strong>{{ job.job_title.substring(0, 35) }}</n-text>
                                 <div class="flex items-center text-sm text-gray-500 space-x-2">
-                                    <n-icon :component="BriefcaseOutline" /> <span>{{ job.type }}</span>
-                                    <n-icon :component="TimeOutline" /> <span>{{ job.time }}</span>
+                                    <n-icon :component="BriefcaseOutline" /> <span>{{ job.employment_type }}</span>
+                                    <n-icon :component="TimeOutline" /> <span>{{ timeAgo(job.created_at?.toString() ||
+                                        '') }}</span>
 
                                 </div>
 
                                 <div class="flex justify-between text-sm text-gray-500 space-x-2">
-                                    <span class="text-primary-500 font-semibold">{{ job.salary }}</span>
+                                    <span class="text-primary-500 font-semibold"
+                                        v-if="Number(job.salary_max) > 0">{{ (Number(job.salary_max) / 1000) }}k {{
+                                        job.currency_code }}</span>
+                                    <span class="text-primary-500 font-semibold" v-else>A convenir</span>
                                     <n-icon class="items-right" :component="LocationOutline" /> <span>{{ job.location
                                     }}</span>
                                 </div>

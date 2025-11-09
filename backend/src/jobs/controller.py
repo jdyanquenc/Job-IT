@@ -51,6 +51,10 @@ def get_active_jobs_counts(db: DbSession, filters: models.JobFilters = Depends(m
 def get_job(db: DbSession, current_user: OptionalCurrentUser, job_id: UUID):
     return service.get_job_by_id(current_user, db, job_id)
 
+@router.get("/{job_id}/related", response_model=List[models.JobResponse])
+async def get_related_jobs(db: DbSession, current_user: OptionalCurrentUser, job_id: UUID):
+    return await service.get_related_jobs(current_user, db, job_id)
+
 
 @router.post("/{job_id}/apply", status_code=status.HTTP_201_CREATED)
 @require_any_role([Role.CANDIDATE])

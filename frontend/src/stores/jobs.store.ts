@@ -9,6 +9,7 @@ export const useJobsStore = defineStore('jobit-jobs', {
   state: () => ({
     jobs: [] as Job[],
     job: {} as JobDetail,
+    relatedJobs: [] as Job[],
     jobCountBySector: [] as JobCountSummary[],
     jobCountBySalary: [] as JobCountSummary[],
     jobCountTotal: 0,
@@ -74,6 +75,10 @@ export const useJobsStore = defineStore('jobit-jobs', {
           name: x.name,
           count: x.count,
         }))
+    },
+
+    async getRelatedJobs(id: string) {
+      this.relatedJobs = await http.get(`${baseUrl}/${id}/related`)
     },
 
     async getById(id: string) {
