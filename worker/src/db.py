@@ -81,7 +81,7 @@ def load_faiss_index_map(index_name):
         """)
         rows = cur.fetchall()
 
-        return [job_id for _, job_id in rows]
+        return [(job_id, position) for position, job_id in rows]
     return []
 
 

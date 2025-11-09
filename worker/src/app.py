@@ -25,5 +25,6 @@ def get_related_jobs(job_id):
     related_jobs = model.get_related_jobs(uuid_obj)
     return jsonify(related_jobs)
 
-if __name__ == "__main__":
-    app.run(debug=True)
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
