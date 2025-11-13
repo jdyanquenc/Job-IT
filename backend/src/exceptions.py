@@ -34,6 +34,11 @@ class JobAlreadyAppliedError(JobError):
         message = "Job already applied" if job_id is None else f"Job with id {job_id} already applied"
         super().__init__(status_code=400, error_code=error_code, message=message)
 
+class JobsRelatedError(JobError):
+    def __init__(self, job_id=None):
+        error_code = "related_jobs_error"
+        message = "Error fetching related jobs" if job_id is None else f"Error fetching related jobs for job with id {job_id}"
+        super().__init__(status_code=500, error_code=error_code, message=message)
 
 class ProfileError(BaseError):
     """Base exception for profile-related errors"""
