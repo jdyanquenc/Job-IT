@@ -79,6 +79,7 @@ class JobResponse(BaseModel):
     job_title: str 
     job_short_description: str
     remote: bool
+    location: str
     employment_type: EmploymentType
     salary_min: Optional[int] = None
     salary_max: Optional[int] = None

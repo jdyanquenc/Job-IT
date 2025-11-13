@@ -93,8 +93,9 @@ const company = {
                             <div class="flex items-center space-x-2">
                                 <n-icon :component="CashOutline" />
                                 <n-text strong>Rango salarial:</n-text>
-                                <n-text>{{ (Number(job.salary_min || 0) / 1000) }}k - {{ (Number(job.salary_max || 0)
-                                    / 1000) }}k {{ job.currency_code }}</n-text>
+                                <n-text v-if="Number(job.salary_max) === 0">A convenir</n-text>
+                                <n-text v-else>{{ (Number(job.salary_min) / 1000) }}k - {{ (Number(job.salary_max) /
+                                    1000) }}k {{ job.currency_code }}</n-text>
                             </div>
                         </n-gi>
 
@@ -102,7 +103,8 @@ const company = {
                             <div class="flex items-center space-x-2">
                                 <n-icon :component="BarChartOutline" />
                                 <n-text strong>Experiencia:</n-text>
-                                <n-text>{{ job.experience_min_years }} años</n-text>
+                                <n-text v-if="Number(job.experience_min_years) === 0">No requerida</n-text>
+                                <n-text v-else>{{ job.experience_min_years }} años</n-text>
                             </div>
                         </n-gi>
 
@@ -195,8 +197,8 @@ const company = {
                         <div>
                             <n-text strong>{{ job.company_name }}</n-text>
                             <div class="text-gray-500 text-sm flex items-center space-x-1">
-                                <n-icon :component="LocationOutline" /> <span>{{ job.location }}</span>, <span>{{
-                                    job.country_code }}</span>
+                                <n-icon :component="LocationOutline" />
+                                <span>{{ job.location }}</span>, <span>{{ job.country_code }}</span>
                             </div>
                             <n-button quaternary size="small" type="primary">
                                 {{ company.jobsOpen }} oportunidades de empleo
@@ -238,7 +240,12 @@ const company = {
                                 :src="job.company_image_url || '/images/template/icons/logo-default.svg'"
                                 class="flex-shrink-0" />
                             <div>
-                                <n-text strong>{{ job.job_title.substring(0, 35) }}</n-text>
+                                <h5 class="text-lg font-bold">
+                                    <a :href="$router.resolve({ name: 'JobDetail', params: { id: job.id } }).href"
+                                        target="_blank" rel="noopener noreferrer">
+                                        {{ job.job_title.substring(0, 35) }}
+                                    </a>
+                                </h5>
                                 <div class="flex items-center text-sm text-gray-500 space-x-2">
                                     <n-icon :component="BriefcaseOutline" /> <span>{{ job.employment_type }}</span>
                                     <n-icon :component="TimeOutline" /> <span>{{ timeAgo(job.created_at?.toString() ||
@@ -247,12 +254,12 @@ const company = {
                                 </div>
 
                                 <div class="flex justify-between text-sm text-gray-500 space-x-2">
-                                    <span class="text-primary-500 font-semibold"
-                                        v-if="Number(job.salary_max) > 0">{{ (Number(job.salary_max) / 1000) }}k {{
-                                        job.currency_code }}</span>
+                                    <span class="text-primary-500 font-semibold" v-if="Number(job.salary_max) > 0">{{
+                                        (Number(job.salary_max) / 1000) }}k {{
+                                            job.currency_code }}</span>
                                     <span class="text-primary-500 font-semibold" v-else>A convenir</span>
-                                    <n-icon class="items-right" :component="LocationOutline" /> <span>{{ job.location
-                                    }}</span>
+                                    <n-icon class="items-right" :component="LocationOutline" />
+                                    <span>{{ job.location }}</span>
                                 </div>
                             </div>
                         </div>
