@@ -1,7 +1,9 @@
 export function timeAgo(isoDate: string): string {
-  console.info('>>> timeAgo called with date:', isoDate)
-
   const date = new Date(isoDate)
+
+  if (isNaN(date.getTime())) {
+    return 'Fecha inválida'
+  }
 
   const now = new Date()
 
@@ -17,5 +19,5 @@ export function timeAgo(isoDate: string): string {
   if (diffDay < 7) return `Hace ${diffDay} día${diffDay === 1 ? '' : 's'}`
 
   // fallback for older dates
-  return date.toLocaleString()
+  return date.toLocaleDateString()
 }
