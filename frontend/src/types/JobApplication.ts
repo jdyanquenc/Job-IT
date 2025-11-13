@@ -11,6 +11,7 @@ export interface JobApplication {
   salary_min: string
   salary_max: string
   currency_code: string
+  has_applied: boolean
   created_at: Date
   updated_at: Date | null
   expires_at: Date | null
@@ -18,5 +19,5 @@ export interface JobApplication {
   country_code: string
   company_name: string
   company_image_url: string | null
-  has_applied: boolean
+  similarity_score: number | null
 }

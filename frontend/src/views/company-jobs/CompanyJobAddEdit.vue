@@ -51,7 +51,8 @@ const model = ref<RegisterJob>({
     expires_at: new Date(new Date().setDate(new Date().getDate() + 30)),
     company_image_url: '',
     company_name: '',
-    has_applied: false
+    has_applied: false,
+    similarity_score: 0
 })
 
 const experience_options = [
