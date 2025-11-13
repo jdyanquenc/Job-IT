@@ -304,6 +304,8 @@ async def get_related_jobs(current_user: OptionalCurrentUser, db: Session, job_i
     # Invoke the recommendation engine via HTTP to get related job IDs
     external_url = RECOMMENDATION_ENGINE_URL + f"/jobs/{job_id}/related"
 
+    logging.info(f"Trying to fetch related jobs for job ID {job_id} from {external_url}")
+
     try:
         async with httpx.AsyncClient() as client:
             response = await client.get(external_url)
@@ -344,11 +346,8 @@ async def get_related_jobs(current_user: OptionalCurrentUser, db: Session, job_i
             )
         return job_responses
 
-    except httpx.RequestError as exc:
-        raise JobsRelatedError(job_id=job_id, detail=f"An error occurred while requesting {exc.request.url}: {exc}")
-    except httpx.HTTPStatusError as exc:
-        raise JobsRelatedError(job_id=job_id, status_code=exc.response.status_code, detail=f"Error response {exc.response.status_code} while requesting {exc.request.url}: {exc.response.text}")
     except Exception as e:
+        logging.error(f"Unexpected error while fetching related jobs for job ID {job_id}: {str(e)}")
         raise JobsRelatedError(job_id=job_id, detail=f"An unexpected error occurred: {e}")
     
 
