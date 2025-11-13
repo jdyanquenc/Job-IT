@@ -380,7 +380,6 @@ def update_job(current_user: TokenData, db: Session, job_id: UUID, job_update: m
     job_detail.responsibilities = job_update.responsibilities
     job_detail.skills = job_update.skills
     job_detail.benefits = job_update.benefits
-    job_detail.experience = job_update.experience
 
     db.commit()
     logging.info(f"Successfully updated job {job_id} for user {current_user.get_uuid()}")

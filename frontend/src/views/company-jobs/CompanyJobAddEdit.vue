@@ -116,7 +116,7 @@ const rules: FormRules = {
         trigger: 'blur'
     },
     experience: {
-        required: true,
+        required: false,
         message: 'Este campo es requerido',
         trigger: 'blur'
     },
