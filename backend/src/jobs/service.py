@@ -80,7 +80,7 @@ def get_company_jobs(current_user: TokenData, db: Session, query: str, page: int
         FROM job_entry j
         JOIN company c ON c.id = j.company_id
         JOIN country co ON co.id = j.country_id
-        JOIN currency cu ON cu.id = j.currency_id
+        LEFT JOIN currency cu ON cu.id = j.currency_id
         WHERE j.company_id = :company_id
         AND (:query = '' OR search_vector @@ plainto_tsquery('english', :query))
         ORDER BY ts_rank_cd(search_vector, plainto_tsquery('english', :query)) DESC
@@ -528,7 +528,7 @@ def get_job_recommendations(current_user: TokenData, db: Session, query: str, pa
         raise UserNotFoundError(current_user.get_uuid())
 
     stmt = text("""
-        SELECT j.id, j.job_title, j.job_short_description, j.remote, j.employment_type, j.tags, (j.salary_min / cu.divisor), (j.salary_max / cu.divisor), cu.code, j.expires_at, j.created_at, c.name AS company_name, j.location, co.iso_code AS country_code, c.image_url, (ja.job_id IS NOT NULL) AS has_applied
+        SELECT j.id, j.job_title, j.job_short_description, j.remote, j.employment_type, j.tags, (j.salary_min / cu.divisor), (j.salary_max / cu.divisor), cu.code, j.expires_at, j.created_at, c.name AS company_name, j.location, co.iso_code AS country_code, c.image_url, (ja.job_id IS NOT NULL) AS has_applied, jr.similarity_score
         FROM job_entry j
         JOIN company c ON c.id = j.company_id
         JOIN country co ON co.id = j.country_id
@@ -564,9 +564,10 @@ def get_job_recommendations(current_user: TokenData, db: Session, query: str, pa
             country_code = country_code,
             company_name = company_name,
             company_image_url = image_url or "",
-            has_applied = has_applied
+            has_applied = has_applied,
+            similarity_score = similarity_score
         )
-        for id, job_title, job_short_description, remote, employment_type, tags, salary_min, salary_max, currency_code, expires_at, created_at, company_name, location, country_code, image_url, has_applied in results
+        for id, job_title, job_short_description, remote, employment_type, tags, salary_min, salary_max, currency_code, expires_at, created_at, company_name, location, country_code, image_url, has_applied, similarity_score in results
     ]
 
     return recommendations

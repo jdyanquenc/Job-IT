@@ -139,6 +139,7 @@ class JobApplicationResponse(JobResponse):
 
 
 class JobRecommendationResponse(JobResponse):
+    similarity_score: float
     pass
 
 

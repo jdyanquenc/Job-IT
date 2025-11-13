@@ -18,7 +18,6 @@ const page = ref(1)
 const pageSize = ref(12)
 const total = ref(200)
 
-const selectedIndustries = ref([])
 const selectedSalaries = ref([])
 const searchText = ref('')
 
@@ -35,21 +34,13 @@ const pageSizes = [
     { label: '36 / pág', value: 36 }
 ]
 
-const industryOptions = [
-    { id: 1, name: 'Software', count: 12 },
-    { id: 2, name: 'Finance', count: 23 },
-    { id: 3, name: 'Recruting', count: 43 },
-    { id: 4, name: 'Management', count: 65 },
-    { id: 5, name: 'Advertising', count: 76 },
-]
-
 const salaryOptions = [
-    { id: 1, name: '$0k - $20k', count: 12 },
-    { id: 2, name: '$20k - $40k', count: 23 },
-    { id: 3, name: '$40k - $60k', count: 43 },
-    { id: 4, name: '$60k - $80k', count: 65 },
-    { id: 5, name: '$80k - $100k', count: 76 },
-    { id: 6, name: '> $100k', count: 10 },
+    { id: 1, name: '$0k - $20k', count: 0 },
+    { id: 2, name: '$20k - $40k', count: 0 },
+    { id: 3, name: '$40k - $60k', count: 0 },
+    { id: 4, name: '$60k - $80k', count: 0 },
+    { id: 5, name: '$80k - $100k', count: 5 },
+    { id: 6, name: '> $100k', count: 0 },
 ]
 
 
@@ -77,13 +68,8 @@ handleSearch('')
 
                     <hr class="mt-4 mb-3" />
 
-                    <FilterGroup title="Industria" :options="industryOptions" v-model="selectedIndustries"
-                        allOptionLabel="Todos" />
-
-                    <hr class="mt-4 mb-3" />
-
                     <FilterGroup title="Rango salarial" :options="salaryOptions" v-model="selectedSalaries"
-                        allOptionLabel="Todos" />
+                        :show-all-option="false" />
                 </nav>
             </aside>
 
@@ -91,7 +77,7 @@ handleSearch('')
             <main class="p-2 w-full md:w-3/4">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center md:block hidden">
-                        <span>Mostrando <strong>41-60 </strong>de <strong>944 </strong>ofertas</span>
+                        <span>Mostrando <strong>1-5 </strong>de <strong>5 </strong>ofertas</span>
                     </div>
                     <div class="flex items-center">
                         <div class="flex items-center gap-3">

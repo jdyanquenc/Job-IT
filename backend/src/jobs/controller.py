@@ -51,6 +51,7 @@ def get_active_jobs_counts(db: DbSession, filters: models.JobFilters = Depends(m
 def get_job(db: DbSession, current_user: OptionalCurrentUser, job_id: UUID):
     return service.get_job_by_id(current_user, db, job_id)
 
+
 @router.get("/{job_id}/related", response_model=List[models.JobResponse])
 async def get_related_jobs(db: DbSession, current_user: OptionalCurrentUser, job_id: UUID):
     return await service.get_related_jobs(current_user, db, job_id)
@@ -74,7 +75,7 @@ def get_job_applications(db: DbSession, current_user: CurrentUser, query: Option
     return service.get_job_applications(current_user, db, query, page)
 
 
-@router.get("/recommendations/", response_model=List[models.JobApplicationResponse])
+@router.get("/recommendations/", response_model=List[models.JobRecommendationResponse])
 @require_any_role([Role.CANDIDATE])
 def get_job_recommendations(db: DbSession, current_user: CurrentUser, query: Optional[str] = None, page: Optional[int] = None):
     return service.get_job_recommendations(current_user, db, query, page)
