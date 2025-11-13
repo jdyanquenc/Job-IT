@@ -52,6 +52,7 @@ export interface JobDetail {
   created_at: Date
   updated_at: Date | null
   expires_at: Date | null
+  similarity_score: number | null
 }
 
 export interface RegisterJob extends Omit<JobDetail, 'id' | 'created_at' | 'updated_at'> {
