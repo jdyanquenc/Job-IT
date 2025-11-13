@@ -348,7 +348,7 @@ async def get_related_jobs(current_user: OptionalCurrentUser, db: Session, job_i
 
     except Exception as e:
         logging.error(f"Failed to fetch related jobs for job {job_id}. Error: {str(e)}")
-        raise JobsRelatedError(job_id=job_id, message=f"An unexpected error occurred: {e}")
+        raise JobsRelatedError(job_id, message=str(e))
     
 
 
