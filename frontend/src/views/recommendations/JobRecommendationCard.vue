@@ -62,13 +62,13 @@ const hover = ref(false)
         <!-- Skills -->
         <div class="flex flex-wrap gap-2 mb-3">
             <n-tag v-for="skill in props.job.tags" :key="skill" :type="hover ? 'success' : 'default'" round>{{ skill
-            }}</n-tag>
+                }}</n-tag>
         </div>
 
         <!-- Footer -->
         <div class="flex items-center justify-between">
             <div>
-                <span class="font-bold text-lg">{{ props.job.salary_range }}</span>
+                <span class="font-bold text-lg">{{ props.job.salary_max }}</span>
             </div>
             <div class="flex gap-2">
                 <n-button type="primary" :ghost="!hover" @click="handleApply(job.id)" :disabled="job.has_applied">
