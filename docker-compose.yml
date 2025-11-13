@@ -15,6 +15,7 @@ services:
       RABBITMQ_PORT: ${RABBITMQ_PORT}
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      RECOMMENDATION_ENGINE_URL: ${RECOMMENDATION_ENGINE_URL}
     depends_on:
       - postgres
       - rabbitmq
