@@ -239,20 +239,20 @@ const company = {
                             <n-image width="60"
                                 :src="job.company_image_url || '/images/template/icons/logo-default.svg'"
                                 class="flex-shrink-0" />
-                            <div>
+                            <div class="flex-1 w-full">
                                 <h5 class="text-lg font-bold">
                                     <a :href="$router.resolve({ name: 'JobDetail', params: { id: job.id } }).href"
                                         target="_blank" rel="noopener noreferrer">
                                         {{ job.job_title.substring(0, 35) }}
                                     </a>
                                 </h5>
-                                <div class="flex items-center text-sm text-gray-500 space-x-2">
+                                <div class="flex justify-between text-sm text-gray-500 space-x-2">
                                     <div>
                                         <n-icon :component="BriefcaseOutline" /> <span>{{ job.employment_type }}</span>
                                     </div>
                                     <div>
                                         <n-icon :component="TimeOutline" /> <span>{{ timeAgo(job.created_at?.toString()
-                                            ||'') }}</span>
+                                            || '') }}</span>
                                     </div>
                                 </div>
 
