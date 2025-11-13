@@ -345,11 +345,11 @@ async def get_related_jobs(current_user: OptionalCurrentUser, db: Session, job_i
         return job_responses
 
     except httpx.RequestError as exc:
-        raise JobsRelatedError(job_id=job_id, detail=f"An error occurred while requesting {exc.request.url}: {exc}")
+        raise JobsRelatedError(job_id=job_id, message=f"An error occurred while requesting {exc.request.url}: {exc}")
     except httpx.HTTPStatusError as exc:
-        raise JobsRelatedError(job_id=job_id, status_code=exc.response.status_code, detail=f"Error response {exc.response.status_code} while requesting {exc.request.url}: {exc.response.text}")
+        raise JobsRelatedError(job_id=job_id, status_code=exc.response.status_code, message=f"Error response {exc.response.status_code} while requesting {exc.request.url}: {exc.response.text}")
     except Exception as e:
-        raise JobsRelatedError(job_id=job_id, detail=f"An unexpected error occurred: {e}")
+        raise JobsRelatedError(job_id=job_id, message=f"An unexpected error occurred: {e}")
     
 
 
