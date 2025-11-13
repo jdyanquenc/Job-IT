@@ -59,7 +59,7 @@ export interface RegisterJob extends Omit<JobDetail, 'id' | 'created_at' | 'upda
 }
 
 export interface JobCountSummary {
-  id: string
+  id: string | number
   name: string
   count: number
 }

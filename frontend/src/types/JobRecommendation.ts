@@ -8,7 +8,9 @@ export interface JobRecommendation {
   remote: boolean
   employment_type: EmploymentType
   tags: [string]
-  salary_range: string
+  salary_min: string
+  salary_max: string
+  currency_code: string
   created_at: Date
   updated_at: Date | null
   expires_at: Date | null

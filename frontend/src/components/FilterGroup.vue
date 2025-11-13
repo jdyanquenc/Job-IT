@@ -9,7 +9,7 @@ const props = defineProps({
         required: true
     },
     options: {
-        type: Array<{ id: number | string; name: string; count: number }>,
+        type: Array<{ id: (string | number); name: string; count: number }>,
         required: true,
     },
     showAllOption: {
@@ -21,7 +21,7 @@ const props = defineProps({
         default: "All"
     },
     modelValue: {
-        type: Array,
+        type: Array<string | number>,
         default: () => []
     }
 })
@@ -52,7 +52,7 @@ const toogleAll = () => {
 }
 
 // Manejar cambios de selección
-const handleChange = (values: number[]) => {
+const handleChange = (values: (string | number)[]) => {
     // Eliminar duplicados y actualizar el modelo
     selected.value = [...new Set(values)]
 
