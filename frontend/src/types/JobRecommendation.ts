@@ -19,4 +19,5 @@ export interface JobRecommendation {
   company_name: string
   company_image_url: string | null
   has_applied: boolean
+  similarity_score: number
 }

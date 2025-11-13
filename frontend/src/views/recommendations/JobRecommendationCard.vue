@@ -70,7 +70,10 @@ const hover = ref(false)
             <div>
                 <span class="font-bold text-lg">{{ props.job.salary_max }}</span>
             </div>
-            <div class="flex gap-2">
+            <div class="flex items-center gap-2 ">
+                <n-tag type="info" round>
+                    {{ Number(100 * (job.similarity_score || 0)).toFixed(2) }}% de similitud
+                </n-tag>
                 <n-button type="primary" :ghost="!hover" @click="handleApply(job.id)" :disabled="job.has_applied">
                     {{ job.has_applied ? 'Postulado' : 'Postularme' }}
                 </n-button>

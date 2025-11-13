@@ -27,6 +27,7 @@ export interface Job {
   company_name: string
   company_image_url: string | null
   has_applied: boolean
+  similarity_score: number | null
 }
 
 export interface JobDetail {
