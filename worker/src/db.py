@@ -159,7 +159,7 @@ def load_profiles(batch_size: int):
     with conn.cursor() as cur:
         cur.execute("""
             SELECT 
-                up.id as user_id, 
+                up.id AS user_id,
                 up.title as profile_title,
                 up.description as profile_detail
             FROM user_profile up
@@ -174,3 +174,35 @@ def load_profiles(batch_size: int):
         profiles = [dict(zip(colnames, row)) for row in rows]
 
         return profiles
+    
+
+def load_recommendations(batch_size: int):
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT 
+                    jr.user_id, 
+                    jr.job_id, 
+                    regexp_replace(up.description, '[[:cntrl:]]', '', 'g') as profile, 
+                    regexp_replace(jd.job_description, '[[:cntrl:]]', '', 'g') as job_summary
+            FROM job_recommendation jr 
+            JOIN users u ON u.id = jr.user_id 
+            JOIN user_profile up ON up.id = u.id 
+            JOIN job_entry je ON je.id  = jr.job_id 
+            JOIN job_detail jd ON jd.id = jr.job_id 
+            ORDER BY jr.user_id
+            LIMIT %s
+        """, (batch_size,)) 
+
+        rows = cur.fetchall()
+
+        colnames = [desc[0] for desc in cur.description]
+
+        recommendations = [dict(zip(colnames, row)) for row in rows]
+
+        return recommendations
+    
+
+def update_recommendation_relevance(job_id, user_id, relevance_score):
+    with conn.cursor() as cur:
+        cur.execute("UPDATE job_recommendation SET relevance_score = %s WHERE user_id = %s AND job_id = %s", (relevance_score, user_id, job_id))
+    pass
