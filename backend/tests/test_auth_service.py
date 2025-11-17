@@ -2,7 +2,7 @@ import pytest
 from datetime import timedelta
 from uuid import uuid4
 from src.auth import service as auth_service
-from src.auth.models import RegisterUserRequest
+from src.users.models import RegisterUserRequest
 from src.exceptions import AuthenticationError
 from fastapi.security import OAuth2PasswordRequestForm
 from src.entities.user import User

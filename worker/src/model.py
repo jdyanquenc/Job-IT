@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from uuid import UUID
 import numpy as np
 from sentence_transformers import SentenceTransformer
-from db import insert_faiss_index_map, insert_recommendation, load_faiss_index, load_faiss_index_map, persist_faiss_index, upsert_embedding
+from db import clear_recommendations, insert_faiss_index_map, insert_recommendation, load_faiss_index, load_faiss_index_map, persist_faiss_index, upsert_embedding
 import faiss
 
 
@@ -74,9 +74,8 @@ def update_faiss_index():
         print("FAISS index persisted.")
 
 
-def recommend_jobs(profile_data, k=5):
+def recommend_jobs(profile_data, k=10):
     user_id = profile_data.get("user_id", "")
-    updated_at = profile_data.get("updated_at", "")
     profile_detail = profile_data.get("profile_detail", "")
 
     profile_embedding = model.encode([profile_detail], normalize_embeddings=True)
@@ -84,6 +83,7 @@ def recommend_jobs(profile_data, k=5):
     
 
     print("\nRecommended jobs:")
+    clear_recommendations(user_id)
     for position, score in zip(positions[0], scores[0]):
         # Insert only if score is above a threshold
 

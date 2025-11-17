@@ -84,6 +84,10 @@ def load_faiss_index_map(index_name):
         return [(job_id, position) for position, job_id in rows]
     return []
 
+def clear_recommendations(user_id):
+    with conn.cursor() as cur:
+        cur.execute("DELETE FROM job_recommendation WHERE user_id = %s", (user_id,))
+    pass
 
 def insert_recommendation(user_id, recommended_job_id, score):
     with conn.cursor() as cur:
@@ -139,3 +143,34 @@ def load_jobs(batch_size: int):
         jobs = [dict(zip(colnames, row)) for row in rows]
 
         return jobs
+    
+def count_profiles():
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT COUNT(1)
+            FROM user_profile up
+        """)
+        row = cur.fetchone()
+        if row:
+            return row[0]
+        return None
+
+def load_profiles(batch_size: int):
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT 
+                up.id as user_id, 
+                up.title as profile_title,
+                up.description as profile_detail
+            FROM user_profile up
+            ORDER BY up.id
+            LIMIT %s
+        """, (batch_size,)) 
+
+        rows = cur.fetchall()
+
+        colnames = [desc[0] for desc in cur.description]
+
+        profiles = [dict(zip(colnames, row)) for row in rows]
+
+        return profiles
