@@ -237,7 +237,7 @@ def get_active_jobs_counts(db: Session, filters: models.JobFilters) -> list[mode
 
         UNION
 
-        SELECT 'TOTAL', '0', 'Total', SUM(COALESCE(job_count, 0))
+        SELECT 'TOTAL', '0', 'Total', COALESCE(SUM(COALESCE(job_count, 0)), 0)
         FROM job_counts j
         ORDER BY 1, 2
     """)
@@ -348,8 +348,7 @@ async def get_related_jobs(current_user: OptionalCurrentUser, db: Session, job_i
 
     except Exception as e:
         logging.error(f"Failed to fetch related jobs for job {job_id}. Error: {str(e)}")
-        raise JobsRelatedError(job_id, message=str(e))
-    
+        return []
 
 
 def update_job(current_user: TokenData, db: Session, job_id: UUID, job_update: models.JobUpdate) -> models.JobDetailResponse:
