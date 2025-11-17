@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from uuid import UUID
 import numpy as np
 from sentence_transformers import SentenceTransformer
-from db import clear_recommendations, insert_faiss_index_map, insert_recommendation, load_faiss_index, load_faiss_index_map, persist_faiss_index, upsert_embedding
+from db import insert_faiss_index_map, insert_recommendation, load_faiss_index, load_faiss_index_map, persist_faiss_index, upsert_embedding
 import faiss
 
 
@@ -76,20 +76,20 @@ def update_faiss_index():
 
 def recommend_jobs(profile_data, k=10):
     user_id = profile_data.get("user_id", "")
+    updated_at = profile_data.get("updated_at", "")
     profile_detail = profile_data.get("profile_detail", "")
 
     profile_embedding = model.encode([profile_detail], normalize_embeddings=True)
     scores, positions = faiss_index.search(profile_embedding, k)
     
-
-    print("\nRecommended jobs:")
-    clear_recommendations(user_id)
     for position, score in zip(positions[0], scores[0]):
         # Insert only if score is above a threshold
 
         job_id = id_map[position]
+        # "job_id" is of type uuid but expression is of type record
+        job_id = job_id[0]
+        #print(f"Job ID: {job_id}, Score: {score}")
         insert_recommendation(user_id, job_id, float(score))
-        print(f"Job ID: {job_id}, Score: {score}")
 
 
 def get_related_jobs(job_id, k=5):

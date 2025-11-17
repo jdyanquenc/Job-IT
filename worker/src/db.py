@@ -159,7 +159,7 @@ def load_profiles(batch_size: int):
     with conn.cursor() as cur:
         cur.execute("""
             SELECT 
-                up.id as user_id, 
+                up.id::text AS user_id,
                 up.title as profile_title,
                 up.description as profile_detail
             FROM user_profile up
