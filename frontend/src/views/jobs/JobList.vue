@@ -39,21 +39,24 @@ const pageSizes = [
     { label: '36 / pág', value: 36 }
 ]
 
-
-async function handleSearch(value: string, pageNumber: number = page.value) {
+async function handleSearch(value: string, new_page = page.value) {
     await Promise.all([
-        jobsStore.find(value, pageNumber, page_size.value, country_code.value, sort.value, selectedIndustries.value, selectedSalaries.value),
+        jobsStore.find(value, new_page, page_size.value, country_code.value, sort.value, selectedIndustries.value, selectedSalaries.value),
         jobsStore.loadJobCounts(value, country_code.value, selectedIndustries.value, selectedSalaries.value)
     ]);
     window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 function onPageSizeChange(new_page_size: number) {
+    page.value = 1
     page_size.value = new_page_size
-    handleSearch(searchText.value, 1)
+    handleSearch(searchText.value)
 }
 
-handleSearch('')
+function search() {
+    page.value = 1
+    handleSearch(searchText.value, 1)
+}
 
 </script>
 
@@ -61,8 +64,7 @@ handleSearch('')
     <div class="w-full mx-auto">
 
         <div class="flex mb-4">
-            <SearchBar v-model="searchText" @search="handleSearch(searchText, 1)"
-                placeholder="Descubre nuevos retos para ti..." />
+            <SearchBar v-model="searchText" @search="search()" placeholder="Descubre nuevos retos para ti..." />
         </div>
 
         <div class="flex flex-col md:flex-row items-start gap-4">
@@ -119,7 +121,7 @@ handleSearch('')
                         </p>
                         <n-pagination v-if="jobs.length !== 0" v-model:page="page" :page-size="page_size"
                             :item-count="jobCountTotal" :page-sizes="pageSizes.map(o => o.value)"
-                            @update:page="handleSearch(searchText)" @update:page-size="onPageSizeChange"
+                            @update:page="handleSearch(searchText, page)" @update:page-size="onPageSizeChange"
                             class="mt-4 flex justify-center" />
                     </div>
                 </div>

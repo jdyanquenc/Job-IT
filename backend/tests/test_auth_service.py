@@ -1,7 +1,7 @@
 import pytest
 from datetime import timedelta
 from uuid import uuid4
-from src.auth import service as auth_service
+from src.users import service as auth_service
 from src.users.models import RegisterUserRequest
 from src.exceptions import AuthenticationError
 from fastapi.security import OAuth2PasswordRequestForm
@@ -45,7 +45,9 @@ async def test_register_user(db_session):
         email="new@example.com",
         password="password123",
         first_name="New",
-        last_name="User"
+        last_name="User",
+        identification_type="CC",
+        identification_number="B98765432"
     )
     auth_service.register_user(db_session, request)
     

@@ -1,64 +1,53 @@
-from datetime import datetime, timezone
 from uuid import uuid4, UUID
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
+
+from src.entities.company import Company
 from . import models
 from src.auth.models import TokenData
 from src.entities.todo import Todo
 from src.exceptions import JobCreationError, JobNotFoundError
 import logging
 
-def create_todo(current_user: TokenData, db: Session, todo: models.TodoCreate) -> Todo:
+def create_company(current_user: TokenData, db: Session, company: models.CompanyCreate) -> Company:
     try:
-        new_todo = Todo(**todo.model_dump())
-        new_todo.user_id = current_user.get_uuid()
-        db.add(new_todo)
+        new_company = Company(**company.model_dump())
+        new_company.user_id = current_user.get_uuid()
+        db.add(new_company)
         db.commit()
-        db.refresh(new_todo)
-        logging.info(f"Created new todo for user: {current_user.get_uuid()}")
-        return new_todo
+        db.refresh(new_company)
+        logging.info(f"Created new company for user: {current_user.get_uuid()}")
+        return new_company
     except Exception as e:
-        logging.error(f"Failed to create todo for user {current_user.get_uuid()}. Error: {str(e)}")
+        logging.error(f"Failed to create company for user {current_user.get_uuid()}. Error: {str(e)}")
         raise JobCreationError(str(e))
 
 
-def get_todos(current_user: TokenData, db: Session) -> list[models.TodoResponse]:
-    todos = db.query(Todo).filter(Todo.user_id == current_user.get_uuid()).all()
-    logging.info(f"Retrieved {len(todos)} todos for user: {current_user.get_uuid()}")
-    return todos
+def get_companies(current_user: TokenData, db: Session) -> list[models.CompanyResponse]:
+    companies = db.query(Company).filter(Company.user_id == current_user.get_uuid()).all()
+    logging.info(f"Retrieved {len(companies)} companies for user: {current_user.get_uuid()}")
+    return companies
 
 
-def get_todo_by_id(current_user: TokenData, db: Session, todo_id: UUID) -> Todo:
-    todo = db.query(Todo).filter(Todo.id == todo_id).filter(Todo.user_id == current_user.get_uuid()).first()
-    if not todo:
-        logging.warning(f"Todo {todo_id} not found for user {current_user.get_uuid()}")
-        raise JobNotFoundError(todo_id)
-    logging.info(f"Retrieved todo {todo_id} for user {current_user.get_uuid()}")
-    return todo
+def get_company_by_id(current_user: TokenData, db: Session, company_id: UUID) -> Company:
+    company = db.query(Company).filter(Company.id == company_id).filter(Company.user_id == current_user.get_uuid()).first()
+    if not company:
+        logging.warning(f"Company {company_id} not found for user {current_user.get_uuid()}")
+        raise JobNotFoundError(company_id)
+    logging.info(f"Retrieved company {company_id} for user {current_user.get_uuid()}")
+    return company
 
 
-def update_todo(current_user: TokenData, db: Session, todo_id: UUID, todo_update: models.TodoCreate) -> Todo:
-    todo_data = todo_update.model_dump(exclude_unset=True)
-    db.query(Todo).filter(Todo.id == todo_id).filter(Todo.user_id == current_user.get_uuid()).update(todo_data)
+def update_company(current_user: TokenData, db: Session, company_id: UUID, company_update: models.CompanyCreate) -> Company:
+    company_data = company_update.model_dump(exclude_unset=True)
+    db.query(Company).filter(Company.id == company_id).filter(Company.user_id == current_user.get_uuid()).update(company_data)
     db.commit()
-    logging.info(f"Successfully updated todo {todo_id} for user {current_user.get_uuid()}")
-    return get_todo_by_id(current_user, db, todo_id)
+    logging.info(f"Successfully updated company {company_id} for user {current_user.get_uuid()}")
+    return get_company_by_id(current_user, db, company_id)
 
-def complete_todo(current_user: TokenData, db: Session, todo_id: UUID) -> Todo:
-    todo = get_todo_by_id(current_user, db, todo_id)
-    if todo.is_completed:
-        logging.debug(f"Todo {todo_id} is already completed")
-        return todo
-    todo.is_completed = True
-    todo.completed_at = datetime.now(timezone.utc)
+
+def delete_company(current_user: TokenData, db: Session, company_id: UUID) -> None:
+    company = get_company_by_id(current_user, db, company_id)
+    db.delete(company)
     db.commit()
-    db.refresh(todo)
-    logging.info(f"Todo {todo_id} marked as completed by user {current_user.get_uuid()}")
-    return todo
-
-
-def delete_todo(current_user: TokenData, db: Session, todo_id: UUID) -> None:
-    todo = get_todo_by_id(current_user, db, todo_id)
-    db.delete(todo)
-    db.commit()
-    logging.info(f"Todo {todo_id} deleted by user {current_user.get_uuid()}")
+    logging.info(f"Company {company_id} deleted by user {current_user.get_uuid()}")
