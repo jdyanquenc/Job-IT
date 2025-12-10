@@ -502,7 +502,7 @@ def get_job_applications(current_user: TokenData, db: Session, query: str, page:
             job_short_description = job_short_description,
             remote = remote,
             employment_type = employment_type,
-            tags = tags,
+            tags = tags or [],
             salary_min = salary_min,
             salary_max = salary_max,
             currency_code = currency_code,

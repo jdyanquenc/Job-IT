@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, Depends, Query, status
 from typing import List, Optional, Union
 from uuid import UUID
@@ -39,14 +40,16 @@ def delete_job(db: DbSession, job_id: UUID, current_user: CurrentUser):
 
 @router.get("/search", response_model=List[models.JobResponse])
 def get_active_jobs(db: DbSession, current_user: OptionalCurrentUser, filters: models.JobFilters = Depends(models.get_job_filters)):
+    logging.info(f"Searching for active jobs with filters: {filters}")
     return service.get_active_jobs(current_user, db, filters)
 
 
 @router.get("/counts", response_model=List[models.JobCountsResponse])
 def get_active_jobs_counts(db: DbSession, filters: models.JobFilters = Depends(models.get_job_filters)):
+    logging.info(f"Getting active jobs counts with filters: {filters}")
     return service.get_active_jobs_counts(db, filters)
 
-
+    
 @router.get("/{job_id}", response_model=models.JobDetailResponse)
 def get_job(db: DbSession, current_user: OptionalCurrentUser, job_id: UUID):
     return service.get_job_by_id(current_user, db, job_id)

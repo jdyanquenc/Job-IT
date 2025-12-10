@@ -14,7 +14,7 @@ class JobFilters(BaseModel):
     sector_ids: Optional[list[UUID]] = None
     salary_ranges: Optional[list[int]] = None
 
-    sort_by: Optional[str] = "relevance"
+    sort_by: str = "relevance"
     page: int = 1
     page_size: int = 20
 
@@ -149,10 +149,17 @@ def get_job_filters(
     country_code: str = Query(...),
     sector_ids: Optional[str] = Query(None),
     salary_ranges: Optional[str] = Query(None),
+    sort_by: str = Query("relevance"),
+    page: int = Query(1),
+    page_size: int = Query(20)
+
 ) -> JobFilters:
     return JobFilters(
         query=query,
         country_code=country_code,
         sector_ids=sector_ids,
-        salary_ranges=salary_ranges
+        salary_ranges=salary_ranges,
+        sort_by=sort_by,
+        page=page,
+        page_size=page_size
     )

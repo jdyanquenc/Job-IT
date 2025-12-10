@@ -1,22 +1,6 @@
-# Clean Architecture Template
+# JOB IT backend
 
-What's included in the template?
-
-- Domain layer with sample entities.
-- Application layer with abstractions for:
-  - Example use cases
-  - Cross-cutting concerns (logging, validation)
-- Infrastructure layer with:
-  - Authentication
-  - SQLAlchemy, PostgreSQL (you can change to SQLite for development in database/core.py)
-  - Rate limiting on registration
-- Testing projects
-  - Pytest unit tests
-  - Pytest integration tests (e2e tests)
-
-I'm open to hearing your feedback about the template and what you'd like to see in future iterations. DM me on LinkedIn or email me.
-
---
+Provides the API services to 
 
 # Install all dependencies.
 - Run `pip install -r requirements-dev.txt`
@@ -32,6 +16,3 @@ I'm open to hearing your feedback about the template and what you'd like to see 
 
 # How to run tests.
 - Run `pytest` to run all tests
-
-
-Cheers!
